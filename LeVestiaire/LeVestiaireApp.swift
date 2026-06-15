@@ -1,6 +1,6 @@
 //
-//  LeVestaireApp.swift
-//  LeVestaire
+//  LeVestiaireApp.swift
+//  LeVestiaire
 //
 //  Created by Corentin Robert on 08/06/2026.
 //
@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftData
 
 @main
-struct LeVestaireApp: App {
+struct LeVestiaireApp: App {
     
     var body: some Scene {
         WindowGroup {

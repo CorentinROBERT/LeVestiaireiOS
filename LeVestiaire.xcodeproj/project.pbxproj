@@ -7,13 +7,13 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		F8B110012FD6F78D0061F056 /* LeVestaire.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LeVestaire.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F8B110012FD6F78D0061F056 /* LeVestiaire.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LeVestiaire.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		F8B110032FD6F78D0061F056 /* LeVestaire */ = {
+		F8B110032FD6F78D0061F056 /* LeVestiaire */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = LeVestaire;
+			path = LeVestiaire;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -32,7 +32,7 @@
 		F8B10FF82FD6F78D0061F056 = {
 			isa = PBXGroup;
 			children = (
-				F8B110032FD6F78D0061F056 /* LeVestaire */,
+				F8B110032FD6F78D0061F056 /* LeVestiaire */,
 				F8B110022FD6F78D0061F056 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -40,7 +40,7 @@
 		F8B110022FD6F78D0061F056 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				F8B110012FD6F78D0061F056 /* LeVestaire.app */,
+				F8B110012FD6F78D0061F056 /* LeVestiaire.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -48,9 +48,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		F8B110002FD6F78D0061F056 /* LeVestaire */ = {
+		F8B110002FD6F78D0061F056 /* LeVestiaire */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = F8B1100E2FD6F7900061F056 /* Build configuration list for PBXNativeTarget "LeVestaire" */;
+			buildConfigurationList = F8B1100E2FD6F7900061F056 /* Build configuration list for PBXNativeTarget "LeVestiaire" */;
 			buildPhases = (
 				F8B10FFD2FD6F78D0061F056 /* Sources */,
 				F8B10FFE2FD6F78D0061F056 /* Frameworks */,
@@ -61,13 +61,13 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				F8B110032FD6F78D0061F056 /* LeVestaire */,
+				F8B110032FD6F78D0061F056 /* LeVestiaire */,
 			);
-			name = LeVestaire;
+			name = LeVestiaire;
 			packageProductDependencies = (
 			);
 			productName = LeVestaire;
-			productReference = F8B110012FD6F78D0061F056 /* LeVestaire.app */;
+			productReference = F8B110012FD6F78D0061F056 /* LeVestiaire.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -85,7 +85,7 @@
 					};
 				};
 			};
-			buildConfigurationList = F8B10FFC2FD6F78D0061F056 /* Build configuration list for PBXProject "LeVestaire" */;
+			buildConfigurationList = F8B10FFC2FD6F78D0061F056 /* Build configuration list for PBXProject "LeVestiaire" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -99,7 +99,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				F8B110002FD6F78D0061F056 /* LeVestaire */,
+				F8B110002FD6F78D0061F056 /* LeVestiaire */,
 			);
 		};
 /* End PBXProject section */
@@ -329,7 +329,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		F8B10FFC2FD6F78D0061F056 /* Build configuration list for PBXProject "LeVestaire" */ = {
+		F8B10FFC2FD6F78D0061F056 /* Build configuration list for PBXProject "LeVestiaire" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				F8B1100C2FD6F7900061F056 /* Debug */,
@@ -338,7 +338,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		F8B1100E2FD6F7900061F056 /* Build configuration list for PBXNativeTarget "LeVestaire" */ = {
+		F8B1100E2FD6F7900061F056 /* Build configuration list for PBXNativeTarget "LeVestiaire" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				F8B1100F2FD6F7900061F056 /* Debug */,
