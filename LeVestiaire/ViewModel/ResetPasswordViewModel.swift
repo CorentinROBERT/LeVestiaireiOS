@@ -8,6 +8,7 @@
 import Combine
 import Foundation
 
+@MainActor
 final class ResetPasswordViewModel: ObservableObject {
     let resetToken: String?
 
@@ -20,8 +21,15 @@ final class ResetPasswordViewModel: ObservableObject {
     @Published var successMessage: String?
     @Published var isLoading = false
 
-    init(resetToken: String? = nil) {
+    private let authService: AuthService
+
+    init(resetToken: String?, authService: AuthService) {
         self.resetToken = resetToken
+        self.authService = authService
+    }
+
+    convenience init(resetToken: String? = nil) {
+        self.init(resetToken: resetToken, authService: AuthService.shared)
     }
 
     var canSubmit: Bool {
@@ -47,11 +55,6 @@ final class ResetPasswordViewModel: ObservableObject {
             return
         }
 
-        guard !verificationCode.trimmingCharacters(in: .whitespaces).isEmpty else {
-            validationMessage = "Veuillez saisir le code reçu par email."
-            return
-        }
-
         guard password == confirmPassword else {
             validationMessage = "Les mots de passe ne correspondent pas."
             return
@@ -62,20 +65,37 @@ final class ResetPasswordViewModel: ObservableObject {
             return
         }
 
-        // Le token est fourni par le lien reçu par email (deep link).
-        // En navigation in-app depuis ForgetPassword, il peut être nil tant que l'API n'est pas branchée.
-        if let resetToken, resetToken.isEmpty {
-            validationMessage = "Le lien de réinitialisation est invalide ou expiré."
+        let token = resolvedResetToken
+        guard !token.isEmpty else {
+            validationMessage = "Veuillez saisir le code reçu par email."
             return
         }
 
         isLoading = true
 
-        Task { @MainActor in
+        Task {
             defer { isLoading = false }
 
-            // TODO: appeler l'API avec verificationCode, resetToken et nouveau mot de passe
-            successMessage = "Votre mot de passe a été mis à jour avec succès."
+            let response = await authService.confirmPasswordReset(
+                token: token,
+                newPassword: password
+            )
+
+            if response.success {
+                successMessage = response.message ?? "Votre mot de passe a été mis à jour avec succès."
+                return
+            }
+
+            validationMessage = response.error ?? response.message ?? "Impossible de réinitialiser le mot de passe."
         }
+    }
+
+    private var resolvedResetToken: String {
+        let deepLinkToken = resetToken?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if !deepLinkToken.isEmpty {
+            return deepLinkToken
+        }
+
+        return verificationCode.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }

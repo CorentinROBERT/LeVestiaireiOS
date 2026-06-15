@@ -75,6 +75,20 @@ struct Login: View {
         .fullScreenCover(isPresented: $viewModel.showDeveloperPage) {
             DeveloperView()
         }
+        .navigationDestination(isPresented: $viewModel.showEmailVerification) {
+            EmailVerificationView(email: viewModel.email.trimmingCharacters(in: .whitespaces))
+        }
+        .alert(
+            "Connexion",
+            isPresented: Binding(
+                get: { viewModel.validationMessage != nil },
+                set: { if !$0 { viewModel.validationMessage = nil } }
+            )
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(viewModel.validationMessage ?? "")
+        }
     }
 
     private var header: some View {
@@ -123,7 +137,7 @@ struct Login: View {
             )
 
             UButton(
-                text: "Se connecter",
+                text: viewModel.isLoading ? "Connexion..." : "Se connecter",
                 textColor: AppPalette.Primary.onMain,
                 backgroundColor: AppPalette.Primary.main,
                 cornerRadius: 25,
@@ -131,6 +145,8 @@ struct Login: View {
                 trailingIcon: "arrow.right",
                 onPress: viewModel.login
             )
+            .opacity(viewModel.isLoading ? 0.7 : 1)
+            .disabled(viewModel.isLoading)
             .padding(.top, 4)
         }
         .padding(22)

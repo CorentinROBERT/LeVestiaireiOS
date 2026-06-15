@@ -8,6 +8,7 @@
 import Combine
 import Foundation
 
+@MainActor
 final class EmailVerificationViewModel: ObservableObject {
     private static let resendCooldownDuration = 20
 
@@ -20,13 +21,19 @@ final class EmailVerificationViewModel: ObservableObject {
     @Published var showSportProfile = false
 
     private var resendCooldownTask: Task<Void, Never>?
+    private let authService: AuthService
 
     var canResendEmail: Bool {
         resendCooldownRemaining == 0 && !isResending
     }
 
-    init(email: String) {
+    init(email: String, authService: AuthService) {
         self.email = email
+        self.authService = authService
+    }
+
+    convenience init(email: String) {
+        self.init(email: email, authService: AuthService.shared)
     }
 
     deinit {
@@ -39,22 +46,31 @@ final class EmailVerificationViewModel: ObservableObject {
         isCheckingVerification = true
         feedbackMessage = nil
 
-        Task { @MainActor in
+        Task {
             defer { isCheckingVerification = false }
 
             let isVerified = await checkEmailVerificationStatus()
 
             if isVerified {
                 showSportProfile = true
-            } else {
+            } else if feedbackMessage == nil {
                 feedbackMessage = "Votre email n'est pas encore vérifié. Consultez votre boîte mail et réessayez."
             }
         }
     }
 
     private func checkEmailVerificationStatus() async -> Bool {
-        // TODO: vérifier auprès de l'API que le compte est activé
-        return true
+        let response = await authService.checkEmailVerification(email: email)
+
+        if response.success, response.emailVerified == true {
+            return true
+        }
+
+        if let message = response.message, !message.isEmpty {
+            feedbackMessage = message
+        }
+
+        return false
     }
 
     func resendEmail() {
@@ -63,16 +79,21 @@ final class EmailVerificationViewModel: ObservableObject {
         isResending = true
         feedbackMessage = nil
 
-        Task { @MainActor in
+        Task {
             defer { isResending = false }
 
-            // TODO: appeler l'API de renvoi d'email de vérification
-            feedbackMessage = "Un nouvel email de vérification a été envoyé."
-            startResendCooldown()
+            let response = await authService.resendVerificationEmail(email: email)
+
+            if response.success {
+                feedbackMessage = response.message ?? "Un nouvel email de vérification a été envoyé."
+                startResendCooldown()
+                return
+            }
+
+            feedbackMessage = response.message ?? response.error ?? "Impossible de renvoyer l'email de vérification."
         }
     }
 
-    @MainActor
     private func startResendCooldown() {
         resendCooldownTask?.cancel()
         resendCooldownRemaining = Self.resendCooldownDuration

@@ -8,6 +8,7 @@
 import Combine
 import Foundation
 
+@MainActor
 final class RegisterViewModel: ObservableObject {
     @Published var lastName = ""
     @Published var firstName = ""
@@ -21,6 +22,17 @@ final class RegisterViewModel: ObservableObject {
     @Published var hasAcceptedLegalTerms = false
     @Published var validationMessage: String?
     @Published var showEmailVerification = false
+    @Published var isLoading = false
+
+    private let authService: AuthService
+
+    init(authService: AuthService) {
+        self.authService = authService
+    }
+
+    convenience init() {
+        self.init(authService: AuthService.shared)
+    }
 
     var canSubmit: Bool {
         !lastName.trimmingCharacters(in: .whitespaces).isEmpty
@@ -29,6 +41,7 @@ final class RegisterViewModel: ObservableObject {
             && !password.isEmpty
             && !confirmPassword.isEmpty
             && hasAcceptedLegalTerms
+            && !isLoading
     }
 
     func createAccount() {
@@ -39,7 +52,9 @@ final class RegisterViewModel: ObservableObject {
             return
         }
 
-        guard isValidEmail(email) else {
+        let trimmedEmail = email.trimmingCharacters(in: .whitespaces)
+
+        guard isValidEmail(trimmedEmail) else {
             validationMessage = "L'adresse email n'est pas valide."
             return
         }
@@ -59,8 +74,27 @@ final class RegisterViewModel: ObservableObject {
             return
         }
 
-        // TODO: appeler l'API d'inscription
-        showEmailVerification = true
+        isLoading = true
+
+        Task {
+            defer { isLoading = false }
+
+            let response = await authService.register(
+                email: trimmedEmail,
+                password: password,
+                firstName: firstName.trimmingCharacters(in: .whitespaces),
+                lastName: lastName.trimmingCharacters(in: .whitespaces),
+                birthDate: birthDate,
+                language: selectedLanguage.rawValue
+            )
+
+            if response.success {
+                showEmailVerification = true
+                return
+            }
+
+            validationMessage = response.message ?? response.error ?? "Inscription impossible."
+        }
     }
 
     private func isValidEmail(_ email: String) -> Bool {

@@ -199,7 +199,7 @@ struct RegisterView: View {
 
     private var submitButton: some View {
         UButton(
-            text: "Créer mon compte",
+            text: viewModel.isLoading ? "Création en cours..." : "Créer mon compte",
             textColor: AppPalette.Primary.onMain,
             backgroundColor: AppPalette.Primary.main,
             cornerRadius: 25,

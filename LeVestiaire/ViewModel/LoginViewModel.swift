@@ -8,6 +8,7 @@
 import Combine
 import Foundation
 
+@MainActor
 final class LoginViewModel: ObservableObject {
     private static let developerAccessPassword = "asdescopains"
     private static let developerTapThreshold = 5
@@ -20,9 +21,21 @@ final class LoginViewModel: ObservableObject {
     @Published var showDeveloperPasswordError = false
     @Published var showDeveloperPage = false
     @Published var developerPasswordInput = ""
+    @Published var validationMessage: String?
+    @Published var isLoading = false
+    @Published var showEmailVerification = false
 
     private var developerTapCount = 0
     private var lastDeveloperTapDate: Date?
+    private let authService: AuthService
+
+    init(authService: AuthService) {
+        self.authService = authService
+    }
+
+    convenience init() {
+        self.init(authService: AuthService.shared)
+    }
 
     func registerDeveloperTap() {
         let now = Date()
@@ -61,6 +74,38 @@ final class LoginViewModel: ObservableObject {
     }
 
     func login() {
-        // TODO: brancher l'authentification
+        validationMessage = nil
+
+        let trimmedEmail = email.trimmingCharacters(in: .whitespaces)
+
+        guard !trimmedEmail.isEmpty else {
+            validationMessage = "Veuillez saisir votre adresse email."
+            return
+        }
+
+        guard !password.isEmpty else {
+            validationMessage = "Veuillez saisir votre mot de passe."
+            return
+        }
+
+        isLoading = true
+
+        Task {
+            defer { isLoading = false }
+
+            let response = await authService.login(email: trimmedEmail, password: password)
+
+            if response.success && response.hasValidData {
+                return
+            }
+
+            if response.requiresVerification == true || response.isEmailVerified == false {
+                showEmailVerification = true
+                validationMessage = response.message ?? "Veuillez vérifier votre email avant de continuer."
+                return
+            }
+
+            validationMessage = response.message ?? response.error ?? "Connexion impossible."
+        }
     }
 }

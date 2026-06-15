@@ -8,11 +8,22 @@
 import Combine
 import Foundation
 
+@MainActor
 final class ForgetPasswordViewModel: ObservableObject {
     @Published var email = ""
     @Published var validationMessage: String?
     @Published var successMessage: String?
     @Published var isLoading = false
+
+    private let authService: AuthService
+
+    init(authService: AuthService) {
+        self.authService = authService
+    }
+
+    convenience init() {
+        self.init(authService: AuthService.shared)
+    }
 
     var canSubmit: Bool {
         !email.trimmingCharacters(in: .whitespaces).isEmpty && !isLoading
@@ -36,11 +47,17 @@ final class ForgetPasswordViewModel: ObservableObject {
 
         isLoading = true
 
-        Task { @MainActor in
+        Task {
             defer { isLoading = false }
 
-            // TODO: appeler l'API de réinitialisation du mot de passe
-            successMessage = "Un email de réinitialisation a été envoyé à \(trimmedEmail)."
+            let response = await authService.requestPasswordReset(email: trimmedEmail)
+
+            if response.success {
+                successMessage = response.message ?? "Un email de réinitialisation a été envoyé à \(trimmedEmail)."
+                return
+            }
+
+            validationMessage = response.error ?? response.message ?? "Impossible d'envoyer l'email de réinitialisation."
         }
     }
 

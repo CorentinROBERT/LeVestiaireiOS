@@ -5,10 +5,11 @@
 //  Created by Corentin Robert on 12/06/2026.
 //
 
-import Combine
 import Foundation
 
-final class APIConfiguration: ObservableObject {
+/// Configuration réseau persistée. Classe simple (sans ObservableObject) pour éviter
+/// l'isolation MainActor implicite des singletons en Swift 6.
+final class APIConfiguration {
     static let shared = APIConfiguration()
 
     private enum StorageKey {
@@ -16,11 +17,11 @@ final class APIConfiguration: ObservableObject {
         static let customBaseURL = "api.customBaseURL"
     }
 
-    @Published var environment: APIEnvironment {
+    var environment: APIEnvironment {
         didSet { persist() }
     }
 
-    @Published var customBaseURL: String {
+    var customBaseURL: String {
         didSet { persist() }
     }
 

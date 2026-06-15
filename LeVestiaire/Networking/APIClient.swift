@@ -22,15 +22,15 @@ enum APIClientError: LocalizedError {
 }
 
 final class APIClient {
-    static let shared = APIClient()
+    static let shared = APIClient(
+        configuration: APIConfiguration.shared,
+        session: .shared
+    )
 
     private let configuration: APIConfiguration
     private let session: URLSession
 
-    init(
-        configuration: APIConfiguration = .shared,
-        session: URLSession = .shared
-    ) {
+    init(configuration: APIConfiguration, session: URLSession = .shared) {
         self.configuration = configuration
         self.session = session
     }

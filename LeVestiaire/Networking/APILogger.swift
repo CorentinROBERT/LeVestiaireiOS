@@ -15,14 +15,12 @@ enum APILogger {
     )
 
     static func logRequest(_ request: URLRequest) {
-        let method = request.httpMethod ?? "GET"
-        let url = request.url?.absoluteString ?? "—"
-        let message = "→ \(method) \(url)"
+        let message = "[LOG] \(requestLogMessage(for: request))"
 
         logger.info("\(message, privacy: .public)")
 
         #if DEBUG
-        print("[API] \(message)")
+        print(message)
         #endif
     }
 
@@ -32,28 +30,32 @@ enum APILogger {
         data: Data,
         durationMs: Int
     ) {
-        let method = request.httpMethod ?? "GET"
-        let url = request.url?.absoluteString ?? "—"
+        let requestLine = requestLogMessage(for: request)
         let body = bodyPreview(data)
-        let message = "← HTTP \(response.statusCode) \(method) \(url) (\(durationMs) ms) body: \(body)"
+        let message = "\(requestLine) → HTTP \(response.statusCode) (\(durationMs) ms) body: \(body)"
 
         logger.info("\(message, privacy: .public)")
 
         #if DEBUG
-        print("[API] \(message)")
+        print("[LOG] \(message)")
         #endif
     }
 
     static func logFailure(request: URLRequest, error: Error, durationMs: Int) {
-        let method = request.httpMethod ?? "GET"
-        let url = request.url?.absoluteString ?? "—"
-        let message = "✗ \(method) \(url) (\(durationMs) ms) error: \(error.localizedDescription)"
+        let requestLine = requestLogMessage(for: request)
+        let message = "\(requestLine) → error: \(error.localizedDescription) (\(durationMs) ms)"
 
         logger.error("\(message, privacy: .public)")
 
         #if DEBUG
-        print("[API] \(message)")
+        print("[LOG] \(message)")
         #endif
+    }
+
+    private static func requestLogMessage(for request: URLRequest) -> String {
+        let method = (request.httpMethod ?? "GET").uppercased()
+        let url = request.url?.absoluteString ?? "—"
+        return "\(method) \(url)"
     }
 
     private static func bodyPreview(_ data: Data) -> String {

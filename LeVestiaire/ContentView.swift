@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import SwiftData
 
 private enum AppScreen {
     case landing
@@ -14,10 +13,22 @@ private enum AppScreen {
 }
 
 struct ContentView: View {
-
-    @State private var currentScreen: AppScreen = .landing
+    @EnvironmentObject private var authService: AuthService
+    @State private var currentScreen: AppScreen = OnboardingStore.shared.hasCompletedOnboarding ? .login : .landing
 
     var body: some View {
+        Group {
+            if authService.isAuthenticated {
+                authenticatedRoot
+            } else {
+                unauthenticatedRoot
+            }
+        }
+        .animation(.easeInOut, value: authService.isAuthenticated)
+        .animation(.easeInOut, value: currentScreen)
+    }
+
+    private var unauthenticatedRoot: some View {
         Group {
             switch currentScreen {
             case .landing:
@@ -29,7 +40,13 @@ struct ContentView: View {
                 Login()
             }
         }
-        .animation(.easeInOut, value: currentScreen)
+    }
+
+    private var authenticatedRoot: some View {
+        NavigationStack {
+            Matchs()
+                .navigationTitle("Matchs")
+        }
     }
 
     private var landingItems: [CarouselItem] {
@@ -56,10 +73,12 @@ struct ContentView: View {
     }
 
     private func goToLoginPage() {
+        OnboardingStore.shared.markOnboardingCompleted()
         currentScreen = .login
     }
 }
 
 #Preview {
     ContentView()
+        .environmentObject(AuthService.shared)
 }

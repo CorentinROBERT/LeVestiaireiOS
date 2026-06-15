@@ -23,7 +23,7 @@ final class DeveloperViewModel: ObservableObject {
     private let configuration: APIConfiguration
     private var cancellables = Set<AnyCancellable>()
 
-    init(configuration: APIConfiguration = .shared) {
+    init(configuration: APIConfiguration) {
         self.configuration = configuration
         self.selectedEnvironment = configuration.environment
         self.customBaseURL = configuration.customBaseURL
@@ -43,6 +43,10 @@ final class DeveloperViewModel: ObservableObject {
                 self?.resetAPITestState()
             }
             .store(in: &cancellables)
+    }
+
+    convenience init() {
+        self.init(configuration: APIConfiguration.shared)
     }
 
     var resolvedBaseURL: String {

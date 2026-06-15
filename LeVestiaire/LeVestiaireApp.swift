@@ -6,14 +6,16 @@
 //
 
 import SwiftUI
-import SwiftData
 
 @main
 struct LeVestiaireApp: App {
-    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(AuthService.shared)
+                .task {
+                    await AuthService.shared.initialize()
+                }
         }
     }
 }

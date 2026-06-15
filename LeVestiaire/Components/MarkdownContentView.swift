@@ -24,6 +24,7 @@ private enum MarkdownBlock: Identifiable {
     }
 }
 
+@MainActor
 private enum MarkdownParser {
     static func parse(_ markdown: String) -> [MarkdownBlock] {
         let normalized = markdown
