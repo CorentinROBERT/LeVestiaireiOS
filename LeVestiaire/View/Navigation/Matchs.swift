@@ -8,11 +8,22 @@
 import SwiftUI
 
 struct Matchs: View {
+    @EnvironmentObject private var authService: AuthService
+
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        VStack(spacing: 16) {
+            Text("Hello, World!")
+
+            UButton(text: "Disconnect", onPress: {
+                Task {
+                    await authService.logout()
+                }
+            })
+        }
     }
 }
 
 #Preview {
     Matchs()
+        .environmentObject(AuthService.shared)
 }

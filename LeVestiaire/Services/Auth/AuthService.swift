@@ -35,6 +35,12 @@ final class AuthService: ObservableObject {
     @MainActor
     func initialize() async {
         loadStoredTokens()
+        guard isAuthenticated else { return }
+
+        let isSessionValid = await validateStoredSession()
+        if !isSessionValid {
+            await logout()
+        }
     }
 
     @MainActor
@@ -223,5 +229,22 @@ final class AuthService: ObservableObject {
         authToken = accessToken
         isAuthenticated = true
         currentUser = loginResponse.user
+    }
+
+    private func validateStoredSession() async -> Bool {
+        guard let accessToken = authToken, !accessToken.isEmpty else {
+            return false
+        }
+
+        do {
+            let (_, response) = try await client.request(
+                path: APIEndpoints.me,
+                method: "GET",
+                headers: ["Authorization": "Bearer \(accessToken)"]
+            )
+            return (200...299).contains(response.statusCode)
+        } catch {
+            return false
+        }
     }
 }

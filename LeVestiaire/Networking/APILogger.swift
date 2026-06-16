@@ -34,7 +34,7 @@ enum APILogger {
         let body = bodyPreview(data)
         let message = "\(requestLine) → HTTP \(response.statusCode) (\(durationMs) ms) body: \(body)"
 
-        logger.info("\(message, privacy: .public)")
+        logger.info("\(message, privacy: .sensitive)")
 
         #if DEBUG
         print("[LOG] \(message)")

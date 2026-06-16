@@ -51,16 +51,20 @@ struct ContentView: View {
 
     private var landingItems: [CarouselItem] {
         [
+            .welcome(
+                appName: "Le Vestiaire",
+                tagline: "Ton vestiaire digital, partout avec toi"
+            ),
             CarouselItem(
                 title: "Gestion d'équipe",
                 imageSource: "https://images.printkk.com/product/football-jersey-wjmqj-718.png",
-                subtitle: "Organiser vos équipes et joueurs en toute simplicité",
+                subtitle: "Créez votre effectif, invitez vos joueurs et gardez leurs profils à jour",
                 backgroundColor: .white
             ),
             CarouselItem(
                 title: "Planification",
                 imageSource: "https://www.radiofrance.fr/pikapi/images/c96aa7d9-e271-49da-99a3-df8d31dece21/1200x680",
-                subtitle: "Planifier vos entrainements et match facilement",
+                subtitle: "Planifier vos championnats, coupes et matchs facilement",
                 backgroundColor: .white
             ),
             CarouselItem(

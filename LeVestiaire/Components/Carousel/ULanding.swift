@@ -38,40 +38,97 @@ struct ULanding: View {
 
                 TabView(selection: $currentIndex) {
                     ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
-                        carouselCard(for: item, size: fullSize)
-                            .tag(index)
+                        Group {
+                            if item.isWelcomeSlide {
+                                welcomeSlideCard(for: item, size: fullSize)
+                            } else {
+                                carouselCard(for: item, size: fullSize)
+                            }
+                        }
+                        .tag(index)
                     }
                 }
-                .tabViewStyle(.page)
+                .tabViewStyle(.page(indexDisplayMode: .never))
 
-                UButton(
-                    text: currentButtonTitle,
-                    textColor: .black,
-                    backgroundColor: .white,
-                    cornerRadius: 25,
-                    isFullWidth: true,
-                    onPress: onButtonPress
-                )
+                VStack(spacing: 20) {
+
+                    UButton(
+                        text: currentButtonTitle,
+                        textColor: .black,
+                        backgroundColor: .white,
+                        cornerRadius: 25,
+                        isFullWidth: true,
+                        onPress: onButtonPress
+                    )
+
+                    pageIndicator
+                }
                 .padding(.horizontal, 20)
-                .padding(.bottom, 64)
+                .padding(.bottom, 30)
             }
         }
         .ignoresSafeArea()
     }
     
+    private var pageIndicator: some View {
+        HStack(spacing: 8) {
+            ForEach(0..<items.count, id: \.self) { index in
+                Capsule()
+                    .fill(
+                        index == currentIndex
+                            ? AppPalette.Primary.onMain
+                            : AppPalette.Primary.onMain.opacity(0.45)
+                    )
+                    .frame(width: index == currentIndex ? 20 : 8, height: 8)
+                    .animation(.easeInOut(duration: 0.2), value: currentIndex)
+            }
+        }
+    }
+
+    private func welcomeSlideCard(for item: CarouselItem, size: CGSize) -> some View {
+        ZStack {
+            AuthScreenBackground()
+
+            VStack(spacing: 20) {
+                Image(systemName: item.iconSystemName ?? "sportscourt.fill")
+                    .font(.system(size: 40, weight: .semibold))
+                    .foregroundStyle(AppPalette.Primary.main)
+                    .frame(width: 88, height: 88)
+                    .glassEffect(.regular, in: .circle)
+
+                Text(item.title)
+                    .font(.largeTitle.weight(.bold))
+                    .foregroundStyle(AppPalette.Primary.dark)
+                    .multilineTextAlignment(.center)
+
+                if let subtitle = item.subtitle, !subtitle.isEmpty {
+                    Text(subtitle)
+                        .font(.title3)
+                        .foregroundStyle(AppPalette.Neutral.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 32)
+                }
+            }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 160)
+            .frame(width: size.width, height: size.height)
+        }
+    }
+
     private func carouselCard(for item: CarouselItem, size: CGSize) -> some View {
         ZStack(alignment: .bottomLeading) {
             item.backgroundColor.ignoresSafeArea()
 
             carouselImage(source: item.imageSource, fallbackColor: item.backgroundColor, size: size)
                 .blur(radius: 8)
-                .opacity(0.75)
+                .opacity(0.90)
                 .glassEffect(.regular, in: .rect())
                 .ignoresSafeArea()
             
             LinearGradient( colors: [.clear, .black.opacity(0.55)], startPoint: .top, endPoint: .bottom ) .frame(width: size.width, height: size.height)
 
-            VStack(alignment: .leading, spacing: 15) {
+            VStack(alignment: .leading) {
+                
                 Text(item.title)
                     .font(.title.weight(.bold))
                     .foregroundStyle(.white)
@@ -135,6 +192,10 @@ struct ULanding: View {
 #Preview {
     ULanding(
         items: [
+            .welcome(
+                appName: "Le Vestiaire",
+                tagline: "Gérez vos équipes et matchs en toute simplicité"
+            ),
             CarouselItem(
                 title: "Produit 1",
                 imageSource: "https://images.printkk.com/product/football-jersey-wjmqj-718.png",

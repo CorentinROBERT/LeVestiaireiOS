@@ -28,13 +28,16 @@ final class LoginViewModel: ObservableObject {
     private var developerTapCount = 0
     private var lastDeveloperTapDate: Date?
     private let authService: AuthService
+    private let savedEmailStore: SavedLoginEmailStore
 
-    init(authService: AuthService) {
+    init(authService: AuthService, savedEmailStore: SavedLoginEmailStore) {
         self.authService = authService
+        self.savedEmailStore = savedEmailStore
+        self.email = savedEmailStore.load() ?? ""
     }
 
     convenience init() {
-        self.init(authService: AuthService.shared)
+        self.init(authService: AuthService.shared, savedEmailStore: SavedLoginEmailStore.shared)
     }
 
     func registerDeveloperTap() {
@@ -88,17 +91,15 @@ final class LoginViewModel: ObservableObject {
             return
         }
 
+        savedEmailStore.save(trimmedEmail)
         isLoading = true
 
         Task {
             defer { isLoading = false }
-
             let response = await authService.login(email: trimmedEmail, password: password)
-
             if response.success && response.hasValidData {
                 return
             }
-
             if response.requiresVerification == true || response.isEmailVerified == false {
                 showEmailVerification = true
                 validationMessage = response.message ?? "Veuillez vérifier votre email avant de continuer."

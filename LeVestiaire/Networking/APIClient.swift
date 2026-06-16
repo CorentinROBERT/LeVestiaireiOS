@@ -39,7 +39,8 @@ final class APIClient {
         path: String,
         method: String = "GET",
         body: Data? = nil,
-        timeout: TimeInterval = 30
+        timeout: TimeInterval = 30,
+        headers: [String: String] = [:]
     ) async throws -> (Data, HTTPURLResponse) {
         let base = configuration.resolvedBaseURL.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !base.isEmpty, let baseURL = URL(string: base) else {
@@ -56,6 +57,10 @@ final class APIClient {
 
         if body != nil {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        }
+
+        for (key, value) in headers {
+            request.setValue(value, forHTTPHeaderField: key)
         }
 
         return try await perform(request)
