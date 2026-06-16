@@ -93,7 +93,7 @@ private struct FlowLayout: Layout {
 }
 
 #Preview {
-    @Previewable @State var selection: Set<PlayerPosition> = [.striker, .winger]
+    @Previewable @State var selection: Set<PlayerPosition> = [.striker, .rightWinger]
 
     ZStack {
         AuthScreenBackground()

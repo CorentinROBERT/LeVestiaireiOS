@@ -26,21 +26,21 @@ final class ForgetPasswordViewModel: ObservableObject {
     }
 
     var canSubmit: Bool {
-        !email.trimmingCharacters(in: .whitespaces).isEmpty && !isLoading
+        !email.trimmed.isEmpty && !isLoading
     }
 
     func submit() {
         validationMessage = nil
         successMessage = nil
 
-        let trimmedEmail = email.trimmingCharacters(in: .whitespaces)
+        let trimmedEmail = email.trimmed
 
         guard !trimmedEmail.isEmpty else {
             validationMessage = "Veuillez saisir votre adresse email."
             return
         }
 
-        guard isValidEmail(trimmedEmail) else {
+        guard trimmedEmail.isValidEmail else {
             validationMessage = "L'adresse email n'est pas valide."
             return
         }
@@ -59,10 +59,5 @@ final class ForgetPasswordViewModel: ObservableObject {
 
             validationMessage = response.error ?? response.message ?? "Impossible d'envoyer l'email de réinitialisation."
         }
-    }
-
-    private func isValidEmail(_ email: String) -> Bool {
-        let pattern = #"^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"#
-        return email.range(of: pattern, options: .regularExpression) != nil
     }
 }

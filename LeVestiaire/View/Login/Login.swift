@@ -10,6 +10,7 @@ import SwiftUI
 struct Login: View {
     @StateObject private var viewModel = LoginViewModel()
     @State private var navigationPath = NavigationPath()
+    @FocusState private var focusedField: Int?
 
     var body: some View {
         NavigationStack(path: $navigationPath) {
@@ -76,7 +77,7 @@ struct Login: View {
             DeveloperView()
         }
         .navigationDestination(isPresented: $viewModel.showEmailVerification) {
-            EmailVerificationView(email: viewModel.email.trimmingCharacters(in: .whitespaces))
+            EmailVerificationView(email: viewModel.trimmedEmail)
         }
         .alert(
             "Connexion",
@@ -123,7 +124,11 @@ struct Login: View {
                 text: $viewModel.email,
                 style: .light,
                 keyboardType: .emailAddress,
-                textContentType: .emailAddress
+                textContentType: .emailAddress,
+                submitLabel: .next,
+                focusTag: 1,
+                focusedTag: $focusedField,
+                nextFocusTag: 2
             )
 
             UGlassTextField(
@@ -133,7 +138,11 @@ struct Login: View {
                 style: .light,
                 isSecure: true,
                 isPasswordVisible: $viewModel.isPasswordVisible,
-                textContentType: .password
+                textContentType: .password,
+                submitLabel: .go,
+                onSubmit: viewModel.login,
+                focusTag: 2,
+                focusedTag: $focusedField
             )
 
             UButton(

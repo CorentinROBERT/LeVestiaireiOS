@@ -32,9 +32,6 @@ struct EmailVerificationView: View {
         }
         .navigationTitle("Vérification")
         .navigationBarTitleDisplayMode(.inline)
-        .navigationDestination(isPresented: $viewModel.showSportProfile) {
-            SportProfileView()
-        }
         .alert(
             "Vérification email",
             isPresented: Binding(

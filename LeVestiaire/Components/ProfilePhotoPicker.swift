@@ -11,6 +11,7 @@ import UIKit
 
 struct ProfilePhotoPicker: View {
     @Binding var selectedImage: UIImage?
+    var isUploading = false
 
     @State private var showSourceDialog = false
     @State private var showCamera = false
@@ -40,6 +41,16 @@ struct ProfilePhotoPicker: View {
                 Circle()
                     .strokeBorder(AppPalette.Primary.main.opacity(0.35), lineWidth: 2)
                     .frame(width: 120, height: 120)
+
+                if isUploading {
+                    Circle()
+                        .fill(Color.black.opacity(0.45))
+                        .frame(width: 120, height: 120)
+                        .overlay {
+                            ProgressView()
+                                .tint(.white)
+                        }
+                }
             }
 
             Button {
@@ -50,6 +61,7 @@ struct ProfilePhotoPicker: View {
                     .foregroundStyle(AppPalette.Primary.main)
             }
             .buttonStyle(.plain)
+            .disabled(isUploading)
         }
         .frame(maxWidth: .infinity)
         .confirmationDialog("Photo de profil", isPresented: $showSourceDialog, titleVisibility: .visible) {

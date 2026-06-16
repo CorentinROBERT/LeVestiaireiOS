@@ -29,15 +29,29 @@ final class LoginViewModel: ObservableObject {
     private var lastDeveloperTapDate: Date?
     private let authService: AuthService
     private let savedEmailStore: SavedLoginEmailStore
+    private let pendingCredentialsStore: PendingAuthCredentialsStore
 
-    init(authService: AuthService, savedEmailStore: SavedLoginEmailStore) {
+    var trimmedEmail: String {
+        email.trimmed
+    }
+
+    init(
+        authService: AuthService,
+        savedEmailStore: SavedLoginEmailStore,
+        pendingCredentialsStore: PendingAuthCredentialsStore
+    ) {
         self.authService = authService
         self.savedEmailStore = savedEmailStore
+        self.pendingCredentialsStore = pendingCredentialsStore
         self.email = savedEmailStore.load() ?? ""
     }
 
     convenience init() {
-        self.init(authService: AuthService.shared, savedEmailStore: SavedLoginEmailStore.shared)
+        self.init(
+            authService: AuthService.shared,
+            savedEmailStore: SavedLoginEmailStore.shared,
+            pendingCredentialsStore: PendingAuthCredentialsStore.shared
+        )
     }
 
     func registerDeveloperTap() {
@@ -79,7 +93,7 @@ final class LoginViewModel: ObservableObject {
     func login() {
         validationMessage = nil
 
-        let trimmedEmail = email.trimmingCharacters(in: .whitespaces)
+        let trimmedEmail = trimmedEmail
 
         guard !trimmedEmail.isEmpty else {
             validationMessage = "Veuillez saisir votre adresse email."
@@ -101,6 +115,7 @@ final class LoginViewModel: ObservableObject {
                 return
             }
             if response.requiresVerification == true || response.isEmailVerified == false {
+                pendingCredentialsStore.save(email: trimmedEmail, password: password)
                 showEmailVerification = true
                 validationMessage = response.message ?? "Veuillez vérifier votre email avant de continuer."
                 return

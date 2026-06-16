@@ -9,6 +9,11 @@ import SwiftUI
 
 struct SportProfileView: View {
     @StateObject private var viewModel = SportProfileViewModel()
+    @FocusState private var focusedField: Int?
+
+    private enum Field {
+        static let jersey = 1
+    }
 
     var body: some View {
         ZStack {
@@ -24,6 +29,26 @@ struct SportProfileView: View {
                 .padding(.horizontal, 24)
                 .padding(.top, 16)
                 .padding(.bottom, 40)
+            }
+            .scrollDismissesKeyboard(.interactively)
+        }
+        .onReceive(Foundation.NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            focusedField = nil
+        }
+        .safeAreaInset(edge: .bottom, spacing: 12) {
+            if focusedField == Field.jersey {
+                HStack {
+                    Spacer()
+                    Button("Terminé") {
+                        focusedField = nil
+                    }
+                    .fontWeight(.semibold)
+                    .foregroundStyle(AppPalette.Primary.main)
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 14)
+                .glassEffect(.regular, in: .rect(cornerRadius: 20))
+                .padding(.horizontal, 16)
             }
         }
         .navigationTitle("Profil sportif")
@@ -57,7 +82,13 @@ struct SportProfileView: View {
 
     private var formCard: some View {
         VStack(spacing: 20) {
-            ProfilePhotoPicker(selectedImage: $viewModel.profileImage)
+            ProfilePhotoPicker(
+                selectedImage: $viewModel.profileImage,
+                isUploading: viewModel.isUploadingPhoto
+            )
+            .onChange(of: viewModel.profileImage) { _, newImage in
+                viewModel.handleProfileImageChange(to: newImage)
+            }
 
             sectionTitle("Informations sportives")
 
@@ -78,7 +109,10 @@ struct SportProfileView: View {
                     set: { viewModel.updateJerseyNumber($0) }
                 ),
                 style: .light,
-                keyboardType: .numberPad
+                keyboardType: .numberPad,
+                focusTag: Field.jersey,
+                focusedTag: $focusedField,
+                usesSystemKeyboardToolbar: false
             )
 
             UGlassFormRow(icon: "trophy.fill") {
@@ -189,7 +223,7 @@ struct SportProfileView: View {
 
     private var submitButton: some View {
         UButton(
-            text: "Finaliser mon profil",
+            text: viewModel.isLoading ? "Enregistrement..." : "Finaliser mon profil",
             textColor: AppPalette.Primary.onMain,
             backgroundColor: AppPalette.Primary.main,
             cornerRadius: 25,

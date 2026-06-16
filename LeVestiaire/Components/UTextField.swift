@@ -72,9 +72,26 @@ struct UTextField: View {
     var usesOneTimeCodeAutofill: Bool = false
     var errorMessage: String?
     var helperText: String?
+    var submitLabel: SubmitLabel = .return
+    var onSubmit: (() -> Void)? = nil
+    var focusTag: Int? = nil
+    var focusedTag: FocusState<Int?>.Binding? = nil
+    var nextFocusTag: Int? = nil
+    var usesSystemKeyboardToolbar = true
+
+    @FocusState private var isInternallyFocused: Bool
 
     private var resolvedKeyboardType: UIKeyboardType {
         usesOneTimeCodeAutofill ? .default : keyboardType
+    }
+
+    private var showsKeyboardDismissButton: Bool {
+        switch resolvedKeyboardType {
+        case .numberPad, .decimalPad, .phonePad:
+            return true
+        default:
+            return false
+        }
     }
 
     private var resolvedTextContentType: UITextContentType? {
@@ -108,12 +125,37 @@ struct UTextField: View {
                         TextField(placeholder, text: $text)
                     }
                 }
+                .modifier(FocusModifier(
+                    focusTag: focusTag,
+                    focusedTag: focusedTag,
+                    internalFocus: $isInternallyFocused
+                ))
                 .keyboardType(resolvedKeyboardType)
                 .textContentType(resolvedTextContentType)
                 .textInputAutocapitalization(autocapitalization)
                 .autocorrectionDisabled(autocorrectionDisabled)
                 .foregroundStyle(style.textColor)
                 .tint(AppPalette.Primary.main)
+                .submitLabel(submitLabel)
+                .onSubmit {
+                    if let nextFocusTag, let focusedTag {
+                        focusedTag.wrappedValue = nextFocusTag
+                    } else {
+                        resignFocus()
+                    }
+                    onSubmit?()
+                }
+                .toolbar {
+                    if showsKeyboardDismissButton, usesSystemKeyboardToolbar {
+                        ToolbarItemGroup(placement: .keyboard) {
+                            Spacer()
+                            Button("Terminé") {
+                                resignFocus()
+                            }
+                            .fontWeight(.semibold)
+                        }
+                    }
+                }
 
                 if isSecure, let isPasswordVisible {
                     Button {
@@ -147,6 +189,28 @@ struct UTextField: View {
             }
         }
     }
+
+    private func resignFocus() {
+        if let focusedTag {
+            focusedTag.wrappedValue = nil
+        } else {
+            isInternallyFocused = false
+        }
+    }
+}
+
+private struct FocusModifier: ViewModifier {
+    let focusTag: Int?
+    let focusedTag: FocusState<Int?>.Binding?
+    let internalFocus: FocusState<Bool>.Binding
+
+    func body(content: Content) -> some View {
+        if let focusedTag, let focusTag {
+            content.focused(focusedTag, equals: focusTag)
+        } else {
+            content.focused(internalFocus)
+        }
+    }
 }
 
 extension UTextField {
@@ -159,7 +223,13 @@ extension UTextField {
         isPasswordVisible: Binding<Bool>? = nil,
         keyboardType: UIKeyboardType = .default,
         textContentType: UITextContentType? = nil,
-        autocapitalization: TextInputAutocapitalization = .never
+        autocapitalization: TextInputAutocapitalization = .never,
+        submitLabel: SubmitLabel = .return,
+        onSubmit: (() -> Void)? = nil,
+        focusTag: Int? = nil,
+        focusedTag: FocusState<Int?>.Binding? = nil,
+        nextFocusTag: Int? = nil,
+        usesSystemKeyboardToolbar: Bool = true
     ) {
         self.init(
             label: nil,
@@ -171,7 +241,13 @@ extension UTextField {
             isPasswordVisible: isPasswordVisible,
             keyboardType: keyboardType,
             textContentType: textContentType,
-            autocapitalization: autocapitalization
+            autocapitalization: autocapitalization,
+            submitLabel: submitLabel,
+            onSubmit: onSubmit,
+            focusTag: focusTag,
+            focusedTag: focusedTag,
+            nextFocusTag: nextFocusTag,
+            usesSystemKeyboardToolbar: usesSystemKeyboardToolbar
         )
     }
 }

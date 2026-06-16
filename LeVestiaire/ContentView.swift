@@ -7,34 +7,34 @@
 
 import SwiftUI
 
-private enum AppScreen {
-    case landing
-    case login
-}
-
 struct ContentView: View {
     @EnvironmentObject private var authService: AuthService
-    @State private var currentScreen: AppScreen = OnboardingStore.shared.hasCompletedOnboarding ? .login : .landing
+    @StateObject private var viewModel = ContentViewModel()
 
     var body: some View {
         Group {
             if authService.isAuthenticated {
-                authenticatedRoot
+                if authService.requiresSportProfileCompletion {
+                    sportProfileRoot
+                } else {
+                    authenticatedRoot
+                }
             } else {
                 unauthenticatedRoot
             }
         }
         .animation(.easeInOut, value: authService.isAuthenticated)
-        .animation(.easeInOut, value: currentScreen)
+        .animation(.easeInOut, value: authService.requiresSportProfileCompletion)
+        .animation(.easeInOut, value: viewModel.currentScreen)
     }
 
     private var unauthenticatedRoot: some View {
         Group {
-            switch currentScreen {
+            switch viewModel.currentScreen {
             case .landing:
                 ULanding(
-                    items: landingItems,
-                    onFinished: goToLoginPage
+                    items: viewModel.landingItems,
+                    onFinished: viewModel.completeOnboarding
                 )
             case .login:
                 Login()
@@ -49,36 +49,11 @@ struct ContentView: View {
         }
     }
 
-    private var landingItems: [CarouselItem] {
-        [
-            .welcome(
-                appName: "Le Vestiaire",
-                tagline: "Ton vestiaire digital, partout avec toi"
-            ),
-            CarouselItem(
-                title: "Gestion d'équipe",
-                imageSource: "https://images.printkk.com/product/football-jersey-wjmqj-718.png",
-                subtitle: "Créez votre effectif, invitez vos joueurs et gardez leurs profils à jour",
-                backgroundColor: .white
-            ),
-            CarouselItem(
-                title: "Planification",
-                imageSource: "https://www.radiofrance.fr/pikapi/images/c96aa7d9-e271-49da-99a3-df8d31dece21/1200x680",
-                subtitle: "Planifier vos championnats, coupes et matchs facilement",
-                backgroundColor: .white
-            ),
-            CarouselItem(
-                title: "Datas et Statistiques",
-                imageSource: "https://static.onzemondial.com/8/2022/06/photo_article/784892/309937/1200-L-coupe-du-monde-2022-le-calendrier-complet-de-la-comptition.jpg",
-                subtitle: "Superviser les statistiques de vos équipes",
-                backgroundColor: .white
-            ),
-        ]
-    }
-
-    private func goToLoginPage() {
-        OnboardingStore.shared.markOnboardingCompleted()
-        currentScreen = .login
+    private var sportProfileRoot: some View {
+        NavigationStack {
+            SportProfileView()
+                .navigationTitle("Profil sportif")
+        }
     }
 }
 

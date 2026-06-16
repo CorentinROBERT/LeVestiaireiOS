@@ -36,7 +36,7 @@ struct RegisterView: View {
         .navigationTitle("Créer un compte")
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(isPresented: $viewModel.showEmailVerification) {
-            EmailVerificationView(email: viewModel.email.trimmingCharacters(in: .whitespaces))
+            EmailVerificationView(email: viewModel.trimmedEmail)
         }
         .alert(
             "Inscription",
@@ -131,6 +131,8 @@ struct RegisterView: View {
                     )
                     .labelsHidden()
                     .datePickerStyle(.compact)
+                    .environment(\.locale, viewModel.selectedLanguage.locale)
+                    .id(viewModel.selectedLanguage)
                     .foregroundStyle(AppPalette.Neutral.textPrimary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)

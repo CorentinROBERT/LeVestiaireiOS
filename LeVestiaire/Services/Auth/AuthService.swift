@@ -11,25 +11,49 @@ import Foundation
 final class AuthService: ObservableObject {
     static let shared = AuthService(
         client: APIClient.shared,
-        tokenStore: AuthTokenStore.shared
+        tokenStore: AuthTokenStore.shared,
+        pendingCredentialsStore: PendingAuthCredentialsStore.shared,
+        sportProfileCompletionStore: SportProfileCompletionStore.shared
     )
 
     @Published private(set) var currentUser: User?
     @Published private(set) var isAuthenticated = false
+    @Published private(set) var requiresSportProfileCompletion = false
     @Published private(set) var authToken: String?
     @Published private(set) var tokenExpiry: Date?
 
     private let client: APIClient
     private let tokenStore: AuthTokenStore
+    private let pendingCredentialsStore: PendingAuthCredentialsStore
+    private let sportProfileCompletionStore: SportProfileCompletionStore
     private var tokens: AuthTokens?
 
-    init(client: APIClient, tokenStore: AuthTokenStore) {
+    init(
+        client: APIClient,
+        tokenStore: AuthTokenStore,
+        pendingCredentialsStore: PendingAuthCredentialsStore,
+        sportProfileCompletionStore: SportProfileCompletionStore
+    ) {
         self.client = client
         self.tokenStore = tokenStore
+        self.pendingCredentialsStore = pendingCredentialsStore
+        self.sportProfileCompletionStore = sportProfileCompletionStore
     }
 
     var refreshToken: String? {
         tokens?.refreshToken
+    }
+
+    @MainActor
+    func markSportProfileRequired() {
+        sportProfileCompletionStore.markRequired()
+        requiresSportProfileCompletion = true
+    }
+
+    @MainActor
+    func markSportProfileCompleted() {
+        sportProfileCompletionStore.markCompleted()
+        requiresSportProfileCompletion = false
     }
 
     @MainActor
@@ -40,7 +64,10 @@ final class AuthService: ObservableObject {
         let isSessionValid = await validateStoredSession()
         if !isSessionValid {
             await logout()
+            return
         }
+
+        await refreshSportProfileRequirement()
     }
 
     @MainActor
@@ -54,7 +81,9 @@ final class AuthService: ObservableObject {
             )
 
             let loginResponse = APIResponseDecoder.decodeLoginResponse(from: data)
-            persistSessionIfNeeded(from: loginResponse)
+            if shouldEstablishSession(from: loginResponse) {
+                await establishSession(from: loginResponse)
+            }
             return loginResponse
         } catch {
             return LoginResponse(
@@ -90,7 +119,9 @@ final class AuthService: ObservableObject {
             )
 
             let loginResponse = APIResponseDecoder.decodeLoginResponse(from: data)
-            persistSessionIfNeeded(from: loginResponse)
+            if shouldEstablishSession(from: loginResponse) {
+                await establishSession(from: loginResponse)
+            }
             return loginResponse
         } catch {
             return LoginResponse(
@@ -200,10 +231,13 @@ final class AuthService: ObservableObject {
     func logout() async {
         currentUser = nil
         isAuthenticated = false
+        requiresSportProfileCompletion = false
         authToken = nil
         tokenExpiry = nil
         tokens = nil
         tokenStore.clearTokens()
+        pendingCredentialsStore.clear()
+        sportProfileCompletionStore.clear()
     }
 
     @MainActor
@@ -213,6 +247,59 @@ final class AuthService: ObservableObject {
         tokens = storedTokens
         authToken = storedTokens.accessToken
         isAuthenticated = true
+    }
+
+    @MainActor
+    private func establishSession(from loginResponse: LoginResponse) async {
+        persistSessionIfNeeded(from: loginResponse)
+        guard isAuthenticated else { return }
+        await refreshSportProfileRequirement()
+    }
+
+    @MainActor
+    private func refreshSportProfileRequirement() async {
+        guard isAuthenticated, let accessToken = authToken, !accessToken.isEmpty else {
+            requiresSportProfileCompletion = false
+            return
+        }
+
+        do {
+            let (data, httpResponse) = try await client.request(
+                path: APIEndpoints.sportProfile,
+                method: "GET",
+                headers: ["Authorization": "Bearer \(accessToken)"]
+            )
+
+            if httpResponse.statusCode == 404 {
+                markSportProfileRequired()
+                return
+            }
+
+            guard (200...299).contains(httpResponse.statusCode) else {
+                return
+            }
+
+            let profileResponse = APIResponseDecoder.decodeSportProfileResponse(from: data)
+            if profileResponse.hasValidData, profileResponse.data?.isCompleted == true {
+                markSportProfileCompleted()
+            } else {
+                markSportProfileRequired()
+            }
+        } catch {
+            return
+        }
+    }
+
+    @MainActor
+    private func shouldEstablishSession(from response: LoginResponse) -> Bool {
+        guard response.success, response.hasValidData else { return false }
+
+        if response.requiresVerification == true { return false }
+        if response.isEmailVerified == false { return false }
+        if response.emailVerified == false { return false }
+        if let user = response.user, !user.emailVerified { return false }
+
+        return true
     }
 
     @MainActor

@@ -10,7 +10,7 @@ import Foundation
 enum StrongFoot: String, CaseIterable, Identifiable {
     case right
     case left
-    case ambidextrous
+    case both
 
     var id: String { rawValue }
 
@@ -18,17 +18,17 @@ enum StrongFoot: String, CaseIterable, Identifiable {
         switch self {
         case .right: return "Droit"
         case .left: return "Gauche"
-        case .ambidextrous: return "Ambidextre"
+        case .both: return "Ambidextre"
         }
     }
 }
 
 enum FootballLeague: String, CaseIterable, Identifiable {
-    case premierLeague
-    case ligue1
+    case ligue1 = "ligue-1"
+    case premierLeague = "premier-league"
     case bundesliga
-    case serieA
-    case laLiga
+    case serieA = "serie-a"
+    case laLiga = "la-liga"
 
     var id: String { rawValue }
 
@@ -38,40 +38,7 @@ enum FootballLeague: String, CaseIterable, Identifiable {
         case .ligue1: return "Ligue 1"
         case .bundesliga: return "Bundesliga"
         case .serieA: return "Serie A"
-        case .laLiga: return "Liga"
-        }
-    }
-
-    var teams: [String] {
-        switch self {
-        case .premierLeague:
-            return [
-                "Arsenal", "Aston Villa", "Brighton", "Chelsea", "Crystal Palace",
-                "Everton", "Fulham", "Liverpool", "Manchester City", "Manchester United",
-                "Newcastle", "Nottingham Forest", "Tottenham", "West Ham", "Wolverhampton",
-            ]
-        case .ligue1:
-            return [
-                "Paris SG", "Marseille", "Lyon", "Monaco", "Lille", "Nice", "Lens",
-                "Rennes", "Strasbourg", "Nantes", "Montpellier", "Reims", "Toulouse",
-            ]
-        case .bundesliga:
-            return [
-                "Bayern Munich", "Borussia Dortmund", "Bayer Leverkusen", "RB Leipzig",
-                "Stuttgart", "Eintracht Frankfurt", "Wolfsburg", "Freiburg", "Hoffenheim",
-                "Werder Bremen", "Union Berlin", "Mainz",
-            ]
-        case .serieA:
-            return [
-                "Inter Milan", "AC Milan", "Juventus", "Napoli", "Roma", "Lazio",
-                "Atalanta", "Fiorentina", "Torino", "Bologna", "Udinese", "Genoa",
-            ]
-        case .laLiga:
-            return [
-                "Real Madrid", "Barcelona", "Atletico Madrid", "Sevilla", "Villarreal",
-                "Real Sociedad", "Athletic Bilbao", "Real Betis", "Valencia", "Girona",
-                "Osasuna", "Celta Vigo",
-            ]
+        case .laLiga: return "La Liga"
         }
     }
 }
@@ -79,12 +46,15 @@ enum FootballLeague: String, CaseIterable, Identifiable {
 enum PlayerPosition: String, CaseIterable, Identifiable {
     case goalkeeper
     case centerBack
-    case fullBack
+    case rightBack
+    case leftBack
     case defensiveMidfielder
-    case centralMidfielder
+    case centerMidfielder
     case attackingMidfielder
-    case winger
+    case rightWinger
+    case leftWinger
     case striker
+    case secondStriker
 
     var id: String { rawValue }
 
@@ -92,12 +62,15 @@ enum PlayerPosition: String, CaseIterable, Identifiable {
         switch self {
         case .goalkeeper: return "Gardien"
         case .centerBack: return "Défenseur central"
-        case .fullBack: return "Défenseur latéral"
+        case .rightBack: return "Défenseur droit"
+        case .leftBack: return "Défenseur gauche"
         case .defensiveMidfielder: return "Milieu défensif"
-        case .centralMidfielder: return "Milieu central"
+        case .centerMidfielder: return "Milieu central"
         case .attackingMidfielder: return "Milieu offensif"
-        case .winger: return "Ailier"
+        case .rightWinger: return "Ailier droit"
+        case .leftWinger: return "Ailier gauche"
         case .striker: return "Attaquant"
+        case .secondStriker: return "Second attaquant"
         }
     }
 }

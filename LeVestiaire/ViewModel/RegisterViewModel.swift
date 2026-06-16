@@ -25,19 +25,28 @@ final class RegisterViewModel: ObservableObject {
     @Published var isLoading = false
 
     private let authService: AuthService
+    private let pendingCredentialsStore: PendingAuthCredentialsStore
 
-    init(authService: AuthService) {
+    var trimmedEmail: String {
+        email.trimmed
+    }
+
+    init(authService: AuthService, pendingCredentialsStore: PendingAuthCredentialsStore) {
         self.authService = authService
+        self.pendingCredentialsStore = pendingCredentialsStore
     }
 
     convenience init() {
-        self.init(authService: AuthService.shared)
+        self.init(
+            authService: AuthService.shared,
+            pendingCredentialsStore: PendingAuthCredentialsStore.shared
+        )
     }
 
     var canSubmit: Bool {
-        !lastName.trimmingCharacters(in: .whitespaces).isEmpty
-            && !firstName.trimmingCharacters(in: .whitespaces).isEmpty
-            && !email.trimmingCharacters(in: .whitespaces).isEmpty
+        !lastName.trimmed.isEmpty
+            && !firstName.trimmed.isEmpty
+            && !trimmedEmail.isEmpty
             && !password.isEmpty
             && !confirmPassword.isEmpty
             && hasAcceptedLegalTerms
@@ -52,9 +61,9 @@ final class RegisterViewModel: ObservableObject {
             return
         }
 
-        let trimmedEmail = email.trimmingCharacters(in: .whitespaces)
+        let trimmedEmail = trimmedEmail
 
-        guard isValidEmail(trimmedEmail) else {
+        guard trimmedEmail.isValidEmail else {
             validationMessage = "L'adresse email n'est pas valide."
             return
         }
@@ -82,23 +91,19 @@ final class RegisterViewModel: ObservableObject {
             let response = await authService.register(
                 email: trimmedEmail,
                 password: password,
-                firstName: firstName.trimmingCharacters(in: .whitespaces),
-                lastName: lastName.trimmingCharacters(in: .whitespaces),
+                firstName: firstName.trimmed,
+                lastName: lastName.trimmed,
                 birthDate: birthDate,
                 language: selectedLanguage.rawValue
             )
 
             if response.success {
+                pendingCredentialsStore.save(email: trimmedEmail, password: password)
                 showEmailVerification = true
                 return
             }
 
             validationMessage = response.message ?? response.error ?? "Inscription impossible."
         }
-    }
-
-    private func isValidEmail(_ email: String) -> Bool {
-        let pattern = #"^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"#
-        return email.range(of: pattern, options: .regularExpression) != nil
     }
 }

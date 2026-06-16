@@ -18,22 +18,31 @@ final class EmailVerificationViewModel: ObservableObject {
     @Published var isResending = false
     @Published var feedbackMessage: String?
     @Published var resendCooldownRemaining = 0
-    @Published var showSportProfile = false
 
     private var resendCooldownTask: Task<Void, Never>?
     private let authService: AuthService
+    private let pendingCredentialsStore: PendingAuthCredentialsStore
 
     var canResendEmail: Bool {
         resendCooldownRemaining == 0 && !isResending
     }
 
-    init(email: String, authService: AuthService) {
+    init(
+        email: String,
+        authService: AuthService,
+        pendingCredentialsStore: PendingAuthCredentialsStore
+    ) {
         self.email = email
         self.authService = authService
+        self.pendingCredentialsStore = pendingCredentialsStore
     }
 
     convenience init(email: String) {
-        self.init(email: email, authService: AuthService.shared)
+        self.init(
+            email: email,
+            authService: AuthService.shared,
+            pendingCredentialsStore: PendingAuthCredentialsStore.shared
+        )
     }
 
     deinit {
@@ -50,11 +59,16 @@ final class EmailVerificationViewModel: ObservableObject {
             defer { isCheckingVerification = false }
 
             let isVerified = await checkEmailVerificationStatus()
+            guard isVerified else {
+                if feedbackMessage == nil {
+                    feedbackMessage = "Votre email n'est pas encore vérifié. Consultez votre boîte mail et réessayez."
+                }
+                return
+            }
 
-            if isVerified {
-                showSportProfile = true
-            } else if feedbackMessage == nil {
-                feedbackMessage = "Votre email n'est pas encore vérifié. Consultez votre boîte mail et réessayez."
+            let didSignIn = await signInAfterVerification()
+            if !didSignIn, feedbackMessage == nil {
+                feedbackMessage = "Connexion automatique impossible après vérification."
             }
         }
     }
@@ -70,6 +84,28 @@ final class EmailVerificationViewModel: ObservableObject {
             feedbackMessage = message
         }
 
+        return false
+    }
+
+    private func signInAfterVerification() async -> Bool {
+        if authService.isAuthenticated {
+            return true
+        }
+
+        guard let credentials = pendingCredentialsStore.load(),
+              credentials.email.caseInsensitiveCompare(email) == .orderedSame else {
+            feedbackMessage = "Connexion automatique impossible. Veuillez vous connecter manuellement."
+            return false
+        }
+
+        let response = await authService.login(email: credentials.email, password: credentials.password)
+
+        if response.success && response.hasValidData {
+            pendingCredentialsStore.clear()
+            return true
+        }
+
+        feedbackMessage = response.message ?? response.error ?? "Connexion automatique impossible après vérification."
         return false
     }
 

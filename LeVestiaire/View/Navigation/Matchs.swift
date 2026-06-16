@@ -8,22 +8,21 @@
 import SwiftUI
 
 struct Matchs: View {
-    @EnvironmentObject private var authService: AuthService
+    @StateObject private var viewModel = MatchsViewModel()
 
     var body: some View {
         VStack(spacing: 16) {
             Text("Hello, World!")
 
-            UButton(text: "Disconnect", onPress: {
-                Task {
-                    await authService.logout()
-                }
-            })
+            UButton(
+                text: viewModel.isLoggingOut ? "Déconnexion..." : "Disconnect",
+                onPress: viewModel.logout
+            )
+            .disabled(viewModel.isLoggingOut)
         }
     }
 }
 
 #Preview {
     Matchs()
-        .environmentObject(AuthService.shared)
 }
