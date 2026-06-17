@@ -40,7 +40,8 @@ final class APIClient {
         method: String = "GET",
         body: Data? = nil,
         timeout: TimeInterval = 30,
-        headers: [String: String] = [:]
+        headers: [String: String] = [:],
+        queryItems: [URLQueryItem] = []
     ) async throws -> (Data, HTTPURLResponse) {
         let base = configuration.resolvedBaseURL.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !base.isEmpty, let baseURL = URL(string: base) else {
@@ -48,7 +49,17 @@ final class APIClient {
         }
 
         let normalizedPath = path.hasPrefix("/") ? String(path.dropFirst()) : path
-        let url = baseURL.appending(path: normalizedPath)
+        var components = URLComponents(
+            url: baseURL.appending(path: normalizedPath),
+            resolvingAgainstBaseURL: false
+        )
+        if !queryItems.isEmpty {
+            components?.queryItems = queryItems
+        }
+
+        guard let url = components?.url else {
+            throw APIClientError.invalidBaseURL
+        }
 
         var request = URLRequest(url: url)
         request.httpMethod = method

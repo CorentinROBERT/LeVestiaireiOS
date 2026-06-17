@@ -7,12 +7,32 @@
 
 import SwiftUI
 
-struct NotificationCenter: View {
+struct NotificationsView: View {
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        ScrollView {
+            VStack(spacing: 16) {
+                Image(systemName: "bell.slash")
+                    .font(.system(size: 40))
+                    .foregroundStyle(AppPalette.Primary.muted)
+
+                Text("Aucune notification")
+                    .font(.headline)
+                    .foregroundStyle(AppPalette.Neutral.textPrimary)
+
+                Text("Vos alertes matchs et équipe apparaîtront ici.")
+                    .font(.subheadline)
+                    .foregroundStyle(AppPalette.Neutral.textSecondary)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(32)
+        }
     }
 }
 
 #Preview {
-    NotificationCenter()
+    NavigationStack {
+        NotificationsView()
+            .navigationTitle("Notifications")
+    }
 }

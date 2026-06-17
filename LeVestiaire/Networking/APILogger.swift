@@ -16,12 +16,7 @@ enum APILogger {
 
     static func logRequest(_ request: URLRequest) {
         let message = "[LOG] \(requestLogMessage(for: request))"
-
         logger.info("\(message, privacy: .public)")
-
-        #if DEBUG
-        print(message)
-        #endif
     }
 
     static func logResponse(
@@ -35,10 +30,6 @@ enum APILogger {
         let message = "\(requestLine) → HTTP \(response.statusCode) (\(durationMs) ms) body: \(body)"
 
         logger.info("\(message, privacy: .sensitive)")
-
-        #if DEBUG
-        print("[LOG] \(message)")
-        #endif
     }
 
     static func logFailure(request: URLRequest, error: Error, durationMs: Int) {
@@ -46,10 +37,6 @@ enum APILogger {
         let message = "\(requestLine) → error: \(error.localizedDescription) (\(durationMs) ms)"
 
         logger.error("\(message, privacy: .public)")
-
-        #if DEBUG
-        print("[LOG] \(message)")
-        #endif
     }
 
     private static func requestLogMessage(for request: URLRequest) -> String {

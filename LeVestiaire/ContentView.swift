@@ -43,10 +43,7 @@ struct ContentView: View {
     }
 
     private var authenticatedRoot: some View {
-        NavigationStack {
-            Matchs()
-                .navigationTitle("Matchs")
-        }
+        MainTabShell()
     }
 
     private var sportProfileRoot: some View {

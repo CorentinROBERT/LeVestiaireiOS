@@ -76,6 +76,13 @@ enum APIResponseDecoder {
         )
     }
 
+    static func decodeErrorMessage(from data: Data) -> String? {
+        if let envelope = try? JSONDecoder().decode(MessageEnvelope.self, from: data) {
+            return envelope.error ?? envelope.message
+        }
+        return nil
+    }
+
     static func decodeProfilePictureResponse(from data: Data, statusCode: Int) -> ProfilePictureResponse {
         if let response = try? decode(ProfilePictureResponse.self, from: data) {
             if response.imageUrl != nil || response.success {
