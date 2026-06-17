@@ -96,12 +96,12 @@ final class LoginViewModel: ObservableObject {
         let trimmedEmail = trimmedEmail
 
         guard !trimmedEmail.isEmpty else {
-            validationMessage = "Veuillez saisir votre adresse email."
+            validationMessage = L10n.pleaseEnterYourEmail
             return
         }
 
         guard !password.isEmpty else {
-            validationMessage = "Veuillez saisir votre mot de passe."
+            validationMessage = L10n.passwordRequired
             return
         }
 
@@ -117,11 +117,19 @@ final class LoginViewModel: ObservableObject {
             if response.requiresVerification == true || response.isEmailVerified == false {
                 pendingCredentialsStore.save(email: trimmedEmail, password: password)
                 showEmailVerification = true
-                validationMessage = response.message ?? "Veuillez vérifier votre email avant de continuer."
+                validationMessage = L10n.apiErrorMessage(
+                    message: response.message,
+                    error: response.error,
+                    fallback: L10n.verifyEmailBeforeLogin
+                )
                 return
             }
 
-            validationMessage = response.message ?? response.error ?? "Connexion impossible."
+            validationMessage = L10n.apiErrorMessage(
+                message: response.message,
+                error: response.error,
+                fallback: L10n.loginFailed
+            )
         }
     }
 }

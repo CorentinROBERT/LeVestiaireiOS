@@ -21,17 +21,17 @@ struct ResetPassword: View {
             AuthScreenBackground()
 
             ScrollView(showsIndicators: false) {
-                UCard(title: "Nouveau mot de passe", icon: "key.fill") {
+                UCard(title: L10n.newPassword, icon: "key.fill") {
                     VStack(spacing: 18) {
                         UText(
-                            text: "Saisissez le code reçu par email, puis choisissez un nouveau mot de passe.",
+                            text: L10n.resetPasswordInstructions,
                             type: .description
                         )
                         .foregroundStyle(AppPalette.Neutral.textSecondary)
 
                         UTextField(
-                            label: "Code de vérification",
-                            placeholder: "Code à 6 chiffres",
+                            label: L10n.verificationCodeLabel,
+                            placeholder: L10n.verificationCodePlaceholder,
                             icon: "number.circle.fill",
                             text: Binding(
                                 get: { viewModel.verificationCode },
@@ -39,12 +39,12 @@ struct ResetPassword: View {
                             ),
                             usesOneTimeCodeAutofill: true,
                             errorMessage: viewModel.validationMessage,
-                            helperText: "Le système peut suggérer le code reçu par email au-dessus du clavier."
+                            helperText: L10n.verificationCodeHelper
                         )
 
                         UTextField(
-                            label: "Mot de passe",
-                            placeholder: "Nouveau mot de passe",
+                            label: L10n.password,
+                            placeholder: L10n.newPassword,
                             icon: "lock.fill",
                             text: $viewModel.password,
                             isSecure: true,
@@ -53,8 +53,8 @@ struct ResetPassword: View {
                         )
 
                         UTextField(
-                            label: "Confirmation",
-                            placeholder: "Confirmer le mot de passe",
+                            label: L10n.confirmationLabel,
+                            placeholder: L10n.confirmPassword,
                             icon: "lock.rotation",
                             text: $viewModel.confirmPassword,
                             isSecure: true,
@@ -63,7 +63,7 @@ struct ResetPassword: View {
                         )
 
                         UButton(
-                            text: viewModel.isLoading ? "Mise à jour..." : "Réinitialiser le mot de passe",
+                            text: viewModel.isLoading ? L10n.resetPasswordUpdating : L10n.resetPassword,
                             textColor: AppPalette.Primary.onMain,
                             backgroundColor: AppPalette.Primary.main,
                             cornerRadius: 30,
@@ -79,16 +79,16 @@ struct ResetPassword: View {
             }
             .scrollDismissesKeyboard(.interactively)
         }
-        .navigationTitle("Réinitialisation")
+        .navigationTitle(L10n.resetPasswordNavTitle)
         .navigationBarTitleDisplayMode(.inline)
         .alert(
-            "Mot de passe mis à jour",
+            L10n.resetPasswordSuccessAlertTitle,
             isPresented: Binding(
                 get: { viewModel.successMessage != nil },
                 set: { if !$0 { viewModel.successMessage = nil } }
             )
         ) {
-            Button("Retour à la connexion") {
+            Button(L10n.backToLogin) {
                 viewModel.successMessage = nil
                 onFinished()
             }

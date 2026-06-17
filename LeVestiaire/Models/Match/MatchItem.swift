@@ -29,14 +29,14 @@ struct MatchItem: Identifiable, Decodable, Hashable {
     }
 
     var formattedDate: String {
-        Self.displayDateFormatter.string(from: date)
+        Self.makeDisplayDateFormatter().string(from: date)
     }
 
     var formattedTime: String? {
         if let startTime, !startTime.isEmpty {
             return startTime
         }
-        return Self.displayTimeFormatter.string(from: date)
+        return Self.makeDisplayTimeFormatter().string(from: date)
     }
 
     init(
@@ -69,7 +69,7 @@ struct MatchItem: Identifiable, Decodable, Hashable {
         id = try container.decodeIfPresent(String.self, forKey: .mongoId)
             ?? container.decodeIfPresent(String.self, forKey: .id)
             ?? ""
-        title = try container.decodeIfPresent(String.self, forKey: .title) ?? "Match"
+        title = try container.decodeIfPresent(String.self, forKey: .title) ?? L10n.defaultMatchTitle
         status = try container.decodeIfPresent(MatchStatus.self, forKey: .status) ?? .upcoming
         opponentTeam = try container.decodeIfPresent(String.self, forKey: .opponentTeam)
         location = try container.decodeIfPresent(String.self, forKey: .location)
@@ -101,21 +101,21 @@ struct MatchItem: Identifiable, Decodable, Hashable {
         case scoreAway
     }
 
-    private static let displayDateFormatter: DateFormatter = {
+    private static func makeDisplayDateFormatter() -> DateFormatter {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "fr_FR")
+        formatter.locale = LocalizationManager.shared.locale
         formatter.dateStyle = .medium
         formatter.timeStyle = .none
         return formatter
-    }()
+    }
 
-    private static let displayTimeFormatter: DateFormatter = {
+    private static func makeDisplayTimeFormatter() -> DateFormatter {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "fr_FR")
+        formatter.locale = LocalizationManager.shared.locale
         formatter.dateStyle = .none
         formatter.timeStyle = .short
         return formatter
-    }()
+    }
 
     private static let iso8601WithFractionalSeconds: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()

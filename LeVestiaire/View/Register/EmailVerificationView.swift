@@ -30,16 +30,16 @@ struct EmailVerificationView: View {
                 .padding(.bottom, 40)
             }
         }
-        .navigationTitle("Vérification")
+        .navigationTitle(L10n.emailVerificationNavTitle)
         .navigationBarTitleDisplayMode(.inline)
         .alert(
-            "Vérification email",
+            L10n.emailVerificationAlertTitle,
             isPresented: Binding(
                 get: { viewModel.feedbackMessage != nil },
                 set: { if !$0 { viewModel.feedbackMessage = nil } }
             )
         ) {
-            Button("OK", role: .cancel) {}
+            Button(L10n.ok, role: .cancel) {}
         } message: {
             Text(viewModel.feedbackMessage ?? "")
         }
@@ -55,7 +55,7 @@ struct EmailVerificationView: View {
 
     private var verificationCard: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Nous avons envoyé un email de vérification à")
+            Text(L10n.verificationEmailSentTo)
                 .font(.subheadline)
                 .foregroundStyle(AppPalette.Neutral.textSecondary)
 
@@ -64,7 +64,7 @@ struct EmailVerificationView: View {
                 .foregroundStyle(AppPalette.Primary.dark)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            Text("Cliquez sur le lien dans l'email pour vérifier le compte.")
+            Text(L10n.clickLinkInEmail)
                 .font(.subheadline)
                 .foregroundStyle(AppPalette.Neutral.textPrimary)
         }
@@ -76,7 +76,7 @@ struct EmailVerificationView: View {
     private var actionButtons: some View {
         VStack(spacing: 14) {
             UButton(
-                text: viewModel.isCheckingVerification ? "Vérification..." : "J'ai vérifié mon email",
+                text: viewModel.isCheckingVerification ? L10n.emailVerificationChecking : L10n.iHaveVerifiedMyEmail,
                 textColor: AppPalette.Primary.onMain,
                 backgroundColor: AppPalette.Primary.main,
                 cornerRadius: 25,
@@ -102,12 +102,12 @@ struct EmailVerificationView: View {
 
     private var resendButtonTitle: String {
         if viewModel.isResending {
-            return "Envoi en cours..."
+            return L10n.sendingInProgress
         }
         if viewModel.resendCooldownRemaining > 0 {
-            return "Renvoyer l'email (\(viewModel.resendCooldownRemaining)s)"
+            return L10n.resendEmailCooldown(viewModel.resendCooldownRemaining)
         }
-        return "Renvoyer l'email"
+        return L10n.resendEmail
     }
 
     private var tipsCard: some View {
@@ -115,15 +115,15 @@ struct EmailVerificationView: View {
             HStack(spacing: 8) {
                 Image(systemName: "lightbulb.fill")
                     .foregroundStyle(AppPalette.Secondary.coral)
-                Text("Conseils")
+                Text(L10n.tipsTitle)
                     .font(.headline)
                     .foregroundStyle(AppPalette.Primary.dark)
             }
 
             VStack(alignment: .leading, spacing: 10) {
-                tipRow("Vérifiez votre dossier spam")
-                tipRow("Assurez-vous que l'email saisi est correct")
-                tipRow("Attendez quelques minutes avant de renvoyer")
+                tipRow(L10n.checkSpamFolder)
+                tipRow(L10n.ensureEmailAddressCorrect)
+                tipRow(L10n.waitFewMinutesBeforeResending)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

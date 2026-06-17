@@ -149,7 +149,7 @@ struct UTextField: View {
                     if showsKeyboardDismissButton, usesSystemKeyboardToolbar {
                         ToolbarItemGroup(placement: .keyboard) {
                             Spacer()
-                            Button("Terminé") {
+                            Button(L10n.done) {
                                 resignFocus()
                             }
                             .fontWeight(.semibold)

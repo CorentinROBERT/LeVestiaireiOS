@@ -57,21 +57,21 @@ struct Login: View {
             .safeAreaPadding(.bottom, 10)
         }
         .ignoresSafeArea()
-        .alert("Mode développeur", isPresented: $viewModel.showDeveloperPasswordDialog) {
-            SecureField("Mot de passe", text: $viewModel.developerPasswordInput)
-            Button("Valider") {
+        .alert(L10n.developerMode, isPresented: $viewModel.showDeveloperPasswordDialog) {
+            SecureField(L10n.password, text: $viewModel.developerPasswordInput)
+            Button(L10n.validate) {
                 viewModel.validateDeveloperPassword()
             }
-            Button("Annuler", role: .cancel) {
+            Button(L10n.cancel, role: .cancel) {
                 viewModel.cancelDeveloperPassword()
             }
         } message: {
-            Text("Entrez le mot de passe pour accéder aux outils développeur.")
+            Text(L10n.enterDeveloperPassword)
         }
-        .alert("Accès refusé", isPresented: $viewModel.showDeveloperPasswordError) {
-            Button("OK", role: .cancel) {}
+        .alert(L10n.accessRefused, isPresented: $viewModel.showDeveloperPasswordError) {
+            Button(L10n.ok, role: .cancel) {}
         } message: {
-            Text("Mot de passe incorrect.")
+            Text(L10n.incorrectPassword)
         }
         .fullScreenCover(isPresented: $viewModel.showDeveloperPage) {
             DeveloperView()
@@ -80,13 +80,13 @@ struct Login: View {
             EmailVerificationView(email: viewModel.trimmedEmail)
         }
         .alert(
-            "Connexion",
+            L10n.login,
             isPresented: Binding(
                 get: { viewModel.validationMessage != nil },
                 set: { if !$0 { viewModel.validationMessage = nil } }
             )
         ) {
-            Button("OK", role: .cancel) {}
+            Button(L10n.ok, role: .cancel) {}
         } message: {
             Text(viewModel.validationMessage ?? "")
         }
@@ -104,11 +104,11 @@ struct Login: View {
                     viewModel.registerDeveloperTap()
                 }
 
-            UText(text: "Le Vestiaire", type: .title)
+            UText(text: L10n.loginHeroTitle, type: .title)
                 .foregroundColor(AppPalette.Primary.dark)
 
             UText(
-                text: "Connectez-vous pour gérer vos équipes",
+                text: L10n.loginHeroSubtitle,
                 type: .description
             )
             .foregroundColor(AppPalette.Neutral.textSecondary)
@@ -119,7 +119,7 @@ struct Login: View {
     private var formCard: some View {
         VStack(spacing: 18) {
             UGlassTextField(
-                placeholder: "Adresse email",
+                placeholder: L10n.emailAddress,
                 icon: "envelope.fill",
                 text: $viewModel.email,
                 style: .light,
@@ -132,7 +132,7 @@ struct Login: View {
             )
 
             UGlassTextField(
-                placeholder: "Mot de passe",
+                placeholder: L10n.password,
                 icon: "lock.fill",
                 text: $viewModel.password,
                 style: .light,
@@ -146,7 +146,7 @@ struct Login: View {
             )
 
             UButton(
-                text: viewModel.isLoading ? "Connexion..." : "Se connecter",
+                text: viewModel.isLoading ? L10n.loginInProgress : L10n.loginButton,
                 textColor: AppPalette.Primary.onMain,
                 backgroundColor: AppPalette.Primary.main,
                 cornerRadius: 25,
@@ -167,20 +167,20 @@ struct Login: View {
             Button {
                 navigationPath.append(AuthFlowRoute.forgetPassword)
             } label: {
-                Text("Mot de passe oublié ?")
+                Text(L10n.forgotPasswordQuestion)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(AppPalette.Primary.main)
             }
             .buttonStyle(.plain)
 
             HStack(spacing: 4) {
-                Text("Pas encore de compte ?")
+                Text(L10n.noAccountYet)
                     .foregroundStyle(AppPalette.Neutral.textTertiary)
 
                 Button {
                     navigationPath.append(AuthFlowRoute.register)
                 } label: {
-                    Text("Créer un compte")
+                    Text(L10n.createAccount)
                         .fontWeight(.semibold)
                         .foregroundStyle(AppPalette.Primary.main)
                 }

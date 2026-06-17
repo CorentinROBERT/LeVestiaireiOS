@@ -15,9 +15,9 @@ enum LegalDocumentError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidResponse:
-            return "Impossible de charger le document."
+            return L10n.documentLoadFailed
         case .unreadableContent:
-            return "Le contenu du document est illisible."
+            return L10n.documentUnreadable
         }
     }
 }

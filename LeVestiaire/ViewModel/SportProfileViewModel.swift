@@ -98,7 +98,7 @@ final class SportProfileViewModel: ObservableObject {
         validationMessage = nil
 
         guard canSubmit else {
-            validationMessage = "Veuillez compléter tous les champs obligatoires."
+            validationMessage = L10n.completeRequiredSportFields
             return
         }
 
@@ -111,7 +111,9 @@ final class SportProfileViewModel: ObservableObject {
             let response = await sportProfileService.saveProfile(request)
 
             guard response.success, response.hasValidData else {
-                validationMessage = response.userFacingMessage ?? "Impossible d'enregistrer le profil sportif."
+                validationMessage = L10n.apiMessage(response.userFacingMessage)
+                    ?? response.userFacingMessage
+                    ?? L10n.saveSportProfileFailed
                 return
             }
 
@@ -136,7 +138,7 @@ final class SportProfileViewModel: ObservableObject {
 
         profileImage = nil
         uploadedProfileImageUrl = nil
-        validationMessage = response.message ?? "Impossible d'envoyer la photo de profil."
+        validationMessage = L10n.apiMessage(response.message) ?? L10n.uploadProfilePhotoFailed
     }
 
     private func reloadTeamsForSelectedLeague() {

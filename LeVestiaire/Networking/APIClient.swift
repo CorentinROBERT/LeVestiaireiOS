@@ -14,9 +14,9 @@ enum APIClientError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidBaseURL:
-            return "L'URL de base de l'API est invalide."
+            return L10n.invalidApiBaseUrl
         case .invalidResponse:
-            return "Réponse serveur invalide."
+            return L10n.invalidServerResponse
         }
     }
 }

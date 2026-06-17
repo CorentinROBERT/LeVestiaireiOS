@@ -17,6 +17,6 @@ enum AppInfo {
     }
 
     static var versionLabel: String {
-        "Version \(version)"
+        L10n.versionWithNumber(version)
     }
 }

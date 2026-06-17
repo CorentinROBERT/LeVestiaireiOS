@@ -61,14 +61,14 @@ final class EmailVerificationViewModel: ObservableObject {
             let isVerified = await checkEmailVerificationStatus()
             guard isVerified else {
                 if feedbackMessage == nil {
-                    feedbackMessage = "Votre email n'est pas encore vérifié. Consultez votre boîte mail et réessayez."
+                    feedbackMessage = L10n.emailNotYetVerified
                 }
                 return
             }
 
             let didSignIn = await signInAfterVerification()
             if !didSignIn, feedbackMessage == nil {
-                feedbackMessage = "Connexion automatique impossible après vérification."
+                feedbackMessage = L10n.autoLoginFailedAfterVerification
             }
         }
     }
@@ -81,7 +81,7 @@ final class EmailVerificationViewModel: ObservableObject {
         }
 
         if let message = response.message, !message.isEmpty {
-            feedbackMessage = message
+            feedbackMessage = L10n.apiMessage(message) ?? message
         }
 
         return false
@@ -94,7 +94,7 @@ final class EmailVerificationViewModel: ObservableObject {
 
         guard let credentials = pendingCredentialsStore.load(),
               credentials.email.caseInsensitiveCompare(email) == .orderedSame else {
-            feedbackMessage = "Connexion automatique impossible. Veuillez vous connecter manuellement."
+            feedbackMessage = L10n.autoLoginFailedManual
             return false
         }
 
@@ -105,7 +105,11 @@ final class EmailVerificationViewModel: ObservableObject {
             return true
         }
 
-        feedbackMessage = response.message ?? response.error ?? "Connexion automatique impossible après vérification."
+        feedbackMessage = L10n.apiErrorMessage(
+            message: response.message,
+            error: response.error,
+            fallback: L10n.autoLoginFailedAfterVerification
+        )
         return false
     }
 
@@ -121,12 +125,16 @@ final class EmailVerificationViewModel: ObservableObject {
             let response = await authService.resendVerificationEmail(email: email)
 
             if response.success {
-                feedbackMessage = response.message ?? "Un nouvel email de vérification a été envoyé."
+                feedbackMessage = L10n.apiMessage(response.message) ?? L10n.verificationEmailResent
                 startResendCooldown()
                 return
             }
 
-            feedbackMessage = response.message ?? response.error ?? "Impossible de renvoyer l'email de vérification."
+            feedbackMessage = L10n.apiErrorMessage(
+                message: response.message,
+                error: response.error,
+                fallback: L10n.verificationEmailResendFailed
+            )
         }
     }
 

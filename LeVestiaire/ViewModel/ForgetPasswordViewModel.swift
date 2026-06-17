@@ -36,12 +36,12 @@ final class ForgetPasswordViewModel: ObservableObject {
         let trimmedEmail = email.trimmed
 
         guard !trimmedEmail.isEmpty else {
-            validationMessage = "Veuillez saisir votre adresse email."
+            validationMessage = L10n.pleaseEnterYourEmail
             return
         }
 
         guard trimmedEmail.isValidEmail else {
-            validationMessage = "L'adresse email n'est pas valide."
+            validationMessage = L10n.emailInvalid
             return
         }
 
@@ -53,11 +53,16 @@ final class ForgetPasswordViewModel: ObservableObject {
             let response = await authService.requestPasswordReset(email: trimmedEmail)
 
             if response.success {
-                successMessage = response.message ?? "Un email de réinitialisation a été envoyé à \(trimmedEmail)."
+                successMessage = L10n.apiMessage(response.message)
+                    ?? L10n.passwordResetEmailSentDefault(trimmedEmail)
                 return
             }
 
-            validationMessage = response.error ?? response.message ?? "Impossible d'envoyer l'email de réinitialisation."
+            validationMessage = L10n.apiErrorMessage(
+                message: response.message,
+                error: response.error,
+                fallback: L10n.passwordResetRequestFailed
+            )
         }
     }
 }

@@ -56,7 +56,7 @@ struct ProfilePhotoPicker: View {
             Button {
                 showSourceDialog = true
             } label: {
-                Label("Choisir une photo", systemImage: "camera.fill")
+                Label(L10n.choosePhoto, systemImage: "camera.fill")
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(AppPalette.Primary.main)
             }
@@ -64,20 +64,20 @@ struct ProfilePhotoPicker: View {
             .disabled(isUploading)
         }
         .frame(maxWidth: .infinity)
-        .confirmationDialog("Photo de profil", isPresented: $showSourceDialog, titleVisibility: .visible) {
-            Button("Appareil photo") {
+        .confirmationDialog(L10n.profilePhoto, isPresented: $showSourceDialog, titleVisibility: .visible) {
+            Button(L10n.camera) {
                 showCamera = true
             }
-            Button("Bibliothèque photos") {
+            Button(L10n.photoLibrary) {
                 showPhotoLibrary = true
             }
             if selectedImage != nil {
-                Button("Supprimer la photo", role: .destructive) {
+                Button(L10n.deletePhoto, role: .destructive) {
                     selectedImage = nil
                     selectedPhotoItem = nil
                 }
             }
-            Button("Annuler", role: .cancel) {}
+            Button(L10n.cancel, role: .cancel) {}
         }
         .photosPicker(isPresented: $showPhotoLibrary, selection: $selectedPhotoItem, matching: .images)
         .onChange(of: selectedPhotoItem) { _, newItem in

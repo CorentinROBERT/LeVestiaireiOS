@@ -16,9 +16,9 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     var displayName: String {
         switch self {
         case .french:
-            return "Français"
+            return L10n.french
         case .english:
-            return "English"
+            return L10n.english
         }
     }
 

@@ -39,7 +39,7 @@ struct SportProfileView: View {
             if focusedField == Field.jersey {
                 HStack {
                     Spacer()
-                    Button("Terminé") {
+                    Button(L10n.done) {
                         focusedField = nil
                     }
                     .fontWeight(.semibold)
@@ -51,16 +51,16 @@ struct SportProfileView: View {
                 .padding(.horizontal, 16)
             }
         }
-        .navigationTitle("Profil sportif")
+        .navigationTitle(L10n.sportProfileTitle)
         .navigationBarTitleDisplayMode(.inline)
         .alert(
-            "Profil sportif",
+            L10n.sportProfileTitle,
             isPresented: Binding(
                 get: { viewModel.validationMessage != nil },
                 set: { if !$0 { viewModel.validationMessage = nil } }
             )
         ) {
-            Button("OK", role: .cancel) {}
+            Button(L10n.ok, role: .cancel) {}
         } message: {
             Text(viewModel.validationMessage ?? "")
         }
@@ -68,11 +68,11 @@ struct SportProfileView: View {
 
     private var header: some View {
         VStack(spacing: 8) {
-            UText(text: "Complétez votre profil", type: .title)
+            UText(text: L10n.completeYourProfile, type: .title)
                 .foregroundColor(AppPalette.Primary.dark)
 
             UText(
-                text: "Personnalisez votre expérience sur Le Vestiaire",
+                text: L10n.sportProfileSubtitle,
                 type: .description
             )
             .foregroundColor(AppPalette.Neutral.textSecondary)
@@ -90,10 +90,10 @@ struct SportProfileView: View {
                 viewModel.handleProfileImageChange(to: newImage)
             }
 
-            sectionTitle("Informations sportives")
+            sectionTitle(L10n.sportInformationSection)
 
             UGlassFormRow(icon: "figure.run") {
-                Picker("Pied fort", selection: $viewModel.strongFoot) {
+                Picker(L10n.strongFoot, selection: $viewModel.strongFoot) {
                     ForEach(StrongFoot.allCases) { foot in
                         Text(foot.displayName).tag(foot)
                     }
@@ -102,7 +102,7 @@ struct SportProfileView: View {
             }
 
             UGlassTextField(
-                placeholder: "Numéro de maillot (0-999)",
+                placeholder: L10n.jerseyNumberPlaceholder,
                 icon: "number",
                 text: Binding(
                     get: { viewModel.jerseyNumberText },
@@ -117,11 +117,11 @@ struct SportProfileView: View {
 
             UGlassFormRow(icon: "trophy.fill") {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Championnat préféré")
+                    Text(L10n.favoriteLeague)
                         .font(.caption)
                         .foregroundStyle(AppPalette.Neutral.textSecondary)
 
-                    Picker("Championnat préféré", selection: $viewModel.selectedLeague) {
+                    Picker(L10n.favoriteLeague, selection: $viewModel.selectedLeague) {
                         ForEach(FootballLeague.allCases) { league in
                             Text(league.displayName).tag(league)
                         }
@@ -138,11 +138,11 @@ struct SportProfileView: View {
 
             UGlassFormRow(icon: "shield.fill") {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Équipe préférée")
+                    Text(L10n.favoriteTeam)
                         .font(.caption)
                         .foregroundStyle(AppPalette.Neutral.textSecondary)
 
-                    Picker("Équipe préférée", selection: $viewModel.selectedTeam) {
+                    Picker(L10n.favoriteTeam, selection: $viewModel.selectedTeam) {
                         ForEach(viewModel.availableTeams, id: \.self) { team in
                             Text(team).tag(team)
                         }
@@ -155,7 +155,7 @@ struct SportProfileView: View {
             }
 
             VStack(alignment: .leading, spacing: 12) {
-                sectionTitle("Postes favoris")
+                sectionTitle(L10n.favoritePositionsSection)
 
                 UMultiSelectChips(
                     items: PlayerPosition.allCases,
@@ -165,7 +165,7 @@ struct SportProfileView: View {
             }
 
             VStack(alignment: .leading, spacing: 12) {
-                sectionTitle("Années d'expérience")
+                sectionTitle(L10n.experienceYearsSection)
 
                 Text(viewModel.experienceLevel.displayName)
                     .font(.headline)
@@ -194,7 +194,7 @@ struct SportProfileView: View {
             }
 
             VStack(alignment: .leading, spacing: 12) {
-                sectionTitle("Disponibilité")
+                sectionTitle(L10n.availabilitySection)
 
                 UMultiSelectChips(
                     items: Weekday.allCases,
@@ -212,7 +212,7 @@ struct SportProfileView: View {
             Image(systemName: "info.circle.fill")
                 .foregroundStyle(AppPalette.Primary.main)
 
-            Text("Vous pouvez modifier ces informations dans votre profil.")
+            Text(L10n.profileEditableLater)
                 .font(.subheadline)
                 .foregroundStyle(AppPalette.Neutral.textSecondary)
         }
@@ -223,7 +223,7 @@ struct SportProfileView: View {
 
     private var submitButton: some View {
         UButton(
-            text: viewModel.isLoading ? "Enregistrement..." : "Finaliser mon profil",
+            text: viewModel.isLoading ? L10n.saving : L10n.finalizeMyProfile,
             textColor: AppPalette.Primary.onMain,
             backgroundColor: AppPalette.Primary.main,
             cornerRadius: 25,

@@ -20,11 +20,11 @@ enum LegalDocument: String, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .termsOfUse:
-            return "Conditions d'utilisation"
+            return L10n.termsOfService
         case .betaWarning:
-            return "Avertissement beta"
+            return L10n.betaDisclaimer
         case .privacyPolicy:
-            return "Politique de confidentialité"
+            return L10n.privacyPolicy
         }
     }
 

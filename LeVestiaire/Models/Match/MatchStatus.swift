@@ -19,11 +19,11 @@ enum MatchStatus: String, CaseIterable, Codable, Identifiable, Hashable {
 
     var displayName: String {
         switch self {
-        case .upcoming: return "À venir"
-        case .ongoing: return "En cours"
-        case .finished: return "Terminé"
-        case .cancelled: return "Annulé"
-        case .postponed: return "Reporté"
+        case .upcoming: return L10n.upcoming
+        case .ongoing: return L10n.ongoing
+        case .finished: return L10n.finished
+        case .cancelled: return L10n.cancelled
+        case .postponed: return L10n.postponed
         }
     }
 

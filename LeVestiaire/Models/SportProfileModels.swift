@@ -16,9 +16,9 @@ enum StrongFoot: String, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .right: return "Droit"
-        case .left: return "Gauche"
-        case .both: return "Ambidextre"
+        case .right: return L10n.rightFoot
+        case .left: return L10n.leftFoot
+        case .both: return L10n.bothFeet
         }
     }
 }
@@ -34,11 +34,11 @@ enum FootballLeague: String, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .premierLeague: return "Premier League"
-        case .ligue1: return "Ligue 1"
-        case .bundesliga: return "Bundesliga"
-        case .serieA: return "Serie A"
-        case .laLiga: return "La Liga"
+        case .premierLeague: return L10n.premierLeagueLabel
+        case .ligue1: return L10n.ligue1Label
+        case .bundesliga: return L10n.bundesligaLabel
+        case .serieA: return L10n.serieALabel
+        case .laLiga: return L10n.laLigaLabel
         }
     }
 }
@@ -60,17 +60,17 @@ enum PlayerPosition: String, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .goalkeeper: return "Gardien"
-        case .centerBack: return "Défenseur central"
-        case .rightBack: return "Défenseur droit"
-        case .leftBack: return "Défenseur gauche"
-        case .defensiveMidfielder: return "Milieu défensif"
-        case .centerMidfielder: return "Milieu central"
-        case .attackingMidfielder: return "Milieu offensif"
-        case .rightWinger: return "Ailier droit"
-        case .leftWinger: return "Ailier gauche"
-        case .striker: return "Attaquant"
-        case .secondStriker: return "Second attaquant"
+        case .goalkeeper: return L10n.goalkeeper
+        case .centerBack: return L10n.centerBack
+        case .rightBack: return L10n.rightBack
+        case .leftBack: return L10n.leftBack
+        case .defensiveMidfielder: return L10n.defensiveMidfielder
+        case .centerMidfielder: return L10n.centerMidfielder
+        case .attackingMidfielder: return L10n.attackingMidfielder
+        case .rightWinger: return L10n.rightWinger
+        case .leftWinger: return L10n.leftWinger
+        case .striker: return L10n.striker
+        case .secondStriker: return L10n.secondStriker
         }
     }
 }
@@ -85,10 +85,10 @@ enum ExperienceLevel: Int, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .beginner: return "Débutant"
-        case .intermediate: return "Intermédiaire"
-        case .advanced: return "Avancé"
-        case .expert: return "Expert"
+        case .beginner: return L10n.footballLevelBeginner
+        case .intermediate: return L10n.footballLevelIntermediate
+        case .advanced: return L10n.footballLevelAdvanced
+        case .expert: return L10n.footballLevelExpert
         }
     }
 }
@@ -100,13 +100,13 @@ enum Weekday: String, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .monday: return "Lundi"
-        case .tuesday: return "Mardi"
-        case .wednesday: return "Mercredi"
-        case .thursday: return "Jeudi"
-        case .friday: return "Vendredi"
-        case .saturday: return "Samedi"
-        case .sunday: return "Dimanche"
+        case .monday: return L10n.monday
+        case .tuesday: return L10n.tuesday
+        case .wednesday: return L10n.wednesday
+        case .thursday: return L10n.thursday
+        case .friday: return L10n.friday
+        case .saturday: return L10n.saturday
+        case .sunday: return L10n.sunday
         }
     }
 }

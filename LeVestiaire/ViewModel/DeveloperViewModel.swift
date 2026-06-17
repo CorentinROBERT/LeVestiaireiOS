@@ -86,7 +86,7 @@ final class DeveloperViewModel: ObservableObject {
     @MainActor
     private func runAPITest() async {
         guard let healthCheckURL else {
-            apiTestState = .failure(message: APITestError.invalidURL.errorDescription ?? "URL invalide.")
+            apiTestState = .failure(message: APITestError.invalidURL.errorDescription ?? L10n.apiUrlInvalid)
             return
         }
 

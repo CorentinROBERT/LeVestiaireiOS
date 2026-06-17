@@ -22,7 +22,7 @@ enum MatchServiceError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .unauthorized:
-            return "Session requise. Veuillez vous reconnecter."
+            return L10n.sessionRequired
         case .requestFailed(let message):
             return message
         }
@@ -64,8 +64,9 @@ final class MatchService {
         )
 
         guard (200...299).contains(httpResponse.statusCode) else {
-            let message = APIResponseDecoder.decodeErrorMessage(from: data)
-                ?? "Impossible de charger les matchs (code \(httpResponse.statusCode))."
+            let rawMessage = APIResponseDecoder.decodeErrorMessage(from: data)
+            let message = L10n.apiMessage(rawMessage) ?? rawMessage
+                ?? L10n.loadMatchesFailedWithCode(httpResponse.statusCode)
             throw MatchServiceError.requestFailed(message)
         }
 

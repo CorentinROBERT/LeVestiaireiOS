@@ -17,11 +17,11 @@ enum APIEnvironment: String, CaseIterable, Identifiable, Codable {
     var displayName: String {
         switch self {
         case .production:
-            return "Production"
+            return L10n.productionEnvironment
         case .dev:
-            return "Dev"
+            return L10n.apiEnvironmentDev
         case .custom:
-            return "Custom"
+            return L10n.customUrl
         }
     }
 

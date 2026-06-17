@@ -29,23 +29,23 @@ struct DeveloperView: View {
                         apiEnvironmentCard
 
                         developerCard(
-                            title: "Informations",
+                            title: L10n.informationTitle,
                             icon: "hammer.fill",
                             tint: AppPalette.Primary.main
                         ) {
-                            infoRow(label: "Version", value: viewModel.appVersion)
-                            infoRow(label: "Numéro de build", value: viewModel.appBuildNumber)
-                            infoRow(label: "Plateforme", value: "iOS")
+                            infoRow(label: L10n.versionLabel, value: viewModel.appVersion)
+                            infoRow(label: L10n.buildNumberLabel, value: viewModel.appBuildNumber)
+                            infoRow(label: L10n.platformLabel, value: "iOS")
                         }
                     }
                     .padding(24)
                 }
             }
-            .navigationTitle("Développeur")
+            .navigationTitle(L10n.developerViewTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Fermer") {
+                    Button(L10n.close) {
                         dismiss()
                     }
                     .foregroundStyle(AppPalette.Primary.main)
@@ -56,12 +56,12 @@ struct DeveloperView: View {
 
     private var apiEnvironmentCard: some View {
         developerCard(
-            title: "Environnement API",
+            title: L10n.apiEnvironment,
             icon: "network",
             tint: AppPalette.Secondary.mint
         ) {
             VStack(alignment: .leading, spacing: 16) {
-                Picker("Environnement", selection: $viewModel.selectedEnvironment) {
+                Picker(L10n.environment, selection: $viewModel.selectedEnvironment) {
                     ForEach(APIEnvironment.allCases) { environment in
                         Text(environment.displayName).tag(environment)
                     }
@@ -70,7 +70,7 @@ struct DeveloperView: View {
 
                 if viewModel.isCustomEnvironment {
                     UGlassTextField(
-                        placeholder: "https://mon-api.local",
+                        placeholder: L10n.customApiUrlPlaceholder,
                         icon: "link",
                         text: $viewModel.customBaseURL,
                         style: .light,
@@ -79,10 +79,10 @@ struct DeveloperView: View {
                     )
                 }
 
-                infoRow(label: "URL testée", value: viewModel.healthCheckURL ?? "—")
+                infoRow(label: L10n.testedUrlLabel, value: viewModel.healthCheckURL ?? "—")
 
                 UButton(
-                    text: viewModel.apiTestState == .loading ? "Test en cours..." : "Tester l'URL",
+                    text: viewModel.apiTestState == .loading ? L10n.testUrlInProgress : L10n.testUrlButton,
                     textColor: AppPalette.Primary.onMain,
                     backgroundColor: AppPalette.Primary.main,
                     cornerRadius: 25,
@@ -106,7 +106,7 @@ struct DeveloperView: View {
         case .loading:
             HStack(spacing: 10) {
                 ProgressView()
-                Text("Connexion à l'API...")
+                Text(L10n.connectingToApi)
                     .font(.subheadline)
                     .foregroundStyle(AppPalette.Neutral.textSecondary)
             }
@@ -114,7 +114,7 @@ struct DeveloperView: View {
             HStack(alignment: .top, spacing: 10) {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundStyle(AppPalette.Semantic.success)
-                Text("Serveur joignable — HTTP \(statusCode) (\(durationMs) ms)")
+                Text(L10n.serverReachable(statusCode: statusCode, durationMs: durationMs))
                     .font(.subheadline)
                     .foregroundStyle(AppPalette.Neutral.textPrimary)
             }

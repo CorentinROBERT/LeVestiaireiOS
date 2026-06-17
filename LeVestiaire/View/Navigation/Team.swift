@@ -11,7 +11,7 @@ struct Team: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 16) {
-                Text("Gérez vos équipes et vos joueurs.")
+                Text(L10n.teamTabDescription)
                     .font(.subheadline)
                     .foregroundStyle(AppPalette.Neutral.textSecondary)
                     .frame(maxWidth: .infinity, alignment: .leading)

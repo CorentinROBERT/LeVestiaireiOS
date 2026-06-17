@@ -51,23 +51,23 @@ final class ResetPasswordViewModel: ObservableObject {
         successMessage = nil
 
         guard canSubmit else {
-            validationMessage = "Veuillez remplir tous les champs."
+            validationMessage = L10n.fillAllFields
             return
         }
 
         guard password == confirmPassword else {
-            validationMessage = "Les mots de passe ne correspondent pas."
+            validationMessage = L10n.passwordsDoNotMatch
             return
         }
 
         guard password.count >= 8 else {
-            validationMessage = "Le mot de passe doit contenir au moins 8 caractères."
+            validationMessage = L10n.passwordMin8Characters
             return
         }
 
         let token = resolvedResetToken
         guard !token.isEmpty else {
-            validationMessage = "Veuillez saisir le code reçu par email."
+            validationMessage = L10n.enterResetCode
             return
         }
 
@@ -82,11 +82,15 @@ final class ResetPasswordViewModel: ObservableObject {
             )
 
             if response.success {
-                successMessage = response.message ?? "Votre mot de passe a été mis à jour avec succès."
+                successMessage = L10n.apiMessage(response.message) ?? L10n.passwordUpdatedSuccessfully
                 return
             }
 
-            validationMessage = response.error ?? response.message ?? "Impossible de réinitialiser le mot de passe."
+            validationMessage = L10n.apiErrorMessage(
+                message: response.message,
+                error: response.error,
+                fallback: L10n.resetPasswordFailed
+            )
         }
     }
 

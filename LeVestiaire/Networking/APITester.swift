@@ -20,11 +20,11 @@ enum APITestError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .emptyURL:
-            return "L'URL est vide."
+            return L10n.apiUrlEmpty
         case .invalidURL:
-            return "L'URL n'est pas valide."
+            return L10n.apiUrlInvalid
         case .invalidResponse:
-            return "Réponse serveur invalide."
+            return L10n.invalidServerResponse
         }
     }
 }

@@ -13,6 +13,7 @@ final class MatchsViewModel: ObservableObject {
     @Published private(set) var matches: [MatchItem] = []
     @Published private(set) var isLoading = false
     @Published private(set) var isLoadingMore = false
+    @Published private(set) var isRefreshing = false
     @Published private(set) var errorMessage: String?
     @Published var filters = MatchFilters()
     @Published var showsFilters = false
@@ -21,6 +22,7 @@ final class MatchsViewModel: ObservableObject {
     private let matchService: MatchService
     private var currentPage = 1
     private var hasReachedMax = false
+    private var loadGeneration = 0
 
     @Published private(set) var totalItems = 0
 
@@ -33,7 +35,7 @@ final class MatchsViewModel: ObservableObject {
     }
 
     var loadedCountText: String {
-        "\(matches.count) sur \(totalItems) matchs"
+        L10n.matchesLoadedCount(matches.count, total: totalItems)
     }
 
     var showsEndOfListMessage: Bool {
@@ -54,7 +56,7 @@ final class MatchsViewModel: ObservableObject {
     }
 
     func refresh() async {
-        await loadMatches(page: 1, append: false)
+        await loadMatches(page: 1, append: false, isRefresh: true)
     }
 
     func loadNextPageIfNeeded(currentMatch: MatchItem) async {
@@ -77,17 +79,25 @@ final class MatchsViewModel: ObservableObject {
         await loadMatches(page: 1, append: false)
     }
 
-    private func loadMatches(page: Int, append: Bool) async {
+    private func loadMatches(page: Int, append: Bool, isRefresh: Bool = false) async {
+        loadGeneration += 1
+        let generation = loadGeneration
+
         if append {
             isLoadingMore = true
+        } else if isRefresh, !matches.isEmpty {
+            isRefreshing = true
         } else {
             isLoading = true
             errorMessage = nil
         }
 
         defer {
-            isLoading = false
-            isLoadingMore = false
+            if generation == loadGeneration {
+                isLoading = false
+                isLoadingMore = false
+                isRefreshing = false
+            }
         }
 
         do {
@@ -98,6 +108,8 @@ final class MatchsViewModel: ObservableObject {
                 toDate: filters.toDate
             )
             let response = try await matchService.fetchMatches(criteria: criteria)
+            guard generation == loadGeneration else { return }
+
             let fetchedMatches = response.matches.filter { !$0.id.isEmpty }
 
             if append {
@@ -111,11 +123,26 @@ final class MatchsViewModel: ObservableObject {
             currentPage = response.pageInfo?.page ?? page
             totalItems = response.pageInfo?.total ?? matches.count
             hasReachedMax = !(response.pageInfo?.hasNextPage ?? false)
+            errorMessage = nil
         } catch {
-            if !append {
-                matches = []
+            guard generation == loadGeneration else { return }
+            guard !isCancellationError(error) else { return }
+
+            if !append, matches.isEmpty {
+                errorMessage = error.localizedDescription
             }
-            errorMessage = error.localizedDescription
         }
+    }
+
+    private func isCancellationError(_ error: Error) -> Bool {
+        if error is CancellationError {
+            return true
+        }
+
+        if let urlError = error as? URLError, urlError.code == .cancelled {
+            return true
+        }
+
+        return false
     }
 }

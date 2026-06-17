@@ -13,13 +13,13 @@ struct Profile: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 20) {
-                Text("Paramètres et informations de votre compte.")
+                Text(L10n.profileSettingsDescription)
                     .font(.subheadline)
                     .foregroundStyle(AppPalette.Neutral.textSecondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 UButton(
-                    text: viewModel.isLoggingOut ? "Déconnexion..." : "Se déconnecter",
+                    text: viewModel.isLoggingOut ? L10n.logoutInProgress : L10n.signOutButton,
                     textColor: AppPalette.Primary.onMain,
                     backgroundColor: AppPalette.Primary.main,
                     cornerRadius: 20,

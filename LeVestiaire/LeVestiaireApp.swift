@@ -9,10 +9,14 @@ import SwiftUI
 
 @main
 struct LeVestiaireApp: App {
+    @ObservedObject private var localizationManager = LocalizationManager.shared
+
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environmentObject(AuthService.shared)
+                .environmentObject(localizationManager)
+                .environment(\.locale, localizationManager.locale)
                 .task {
                     await AuthService.shared.initialize()
                 }

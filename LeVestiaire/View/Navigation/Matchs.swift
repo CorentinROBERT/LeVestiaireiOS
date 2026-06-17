@@ -24,7 +24,7 @@ struct Matchs: View {
     var body: some View {
         Group {
             if viewModel.isLoading && viewModel.matches.isEmpty {
-                ProgressView("Chargement des matchs…")
+                ProgressView(L10n.matchesLoading)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let errorMessage = viewModel.errorMessage, viewModel.matches.isEmpty {
                 errorState(message: errorMessage)
@@ -126,11 +126,11 @@ struct Matchs: View {
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Nouveau match")
+                    Text(L10n.newMatch)
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(AppPalette.Neutral.textPrimary)
 
-                    Text("Planifier une rencontre")
+                    Text(L10n.planMatchSubtitle)
                         .font(.caption)
                         .foregroundStyle(AppPalette.Neutral.textSecondary)
                 }
@@ -143,7 +143,7 @@ struct Matchs: View {
             .glassEffect(.regular, in: .rect(cornerRadius: ActionButtonMetrics.cornerRadius))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Créer un nouveau match")
+        .accessibilityLabel(L10n.createMatch)
     }
 
     private var filterButton: some View {
@@ -176,7 +176,7 @@ struct Matchs: View {
             }
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Filtrer les matchs")
+        .accessibilityLabel(L10n.filterMatches)
     }
 
     private var activeFiltersBanner: some View {
@@ -195,7 +195,7 @@ struct Matchs: View {
 
                 Spacer(minLength: 0)
 
-                Text("Modifier")
+                Text(L10n.modify)
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(AppPalette.Primary.main)
             }
@@ -215,7 +215,7 @@ struct Matchs: View {
             parts.append(labels.joined(separator: ", "))
         }
         if viewModel.filters.fromDate != nil || viewModel.filters.toDate != nil {
-            parts.append("Période personnalisée")
+            parts.append(L10n.customPeriod)
         }
         return parts.joined(separator: " · ")
     }
@@ -230,11 +230,11 @@ struct Matchs: View {
     private var emptyState: some View {
         UCard(icon: "sportscourt", iconTint: AppPalette.Neutral.textTertiary) {
             VStack(spacing: 8) {
-                Text("Aucun match trouvé")
+                Text(L10n.noMatchesFound)
                     .font(.headline)
                     .foregroundStyle(AppPalette.Neutral.textPrimary)
 
-                Text("Créez votre premier match ou modifiez les filtres.")
+                Text(L10n.createFirstMatchToStart)
                     .font(.subheadline)
                     .foregroundStyle(AppPalette.Neutral.textSecondary)
                     .multilineTextAlignment(.center)
@@ -249,7 +249,7 @@ struct Matchs: View {
             if viewModel.isLoadingMore {
                 ProgressView()
             } else if viewModel.showsEndOfListMessage {
-                Text("Tous les matchs sont chargés")
+                Text(L10n.allMatchesLoaded)
                     .font(.caption)
                     .foregroundStyle(AppPalette.Neutral.textTertiary)
             }
@@ -271,7 +271,7 @@ struct Matchs: View {
                             .multilineTextAlignment(.center)
 
                         UButton(
-                            text: "Réessayer",
+                            text: L10n.retry,
                             textColor: AppPalette.Primary.onMain,
                             backgroundColor: AppPalette.Primary.main,
                             cornerRadius: 12,
@@ -297,6 +297,6 @@ struct Matchs: View {
             AuthScreenBackground()
             Matchs()
         }
-        .navigationTitle("Matchs")
+        .navigationTitle(L10n.matches)
     }
 }

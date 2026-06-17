@@ -54,7 +54,7 @@ struct User: Decodable, Equatable, Identifiable {
 
     func displayName(deletedUserLabel: String? = nil) -> String {
         if isAnonymized {
-            return deletedUserLabel ?? "Utilisateur Supprimé"
+            return deletedUserLabel ?? L10n.deletedUser
         }
         return fullName
     }

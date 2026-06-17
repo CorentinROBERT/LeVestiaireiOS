@@ -56,7 +56,7 @@ struct AccountDeletion: Decodable, Equatable {
             throw DecodingError.dataCorruptedError(
                 forKey: key,
                 in: container,
-                debugDescription: "Date invalide ou absente."
+                debugDescription: L10n.invalidDateOrMissing
             )
         }
 

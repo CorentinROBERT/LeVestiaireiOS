@@ -49,7 +49,7 @@ struct ContentView: View {
     private var sportProfileRoot: some View {
         NavigationStack {
             SportProfileView()
-                .navigationTitle("Profil sportif")
+                .navigationTitle(L10n.sportProfileTitle)
         }
     }
 }

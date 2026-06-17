@@ -33,7 +33,7 @@ enum APIResponseDecoder {
         throw DecodingError.dataCorrupted(
             DecodingError.Context(
                 codingPath: [],
-                debugDescription: "Impossible de décoder \(T.self) depuis la réponse API."
+                debugDescription: L10n.decodeApiResponseFailed(String(describing: type))
             )
         )
     }
@@ -53,7 +53,7 @@ enum APIResponseDecoder {
 
         return LoginResponse(
             success: false,
-            message: "Réponse API invalide."
+            message: L10n.invalidApiResponse
         )
     }
 
@@ -72,7 +72,7 @@ enum APIResponseDecoder {
 
         return SportProfileResponse(
             success: false,
-            message: "Réponse API invalide."
+            message: L10n.invalidApiResponse
         )
     }
 
@@ -103,7 +103,7 @@ enum APIResponseDecoder {
 
         return ProfilePictureResponse(
             success: false,
-            message: "Réponse API invalide pour l'upload de la photo."
+            message: L10n.invalidProfilePictureApiResponse
         )
     }
 }

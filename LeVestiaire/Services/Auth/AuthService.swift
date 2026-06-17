@@ -88,7 +88,7 @@ final class AuthService: ObservableObject {
         } catch {
             return LoginResponse(
                 success: false,
-                message: "Erreur lors de la connexion: \(error.localizedDescription)"
+                message: L10n.loginErrorWithDetail(error.localizedDescription)
             )
         }
     }
@@ -126,7 +126,7 @@ final class AuthService: ObservableObject {
         } catch {
             return LoginResponse(
                 success: false,
-                message: "Erreur lors de l'inscription: \(error.localizedDescription)"
+                message: L10n.registerErrorWithDetail(error.localizedDescription)
             )
         }
     }
@@ -144,7 +144,7 @@ final class AuthService: ObservableObject {
         } catch {
             return LoginResponse(
                 success: false,
-                message: "Erreur lors du renvoi de l'email de vérification: \(error.localizedDescription)"
+                message: L10n.resendVerificationErrorWithDetail(error.localizedDescription)
             )
         }
     }
@@ -161,7 +161,7 @@ final class AuthService: ObservableObject {
             guard !data.isEmpty else {
                 return EmailVerificationResponse(
                     success: false,
-                    message: "Réponse API invalide: aucune donnée reçue."
+                    message: L10n.invalidApiResponseNoData
                 )
             }
 
@@ -169,7 +169,7 @@ final class AuthService: ObservableObject {
         } catch {
             return EmailVerificationResponse(
                 success: false,
-                message: "Erreur lors de la vérification: \(error.localizedDescription)"
+                message: L10n.emailVerificationErrorWithDetail(error.localizedDescription)
             )
         }
     }
@@ -186,7 +186,7 @@ final class AuthService: ObservableObject {
             guard !data.isEmpty else {
                 return PasswordResetResponse(
                     success: false,
-                    error: "Réponse API invalide: aucune donnée reçue."
+                    error: L10n.invalidApiResponseNoData
                 )
             }
 
@@ -194,7 +194,7 @@ final class AuthService: ObservableObject {
         } catch {
             return PasswordResetResponse(
                 success: false,
-                error: "Erreur lors de la demande de réinitialisation: \(error.localizedDescription)"
+                error: L10n.passwordResetRequestErrorWithDetail(error.localizedDescription)
             )
         }
     }
@@ -214,7 +214,7 @@ final class AuthService: ObservableObject {
             guard !data.isEmpty else {
                 return PasswordResetResponse(
                     success: false,
-                    error: "Réponse API invalide: aucune donnée reçue."
+                    error: L10n.invalidApiResponseNoData
                 )
             }
 
@@ -222,7 +222,7 @@ final class AuthService: ObservableObject {
         } catch {
             return PasswordResetResponse(
                 success: false,
-                error: "Erreur lors de la confirmation de réinitialisation: \(error.localizedDescription)"
+                error: L10n.passwordResetConfirmErrorWithDetail(error.localizedDescription)
             )
         }
     }

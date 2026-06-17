@@ -12,20 +12,20 @@ struct MainTabShell: View {
 
     var body: some View {
         TabView {
-            Tab("Matchs", systemImage: "sportscourt.fill") {
-                mainTabRoot(title: "Matchs") {
+            Tab(L10n.matches, systemImage: "sportscourt.fill") {
+                mainTabRoot(title: L10n.matches) {
                     Matchs()
                 }
             }
 
-            Tab("Équipe", systemImage: "person.3.fill") {
-                mainTabRoot(title: "Équipe") {
+            Tab(L10n.team, systemImage: "person.3.fill") {
+                mainTabRoot(title: L10n.team) {
                     Team()
                 }
             }
 
-            Tab("Profil", systemImage: "person.crop.circle.fill") {
-                mainTabRoot(title: "Profil") {
+            Tab(L10n.profile, systemImage: "person.crop.circle.fill") {
+                mainTabRoot(title: L10n.profile) {
                     Profile()
                 }
             }
@@ -34,11 +34,11 @@ struct MainTabShell: View {
         .sheet(isPresented: $viewModel.showsNotificationCenter) {
             NavigationStack {
                 NotificationsView()
-                    .navigationTitle("Notifications")
+                    .navigationTitle(L10n.notifications)
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
                         ToolbarItem(placement: .topBarTrailing) {
-                            Button("Fermer") {
+                            Button(L10n.close) {
                                 viewModel.closeNotifications()
                             }
                         }

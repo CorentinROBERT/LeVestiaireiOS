@@ -13,18 +13,18 @@ struct CreateMatchSheet: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                UCard(title: "Nouveau match", icon: "plus.circle.fill") {
-                    Text("Le formulaire de création de match sera disponible prochainement.")
+                UCard(title: L10n.createMatchTitle, icon: "plus.circle.fill") {
+                    Text(L10n.createMatchPlaceholder)
                         .font(.subheadline)
                         .foregroundStyle(AppPalette.Neutral.textSecondary)
                 }
                 .padding(20)
             }
-            .navigationTitle("Créer un match")
+            .navigationTitle(L10n.createMatch)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Fermer") {
+                    Button(L10n.close) {
                         dismiss()
                     }
                 }
@@ -36,4 +36,6 @@ struct CreateMatchSheet: View {
 
 #Preview {
     CreateMatchSheet()
+        .environmentObject(LocalizationManager.shared)
+        .environment(\.locale, LocalizationManager.shared.locale)
 }

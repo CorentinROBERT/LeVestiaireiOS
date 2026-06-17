@@ -59,13 +59,13 @@ struct MatchFiltersSheet: View {
 
     private var sheetHeader: some View {
         HStack(alignment: .center) {
-            Text("Filtrer les matchs")
+            Text(L10n.filterMatches)
                 .font(.headline)
                 .foregroundStyle(AppPalette.Neutral.textPrimary)
 
             Spacer()
 
-            Button("Fermer") {
+            Button(L10n.close) {
                 dismiss()
             }
             .font(.subheadline.weight(.semibold))
@@ -77,7 +77,7 @@ struct MatchFiltersSheet: View {
 
     private var statusSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Statut")
+            Text(L10n.filterStatusLabel)
                 .font(.headline)
                 .foregroundStyle(AppPalette.Neutral.textPrimary)
 
@@ -105,19 +105,19 @@ struct MatchFiltersSheet: View {
 
     private var periodSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Période")
+            Text(L10n.period)
                 .font(.headline)
                 .foregroundStyle(AppPalette.Neutral.textPrimary)
 
             HStack(spacing: 12) {
                 dateField(
-                    title: "Du",
+                    title: L10n.from,
                     date: draftFilters.fromDate,
                     binding: $draftFilters.fromDate
                 )
 
                 dateField(
-                    title: "Au",
+                    title: L10n.to,
                     date: draftFilters.toDate,
                     binding: $draftFilters.toDate
                 )
@@ -128,7 +128,7 @@ struct MatchFiltersSheet: View {
     private var actionButtons: some View {
         HStack(spacing: 12) {
             UButton(
-                text: "Réinitialiser",
+                text: L10n.reset,
                 textColor: AppPalette.Primary.main,
                 backgroundColor: AppPalette.Primary.soft,
                 cornerRadius: 12,
@@ -142,7 +142,7 @@ struct MatchFiltersSheet: View {
             )
 
             UButton(
-                text: "Appliquer",
+                text: L10n.apply,
                 textColor: AppPalette.Primary.onMain,
                 backgroundColor: AppPalette.Primary.main,
                 cornerRadius: 12,

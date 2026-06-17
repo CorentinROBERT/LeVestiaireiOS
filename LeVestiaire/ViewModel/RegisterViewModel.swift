@@ -41,6 +41,7 @@ final class RegisterViewModel: ObservableObject {
             authService: AuthService.shared,
             pendingCredentialsStore: PendingAuthCredentialsStore.shared
         )
+        selectedLanguage = LocalizationManager.shared.language
     }
 
     var canSubmit: Bool {
@@ -57,29 +58,29 @@ final class RegisterViewModel: ObservableObject {
         validationMessage = nil
 
         guard canSubmit else {
-            validationMessage = "Veuillez remplir tous les champs et accepter les documents légaux."
+            validationMessage = L10n.registerFormIncomplete
             return
         }
 
         let trimmedEmail = trimmedEmail
 
         guard trimmedEmail.isValidEmail else {
-            validationMessage = "L'adresse email n'est pas valide."
+            validationMessage = L10n.emailInvalid
             return
         }
 
         guard password == confirmPassword else {
-            validationMessage = "Les mots de passe ne correspondent pas."
+            validationMessage = L10n.passwordsDoNotMatch
             return
         }
 
         guard password.count >= 8 else {
-            validationMessage = "Le mot de passe doit contenir au moins 8 caractères."
+            validationMessage = L10n.passwordMin8Characters
             return
         }
 
         guard birthDate <= Date() else {
-            validationMessage = "La date de naissance n'est pas valide."
+            validationMessage = L10n.invalidBirthDate
             return
         }
 
@@ -98,12 +99,17 @@ final class RegisterViewModel: ObservableObject {
             )
 
             if response.success {
+                LocalizationManager.shared.setLanguage(selectedLanguage)
                 pendingCredentialsStore.save(email: trimmedEmail, password: password)
                 showEmailVerification = true
                 return
             }
 
-            validationMessage = response.message ?? response.error ?? "Inscription impossible."
+            validationMessage = L10n.apiErrorMessage(
+                message: response.message,
+                error: response.error,
+                fallback: L10n.registerFailed
+            )
         }
     }
 }

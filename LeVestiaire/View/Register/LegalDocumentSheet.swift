@@ -25,7 +25,7 @@ struct LegalDocumentSheet: View {
 
                 Group {
                     if viewModel.isLoading {
-                        ProgressView("Chargement du document…")
+                        ProgressView(L10n.loadingDocument)
                             .tint(AppPalette.Primary.main)
                     } else if let errorMessage = viewModel.errorMessage {
                         errorView(message: errorMessage)
@@ -42,7 +42,7 @@ struct LegalDocumentSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Fermer") {
+                    Button(L10n.close) {
                         dismiss()
                     }
                 }
@@ -65,7 +65,7 @@ struct LegalDocumentSheet: View {
                 .foregroundStyle(AppPalette.Neutral.textSecondary)
                 .multilineTextAlignment(.center)
 
-            Button("Réessayer") {
+            Button(L10n.retry) {
                 Task {
                     await viewModel.load()
                 }

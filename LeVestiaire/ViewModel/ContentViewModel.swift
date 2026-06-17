@@ -32,25 +32,25 @@ final class ContentViewModel: ObservableObject {
     var landingItems: [CarouselItem] {
         [
             .welcome(
-                appName: "Le Vestiaire",
-                tagline: "Ton vestiaire digital, partout avec toi"
+                appName: L10n.loginHeroTitle,
+                tagline: L10n.onboardingWelcomeTagline
             ),
             CarouselItem(
-                title: "Gestion d'équipe",
+                title: L10n.onboardingTeamTitle,
                 imageSource: "https://images.printkk.com/product/football-jersey-wjmqj-718.png",
-                subtitle: "Créez votre effectif, invitez vos joueurs et gardez leurs profils à jour",
+                subtitle: L10n.onboardingTeamSubtitle,
                 backgroundColor: .white
             ),
             CarouselItem(
-                title: "Planification",
+                title: L10n.onboardingPlanningTitle,
                 imageSource: "https://www.radiofrance.fr/pikapi/images/c96aa7d9-e271-49da-99a3-df8d31dece21/1200x680",
-                subtitle: "Planifier vos championnats, coupes et matchs facilement",
+                subtitle: L10n.onboardingPlanningSubtitle,
                 backgroundColor: .white
             ),
             CarouselItem(
-                title: "Datas et Statistiques",
+                title: L10n.onboardingStatsTitle,
                 imageSource: "https://static.onzemondial.com/8/2022/06/photo_article/784892/309937/1200-L-coupe-du-monde-2022-le-calendrier-complet-de-la-comptition.jpg",
-                subtitle: "Superviser les statistiques de vos équipes",
+                subtitle: L10n.onboardingStatsSubtitle,
                 backgroundColor: .white
             ),
         ]

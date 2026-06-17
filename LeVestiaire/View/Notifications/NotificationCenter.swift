@@ -15,11 +15,11 @@ struct NotificationsView: View {
                     .font(.system(size: 40))
                     .foregroundStyle(AppPalette.Primary.muted)
 
-                Text("Aucune notification")
+                Text(L10n.noNotifications)
                     .font(.headline)
                     .foregroundStyle(AppPalette.Neutral.textPrimary)
 
-                Text("Vos alertes matchs et équipe apparaîtront ici.")
+                Text(L10n.noNotificationsDescription)
                     .font(.subheadline)
                     .foregroundStyle(AppPalette.Neutral.textSecondary)
                     .multilineTextAlignment(.center)

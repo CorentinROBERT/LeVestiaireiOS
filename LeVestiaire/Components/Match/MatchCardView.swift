@@ -101,9 +101,9 @@ struct MatchCardView: View {
 
     private var opponentLabel: String {
         if let opponent = match.opponentTeam, !opponent.isEmpty {
-            return "vs \(opponent)"
+            return "\(L10n.vs) \(opponent)"
         }
-        return "Adversaire à définir"
+        return L10n.opponentToBeDefined
     }
 
     private func infoTile(

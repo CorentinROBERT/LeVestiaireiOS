@@ -20,27 +20,27 @@ struct ForgetPassword: View {
             AuthScreenBackground()
 
             ScrollView(showsIndicators: false) {
-                UCard(title: "Mot de passe oublié", icon: "lock.fill") {
+                UCard(title: L10n.forgotPassword, icon: "lock.fill") {
                     VStack(spacing: 18) {
                         UText(
-                            text: "Saisissez l'email associé à votre compte pour recevoir un lien de réinitialisation.",
+                            text: L10n.forgetPasswordDescription,
                             type: .description
                         )
                         .foregroundStyle(AppPalette.Neutral.textSecondary)
 
                         UTextField(
-                            label: "Email",
-                            placeholder: "Adresse email",
+                            label: L10n.email,
+                            placeholder: L10n.emailAddress,
                             icon: "envelope.fill",
                             text: $viewModel.email,
                             keyboardType: .emailAddress,
                             textContentType: .emailAddress,
                             errorMessage: viewModel.validationMessage,
-                            helperText: "Merci de renseigner l'email utilisé lors de votre inscription."
+                            helperText: L10n.forgetPasswordEmailHelper
                         )
 
                         UButton(
-                            text: viewModel.isLoading ? "Envoi en cours..." : "Confirmer",
+                            text: viewModel.isLoading ? L10n.sendingInProgress : L10n.confirm,
                             textColor: AppPalette.Primary.onMain,
                             backgroundColor: AppPalette.Primary.main,
                             cornerRadius: 30,
@@ -56,16 +56,16 @@ struct ForgetPassword: View {
             }
             .scrollDismissesKeyboard(.interactively)
         }
-        .navigationTitle("Mot de passe oublié")
+        .navigationTitle(L10n.forgotPassword)
         .navigationBarTitleDisplayMode(.inline)
         .alert(
-            "Email envoyé",
+            L10n.passwordResetEmailSentTitle,
             isPresented: Binding(
                 get: { viewModel.successMessage != nil },
                 set: { if !$0 { viewModel.successMessage = nil } }
             )
         ) {
-            Button("Continuer") {
+            Button(L10n.continueButton) {
                 viewModel.successMessage = nil
                 onNavigateToResetPassword()
             }

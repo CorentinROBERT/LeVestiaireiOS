@@ -12,14 +12,14 @@ struct MatchDetailView: View {
 
     var body: some View {
         ScrollView {
-            UCard(title: "Détail du match", icon: "sportscourt.fill") {
-                Text("Le détail du match \(matchId) sera disponible prochainement.")
+            UCard(title: L10n.matchDetailTitle, icon: "sportscourt.fill") {
+                Text(L10n.matchDetailPlaceholder)
                     .font(.subheadline)
                     .foregroundStyle(AppPalette.Neutral.textSecondary)
             }
             .padding(20)
         }
-        .navigationTitle("Match")
+        .navigationTitle(L10n.matchDetailTitle)
         .navigationBarTitleDisplayMode(.inline)
     }
 }
@@ -27,5 +27,7 @@ struct MatchDetailView: View {
 #Preview {
     NavigationStack {
         MatchDetailView(matchId: "preview-match")
+            .environmentObject(LocalizationManager.shared)
+            .environment(\.locale, LocalizationManager.shared.locale)
     }
 }

@@ -78,11 +78,11 @@ struct SportProfileData: Decodable, Equatable, Identifiable {
     }
 
     var createdAtFormatted: String {
-        Self.dateFormatter.string(from: createdAt)
+        Self.makeDateFormatter().string(from: createdAt)
     }
 
     var updatedAtFormatted: String {
-        Self.dateFormatter.string(from: updatedAt)
+        Self.makeDateFormatter().string(from: updatedAt)
     }
 
     var timeSinceCreation: String {
@@ -92,12 +92,12 @@ struct SportProfileData: Decodable, Equatable, Identifiable {
         let minutes = Int(difference / 60)
 
         if days > 0 {
-            return days == 1 ? "1 jour" : "\(days) jours"
+            return days == 1 ? L10n.oneDayAgo : L10n.daysAgo(days)
         }
         if hours > 0 {
-            return hours == 1 ? "1 heure" : "\(hours) heures"
+            return hours == 1 ? L10n.oneHourAgo : L10n.hoursAgo(hours)
         }
-        return minutes <= 1 ? "1 minute" : "\(minutes) minutes"
+        return minutes <= 1 ? L10n.oneMinuteAgo : L10n.minutesAgo(minutes)
     }
 
     func toSportProfile() -> SportProfile {
@@ -199,9 +199,11 @@ struct SportProfileData: Decodable, Equatable, Identifiable {
         case licenseNumber
     }
 
-    private static let dateFormatter: DateFormatter = {
+    private static func makeDateFormatter() -> DateFormatter {
         let formatter = DateFormatter()
-        formatter.dateFormat = "d/M/yyyy"
+        formatter.locale = LocalizationManager.shared.locale
+        formatter.dateStyle = .short
+        formatter.timeStyle = .none
         return formatter
-    }()
+    }
 }

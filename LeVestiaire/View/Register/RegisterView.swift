@@ -33,34 +33,37 @@ struct RegisterView: View {
             }
             .scrollDismissesKeyboard(.interactively)
         }
-        .navigationTitle("Créer un compte")
+        .navigationTitle(L10n.createAccount)
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(isPresented: $viewModel.showEmailVerification) {
             EmailVerificationView(email: viewModel.trimmedEmail)
         }
         .alert(
-            "Inscription",
+            L10n.register,
             isPresented: Binding(
                 get: { viewModel.validationMessage != nil },
                 set: { if !$0 { viewModel.validationMessage = nil } }
             )
         ) {
-            Button("OK", role: .cancel) {}
+            Button(L10n.ok, role: .cancel) {}
         } message: {
             Text(viewModel.validationMessage ?? "")
         }
         .sheet(item: $presentedLegalDocument) { document in
             LegalDocumentSheet(document: document, language: viewModel.selectedLanguage)
         }
+        .onChange(of: viewModel.selectedLanguage) { _, language in
+            LocalizationManager.shared.setLanguage(language)
+        }
     }
 
     private var header: some View {
         VStack(spacing: 8) {
-            UText(text: "Rejoignez Le Vestiaire", type: .title)
+            UText(text: L10n.registerHeroTitle, type: .title)
                 .foregroundColor(AppPalette.Primary.dark)
 
             UText(
-                text: "Créez votre compte pour gérer vos équipes",
+                text: L10n.registerHeroSubtitle,
                 type: .description
             )
             .foregroundColor(AppPalette.Neutral.textSecondary)
@@ -71,7 +74,7 @@ struct RegisterView: View {
     private var formCard: some View {
         VStack(spacing: 16) {
             UGlassTextField(
-                placeholder: "Nom",
+                placeholder: L10n.lastNameHint,
                 icon: "person.fill",
                 text: $viewModel.lastName,
                 style: .light,
@@ -80,7 +83,7 @@ struct RegisterView: View {
             )
 
             UGlassTextField(
-                placeholder: "Prénom",
+                placeholder: L10n.firstNameHint,
                 icon: "person.fill",
                 text: $viewModel.firstName,
                 style: .light,
@@ -89,7 +92,7 @@ struct RegisterView: View {
             )
 
             UGlassTextField(
-                placeholder: "Adresse email",
+                placeholder: L10n.emailAddress,
                 icon: "envelope.fill",
                 text: $viewModel.email,
                 style: .light,
@@ -98,7 +101,7 @@ struct RegisterView: View {
             )
 
             UGlassTextField(
-                placeholder: "Mot de passe",
+                placeholder: L10n.password,
                 icon: "lock.fill",
                 text: $viewModel.password,
                 style: .light,
@@ -108,7 +111,7 @@ struct RegisterView: View {
             )
 
             UGlassTextField(
-                placeholder: "Confirmer le mot de passe",
+                placeholder: L10n.confirmPassword,
                 icon: "lock.rotation",
                 text: $viewModel.confirmPassword,
                 style: .light,
@@ -119,12 +122,12 @@ struct RegisterView: View {
 
             UGlassFormRow(icon: "calendar") {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Date de naissance")
+                    Text(L10n.birthdate)
                         .font(.caption)
                         .foregroundStyle(AppPalette.Neutral.textSecondary)
 
                     DatePicker(
-                        "Date de naissance",
+                        L10n.birthdate,
                         selection: $viewModel.birthDate,
                         in: birthDateRange,
                         displayedComponents: .date
@@ -140,11 +143,11 @@ struct RegisterView: View {
 
             UGlassFormRow(icon: "globe") {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Langue")
+                    Text(L10n.languageLabel)
                         .font(.caption)
                         .foregroundStyle(AppPalette.Neutral.textSecondary)
 
-                    Picker("Langue", selection: $viewModel.selectedLanguage) {
+                    Picker(L10n.languageLabel, selection: $viewModel.selectedLanguage) {
                         ForEach(AppLanguage.allCases) { language in
                             Text(language.displayName).tag(language)
                         }
@@ -163,13 +166,13 @@ struct RegisterView: View {
     private var legalSection: some View {
         VStack(alignment: .leading, spacing: 14) {
             Toggle(isOn: $viewModel.hasAcceptedLegalTerms) {
-                Text("J'accepte les documents légaux suivants")
+                Text(L10n.acceptLegalDocuments)
                     .font(.subheadline)
                     .foregroundStyle(AppPalette.Neutral.textPrimary)
             }
             .tint(AppPalette.Primary.main)
 
-            Text("La switch confirme votre consentement. Consultez chaque document avant de valider.")
+            Text(L10n.legalConsentHint)
                 .font(.caption)
                 .foregroundStyle(AppPalette.Neutral.textTertiary)
 
@@ -201,7 +204,7 @@ struct RegisterView: View {
 
     private var submitButton: some View {
         UButton(
-            text: viewModel.isLoading ? "Création en cours..." : "Créer mon compte",
+            text: viewModel.isLoading ? L10n.registerCreatingAccount : L10n.createAccountButton,
             textColor: AppPalette.Primary.onMain,
             backgroundColor: AppPalette.Primary.main,
             cornerRadius: 25,

@@ -27,7 +27,7 @@ struct ULanding: View {
     }
 
     private var currentButtonTitle: String {
-        isLastPage ? "Découvrir" : "Suivant"
+        isLastPage ? L10n.discover : L10n.next
     }
 
     var body: some View {

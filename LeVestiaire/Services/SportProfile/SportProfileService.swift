@@ -29,7 +29,7 @@ final class SportProfileService {
         guard let accessToken = authService.authToken, !accessToken.isEmpty else {
             return SportProfileResponse(
                 success: false,
-                message: "Session requise. Veuillez vous reconnecter."
+                message: L10n.sessionRequired
             )
         }
 
@@ -46,7 +46,7 @@ final class SportProfileService {
         } catch {
             return SportProfileResponse(
                 success: false,
-                message: "Erreur lors de l'enregistrement du profil sportif: \(error.localizedDescription)"
+                message: L10n.saveSportProfileErrorWithDetail(error.localizedDescription)
             )
         }
     }
@@ -56,14 +56,14 @@ final class SportProfileService {
         guard let accessToken = authService.authToken, !accessToken.isEmpty else {
             return ProfilePictureResponse(
                 success: false,
-                message: "Session requise. Veuillez vous reconnecter."
+                message: L10n.sessionRequired
             )
         }
 
         guard let imageData = image.jpegData(compressionQuality: 0.85) else {
             return ProfilePictureResponse(
                 success: false,
-                message: "Impossible de préparer la photo de profil."
+                message: L10n.prepareProfilePhotoFailed
             )
         }
 
@@ -84,7 +84,7 @@ final class SportProfileService {
         } catch {
             return ProfilePictureResponse(
                 success: false,
-                message: "Erreur lors de l'upload de la photo: \(error.localizedDescription)"
+                message: L10n.uploadPhotoErrorWithDetail(error.localizedDescription)
             )
         }
     }
