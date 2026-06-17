@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Generate Localizable.xcstrings from Flutter-style ARB JSON files."""
+""" python3 Scripts/generate_strings_catalog.py """
 
 from __future__ import annotations
 
