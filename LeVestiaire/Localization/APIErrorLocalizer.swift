@@ -18,9 +18,11 @@ enum APIErrorLocalizer {
         guard looksLikeApiKey(trimmed) else { return trimmed }
 
         let key = normalizedKey(from: trimmed)
+        let manager = LocalizationManager.shared
         let translated = String(
             localized: String.LocalizationValue(stringLiteral: key),
-            locale: LocalizationManager.shared.locale
+            bundle: manager.bundle,
+            locale: manager.locale
         )
 
         guard translated != key else { return nil }

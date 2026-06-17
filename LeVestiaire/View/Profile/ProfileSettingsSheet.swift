@@ -12,12 +12,10 @@ struct ProfileSettingsSheet: View {
     @ObservedObject private var localizationManager = LocalizationManager.shared
     @ObservedObject private var biometricStore = BiometricAuthStore.shared
 
-    @State private var selectedLanguage: AppLanguage
     @State private var biometricToggleValue = false
     @State private var showsBiometricError = false
 
     init() {
-        _selectedLanguage = State(initialValue: LocalizationManager.shared.language)
         _biometricToggleValue = State(initialValue: BiometricAuthStore.shared.isEnabled)
     }
 
@@ -45,9 +43,7 @@ struct ProfileSettingsSheet: View {
                     }
                 }
             }
-        }
-        .onChange(of: selectedLanguage) { _, language in
-            localizationManager.setLanguage(language)
+            .environment(\.locale, localizationManager.locale)
         }
         .onChange(of: biometricToggleValue) { _, isOn in
             handleBiometricToggleChange(isOn)
@@ -79,7 +75,7 @@ struct ProfileSettingsSheet: View {
 
     private var languageCard: some View {
         UCard(title: L10n.appLanguage, icon: "globe") {
-            Picker(L10n.appLanguage, selection: $selectedLanguage) {
+            Picker(L10n.appLanguage, selection: languageBinding) {
                 ForEach(AppLanguage.allCases) { language in
                     Text(language.displayName).tag(language)
                 }
@@ -87,6 +83,13 @@ struct ProfileSettingsSheet: View {
             .pickerStyle(.menu)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+    }
+
+    private var languageBinding: Binding<AppLanguage> {
+        Binding(
+            get: { localizationManager.language },
+            set: { localizationManager.setLanguage($0) }
+        )
     }
 
     private var biometricCard: some View {

@@ -21,6 +21,10 @@ final class LocalizationManager: ObservableObject {
         language.locale
     }
 
+    var bundle: Bundle {
+        Bundle.appLanguageBundle(for: language.rawValue)
+    }
+
     init(userDefaults: UserDefaults = .standard) {
         if let rawValue = userDefaults.string(forKey: Self.storageKey),
            let savedLanguage = AppLanguage(rawValue: rawValue) {

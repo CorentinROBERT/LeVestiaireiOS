@@ -14,6 +14,7 @@ struct LeVestiaireApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .id(localizationManager.language.rawValue)
                 .environmentObject(AuthService.shared)
                 .environmentObject(localizationManager)
                 .environment(\.locale, localizationManager.locale)

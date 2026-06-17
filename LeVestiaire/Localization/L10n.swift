@@ -8,12 +8,23 @@
 import Foundation
 
 enum L10n {
+    private static var localization: LocalizationManager { LocalizationManager.shared }
+
     static func text(_ key: String.LocalizationValue) -> String {
-        String(localized: key)
+        String(
+            localized: key,
+            bundle: localization.bundle,
+            locale: localization.locale
+        )
     }
 
     static func format(_ key: String.LocalizationValue, _ arguments: CVarArg...) -> String {
-        String(format: String(localized: key), locale: LocalizationManager.shared.locale, arguments: arguments)
+        let template = String(
+            localized: key,
+            bundle: localization.bundle,
+            locale: localization.locale
+        )
+        return String(format: template, locale: localization.locale, arguments: arguments)
     }
 
     // MARK: - Navigation
