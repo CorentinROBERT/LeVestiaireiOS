@@ -1419,5 +1419,13 @@
   "oneHourAgo": "1 hour",
   "hoursAgo": "%lld hours",
   "oneMinuteAgo": "1 minute",
-  "minutesAgo": "%lld minutes"
+  "minutesAgo": "%lld minutes",
+  "biometricLogin": "Biometric sign-in",
+  "biometricLoginDescription": "Use Face ID or Touch ID to unlock the app quickly",
+  "biometricUnavailable": "Biometrics are not available on this device",
+  "biometricEnableReason": "Confirm your identity to enable biometric sign-in",
+  "biometricAuthenticationFailed": "Biometric authentication failed",
+  "biometricNotEnrolled": "No fingerprint or face is enrolled on this device",
+  "biometricLockout": "Biometrics are locked. Try again later or use your passcode",
+  "biometricCancelled": "Biometric activation cancelled"
 }

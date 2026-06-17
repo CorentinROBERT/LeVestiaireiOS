@@ -25,6 +25,35 @@ final class SportProfileService {
     }
 
     @MainActor
+    func fetchProfile() async -> SportProfileResponse {
+        guard let accessToken = authService.authToken, !accessToken.isEmpty else {
+            return SportProfileResponse(
+                success: false,
+                message: L10n.sessionRequired
+            )
+        }
+
+        do {
+            let (data, httpResponse) = try await client.request(
+                path: APIEndpoints.sportProfile,
+                method: "GET",
+                headers: authorizationHeader(accessToken: accessToken)
+            )
+
+            if httpResponse.statusCode == 404 {
+                return SportProfileResponse(success: false)
+            }
+
+            return APIResponseDecoder.decodeSportProfileResponse(from: data)
+        } catch {
+            return SportProfileResponse(
+                success: false,
+                message: error.localizedDescription
+            )
+        }
+    }
+
+    @MainActor
     func saveProfile(_ request: SportProfileRequest) async -> SportProfileResponse {
         guard let accessToken = authService.authToken, !accessToken.isEmpty else {
             return SportProfileResponse(

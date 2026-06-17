@@ -24,10 +24,25 @@ final class SportProfileViewModel: ObservableObject {
     @Published var isLoading = false
     @Published private(set) var isUploadingPhoto = false
     @Published private(set) var uploadedProfileImageUrl: String?
+    @Published private(set) var isLoadingExistingProfile = false
+
+    let mode: SportProfileMode
+    var onProfileSaved: (() -> Void)?
 
     private let sportProfileService: SportProfileService
     private let referenceDataService: ReferenceDataService
     private let authService: AuthService
+
+    var isEditMode: Bool {
+        mode == .edit
+    }
+
+    var submitButtonTitle: String {
+        if isLoading {
+            return L10n.saving
+        }
+        return isEditMode ? L10n.save : L10n.finalizeMyProfile
+    }
 
     var canSubmit: Bool {
         !selectedTeam.isEmpty
@@ -47,10 +62,14 @@ final class SportProfileViewModel: ObservableObject {
     }
 
     init(
+        mode: SportProfileMode = .onboarding,
+        onProfileSaved: (() -> Void)? = nil,
         sportProfileService: SportProfileService,
         referenceDataService: ReferenceDataService,
         authService: AuthService
     ) {
+        self.mode = mode
+        self.onProfileSaved = onProfileSaved
         self.sportProfileService = sportProfileService
         self.referenceDataService = referenceDataService
         self.authService = authService
@@ -58,12 +77,29 @@ final class SportProfileViewModel: ObservableObject {
         reloadTeamsForSelectedLeague()
     }
 
-    convenience init() {
+    convenience init(
+        mode: SportProfileMode = .onboarding,
+        onProfileSaved: (() -> Void)? = nil
+    ) {
         self.init(
+            mode: mode,
+            onProfileSaved: onProfileSaved,
             sportProfileService: SportProfileService.shared,
             referenceDataService: ReferenceDataService.shared,
             authService: AuthService.shared
         )
+    }
+
+    func loadExistingProfileIfNeeded() async {
+        guard isEditMode, !isLoadingExistingProfile else { return }
+
+        isLoadingExistingProfile = true
+        defer { isLoadingExistingProfile = false }
+
+        let response = await sportProfileService.fetchProfile()
+        guard response.success, let profile = response.data else { return }
+
+        applyExistingProfile(profile)
     }
 
     func onLeagueChanged() {
@@ -117,7 +153,11 @@ final class SportProfileViewModel: ObservableObject {
                 return
             }
 
-            authService.markSportProfileCompleted()
+            if isEditMode {
+                onProfileSaved?()
+            } else {
+                authService.markSportProfileCompleted()
+            }
         }
     }
 
@@ -139,6 +179,44 @@ final class SportProfileViewModel: ObservableObject {
         profileImage = nil
         uploadedProfileImageUrl = nil
         validationMessage = L10n.apiMessage(response.message) ?? L10n.uploadProfilePhotoFailed
+    }
+
+    private func applyExistingProfile(_ profile: SportProfileData) {
+        if let leagueRaw = profile.favoriteLeague,
+           let league = FootballLeague(rawValue: leagueRaw) {
+            selectedLeague = league
+            reloadTeamsForSelectedLeague()
+        }
+
+        if let team = profile.favoriteTeam, !team.isEmpty {
+            selectedTeam = team
+        }
+
+        if let footRaw = profile.strongFoot,
+           let foot = StrongFoot(rawValue: footRaw) {
+            strongFoot = foot
+        }
+
+        if let jerseyNumber = profile.jerseyNumber {
+            jerseyNumberText = String(jerseyNumber)
+        }
+
+        if let experience = profile.experienceLevel,
+           let level = ExperienceLevel(rawValue: experience) {
+            experienceLevel = level
+        }
+
+        selectedPositions = Set(
+            (profile.favoritePositions ?? [])
+                .compactMap(PlayerPosition.init(rawValue:))
+        )
+
+        selectedWeekdays = Set(
+            (profile.availabilities ?? [])
+                .compactMap(Weekday.init(rawValue:))
+        )
+
+        uploadedProfileImageUrl = profile.profileImageUrl
     }
 
     private func reloadTeamsForSelectedLeague() {

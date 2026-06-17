@@ -68,6 +68,38 @@ final class AuthService: ObservableObject {
         }
 
         await refreshSportProfileRequirement()
+        await fetchCurrentUser()
+    }
+
+    @MainActor
+    @discardableResult
+    func fetchCurrentUser() async -> User? {
+        guard let accessToken = authToken, !accessToken.isEmpty else {
+            return nil
+        }
+
+        do {
+            let (data, response) = try await client.request(
+                path: APIEndpoints.me,
+                method: "GET",
+                headers: ["Authorization": "Bearer \(accessToken)"]
+            )
+
+            guard (200...299).contains(response.statusCode) else {
+                return nil
+            }
+
+            let user = try APIResponseDecoder.decodeUser(from: data)
+            currentUser = user
+            return user
+        } catch {
+            return nil
+        }
+    }
+
+    @MainActor
+    func updateCurrentUser(_ user: User) {
+        currentUser = user
     }
 
     @MainActor

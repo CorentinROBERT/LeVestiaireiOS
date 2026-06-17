@@ -8,11 +8,17 @@
 import SwiftUI
 
 struct SportProfileView: View {
-    @StateObject private var viewModel = SportProfileViewModel()
+    @StateObject private var viewModel: SportProfileViewModel
     @FocusState private var focusedField: Int?
 
     private enum Field {
         static let jersey = 1
+    }
+
+    init(mode: SportProfileMode = .onboarding, onProfileSaved: (() -> Void)? = nil) {
+        _viewModel = StateObject(
+            wrappedValue: SportProfileViewModel(mode: mode, onProfileSaved: onProfileSaved)
+        )
     }
 
     var body: some View {
@@ -23,7 +29,9 @@ struct SportProfileView: View {
                 VStack(spacing: 24) {
                     header
                     formCard
-                    infoCard
+                    if !viewModel.isEditMode {
+                        infoCard
+                    }
                     submitButton
                 }
                 .padding(.horizontal, 24)
@@ -51,8 +59,11 @@ struct SportProfileView: View {
                 .padding(.horizontal, 16)
             }
         }
-        .navigationTitle(L10n.sportProfileTitle)
+        .navigationTitle(viewModel.isEditMode ? L10n.editSportifProfile : L10n.sportProfileTitle)
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            await viewModel.loadExistingProfileIfNeeded()
+        }
         .alert(
             L10n.sportProfileTitle,
             isPresented: Binding(
@@ -68,15 +79,20 @@ struct SportProfileView: View {
 
     private var header: some View {
         VStack(spacing: 8) {
-            UText(text: L10n.completeYourProfile, type: .title)
-                .foregroundColor(AppPalette.Primary.dark)
-
             UText(
-                text: L10n.sportProfileSubtitle,
-                type: .description
+                text: viewModel.isEditMode ? L10n.editSportifProfile : L10n.completeYourProfile,
+                type: .title
             )
-            .foregroundColor(AppPalette.Neutral.textSecondary)
-            .multilineTextAlignment(.center)
+            .foregroundColor(AppPalette.Primary.dark)
+
+            if !viewModel.isEditMode {
+                UText(
+                    text: L10n.sportProfileSubtitle,
+                    type: .description
+                )
+                .foregroundColor(AppPalette.Neutral.textSecondary)
+                .multilineTextAlignment(.center)
+            }
         }
     }
 
@@ -84,6 +100,7 @@ struct SportProfileView: View {
         VStack(spacing: 20) {
             ProfilePhotoPicker(
                 selectedImage: $viewModel.profileImage,
+                remoteImageURL: viewModel.uploadedProfileImageUrl,
                 isUploading: viewModel.isUploadingPhoto
             )
             .onChange(of: viewModel.profileImage) { _, newImage in
@@ -223,7 +240,7 @@ struct SportProfileView: View {
 
     private var submitButton: some View {
         UButton(
-            text: viewModel.isLoading ? L10n.saving : L10n.finalizeMyProfile,
+            text: viewModel.submitButtonTitle,
             textColor: AppPalette.Primary.onMain,
             backgroundColor: AppPalette.Primary.main,
             cornerRadius: 25,

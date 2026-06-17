@@ -1420,5 +1420,13 @@
   "oneHourAgo": "1 heure",
   "hoursAgo": "%lld heures",
   "oneMinuteAgo": "1 minute",
-  "minutesAgo": "%lld minutes"
+  "minutesAgo": "%lld minutes",
+  "biometricLogin": "Connexion biométrique",
+  "biometricLoginDescription": "Utilisez Face ID ou Touch ID pour accéder rapidement à l'application",
+  "biometricUnavailable": "La biométrie n'est pas disponible sur cet appareil",
+  "biometricEnableReason": "Confirmez votre identité pour activer la connexion biométrique",
+  "biometricAuthenticationFailed": "L'authentification biométrique a échoué",
+  "biometricNotEnrolled": "Aucune empreinte ou visage n'est enregistré sur cet appareil",
+  "biometricLockout": "La biométrie est verrouillée. Réessayez plus tard ou utilisez votre code",
+  "biometricCancelled": "Activation de la biométrie annulée"
 }

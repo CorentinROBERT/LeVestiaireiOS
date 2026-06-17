@@ -11,6 +11,8 @@ import UIKit
 
 struct ProfilePhotoPicker: View {
     @Binding var selectedImage: UIImage?
+    var remoteImageURL: String?
+    var initials: String?
     var isUploading = false
 
     @State private var showSourceDialog = false
@@ -27,15 +29,19 @@ struct ProfilePhotoPicker: View {
                         .scaledToFill()
                         .frame(width: 120, height: 120)
                         .clipShape(Circle())
+                } else if let remoteImageURL,
+                          let url = URL(string: remoteImageURL) {
+                    CachedRemoteImage(url: url) { image in
+                        image
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 120, height: 120)
+                            .clipShape(Circle())
+                    } placeholder: {
+                        avatarPlaceholder
+                    }
                 } else {
-                    Circle()
-                        .fill(AppPalette.Primary.soft)
-                        .frame(width: 120, height: 120)
-                        .overlay {
-                            Image(systemName: "person.fill")
-                                .font(.system(size: 44))
-                                .foregroundStyle(AppPalette.Primary.muted)
-                        }
+                    avatarPlaceholder
                 }
 
                 Circle()
@@ -95,6 +101,24 @@ struct ProfilePhotoPicker: View {
             CameraImagePicker(image: $selectedImage)
                 .ignoresSafeArea()
         }
+    }
+
+    @ViewBuilder
+    private var avatarPlaceholder: some View {
+        Circle()
+            .fill(AppPalette.Primary.soft)
+            .frame(width: 120, height: 120)
+            .overlay {
+                if let initials, !initials.isEmpty {
+                    Text(initials)
+                        .font(.system(size: 40, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppPalette.Primary.main)
+                } else {
+                    Image(systemName: "person.fill")
+                        .font(.system(size: 44))
+                        .foregroundStyle(AppPalette.Primary.muted)
+                }
+            }
     }
 }
 

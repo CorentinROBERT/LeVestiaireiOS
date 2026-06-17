@@ -113,7 +113,6 @@
       }
     },
     "accountDeletionCancelled" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -130,7 +129,6 @@
       }
     },
     "accountDeletionInProgress" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -147,7 +145,6 @@
       }
     },
     "accountDeletionScheduled" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1008,7 +1005,6 @@
       }
     },
     "appLanguage" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1194,7 +1190,6 @@
       }
     },
     "assists" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1663,6 +1658,134 @@
         }
       }
     },
+    "biometricAuthenticationFailed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Biometric authentication failed"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'authentification biométrique a échoué"
+          }
+        }
+      }
+    },
+    "biometricCancelled" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Biometric activation cancelled"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activation de la biométrie annulée"
+          }
+        }
+      }
+    },
+    "biometricEnableReason" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirm your identity to enable biometric sign-in"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmez votre identité pour activer la connexion biométrique"
+          }
+        }
+      }
+    },
+    "biometricLockout" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Biometrics are locked. Try again later or use your passcode"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La biométrie est verrouillée. Réessayez plus tard ou utilisez votre code"
+          }
+        }
+      }
+    },
+    "biometricLogin" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Biometric sign-in"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connexion biométrique"
+          }
+        }
+      }
+    },
+    "biometricLoginDescription" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use Face ID or Touch ID to unlock the app quickly"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilisez Face ID ou Touch ID pour accéder rapidement à l'application"
+          }
+        }
+      }
+    },
+    "biometricNotEnrolled" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No fingerprint or face is enrolled on this device"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune empreinte ou visage n'est enregistré sur cet appareil"
+          }
+        }
+      }
+    },
+    "biometricUnavailable" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Biometrics are not available on this device"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La biométrie n'est pas disponible sur cet appareil"
+          }
+        }
+      }
+    },
     "birthdate" : {
       "localizations" : {
         "en" : {
@@ -1845,7 +1968,6 @@
       }
     },
     "cancelDeletion" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1862,7 +1984,6 @@
       }
     },
     "cancelDeletionError" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3058,7 +3179,6 @@
       }
     },
     "confirmLogout" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4198,7 +4318,6 @@
       }
     },
     "deleteAccount" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4215,7 +4334,6 @@
       }
     },
     "deleteAccountConfirmMessage" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4232,7 +4350,6 @@
       }
     },
     "deleteAccountConfirmTitle" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4249,7 +4366,6 @@
       }
     },
     "deleteAccountError" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4266,7 +4382,6 @@
       }
     },
     "deleteAccountSuccess" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4988,7 +5103,6 @@
       }
     },
     "editSportifProfile" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -9942,7 +10056,6 @@
       }
     },
     "goals" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -11546,7 +11659,6 @@
       }
     },
     "jerseyNumber" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -11870,13 +11982,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Last Name *"
+            "value" : "Last Name"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nom *"
+            "value" : "Nom"
           }
         }
       }
@@ -13117,7 +13229,6 @@
       }
     },
     "matchesPlayed" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -14017,7 +14128,6 @@
       }
     },
     "minutesPlayed" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -14627,7 +14737,6 @@
       }
     },
     "none" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -14744,7 +14853,6 @@
       }
     },
     "noStatisticsAvailable" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -15720,7 +15828,6 @@
       }
     },
     "ownGoals" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -18194,7 +18301,6 @@
       }
     },
     "redCards" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -18920,7 +19026,6 @@
       }
     },
     "save" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -18954,7 +19059,6 @@
       }
     },
     "saves" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19254,7 +19358,6 @@
       }
     },
     "season" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19288,7 +19391,6 @@
       }
     },
     "seasonStats" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19792,7 +19894,6 @@
       }
     },
     "settings" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19962,7 +20063,6 @@
       }
     },
     "shotsOnTarget" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -20230,7 +20330,6 @@
       }
     },
     "statistics" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -20653,7 +20752,6 @@
       }
     },
     "substitutionsIn" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -20670,7 +20768,6 @@
       }
     },
     "substitutionsOut" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -23053,7 +23150,6 @@
       }
     },
     "userStatsSubtitle" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -23686,7 +23782,6 @@
       }
     },
     "yellowCards" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

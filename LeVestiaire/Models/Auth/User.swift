@@ -63,6 +63,16 @@ struct User: Decodable, Equatable, Identifiable {
         "\(firstName) \(lastName)".trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    var initials: String {
+        let firstInitial = firstName.trimmingCharacters(in: .whitespacesAndNewlines).first
+        let lastInitial = lastName.trimmingCharacters(in: .whitespacesAndNewlines).first
+        let value = [firstInitial, lastInitial]
+            .compactMap { $0.map(String.init) }
+            .joined()
+            .uppercased()
+        return value.isEmpty ? "?" : value
+    }
+
     func age(referenceDate: Date = Date()) -> Int {
         guard let birthDate else { return 0 }
 
@@ -191,6 +201,9 @@ struct User: Decodable, Equatable, Identifiable {
         firstName = try container.decodeIfPresent(String.self, forKey: .firstName) ?? ""
         lastName = try container.decodeIfPresent(String.self, forKey: .lastName) ?? ""
         avatar = try container.decodeIfPresent(String.self, forKey: .avatar)
+            ?? container.decodeIfPresent(String.self, forKey: .avatarUrl)
+            ?? container.decodeIfPresent(String.self, forKey: .profileImageUrl)
+            ?? container.decodeIfPresent(String.self, forKey: .profilePicture)
         isActive = try container.decodeIfPresent(Bool.self, forKey: .isActive) ?? false
         isDeleted = try container.decodeIfPresent(Bool.self, forKey: .isDeleted) ?? false
         emailVerified = try container.decodeIfPresent(Bool.self, forKey: .emailVerified) ?? false
@@ -218,6 +231,9 @@ struct User: Decodable, Equatable, Identifiable {
         case firstName
         case lastName
         case avatar
+        case avatarUrl
+        case profileImageUrl
+        case profilePicture
         case isActive
         case isDeleted
         case emailVerified

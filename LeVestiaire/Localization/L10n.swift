@@ -250,6 +250,52 @@ enum L10n {
     // MARK: - Profile / Team tabs
 
     static var profileSettingsDescription: String { text("profileSettingsDescription") }
+    static var settings: String { text("settings") }
+    static var appLanguage: String { text("appLanguage") }
+    static var editSportifProfile: String { text("editSportifProfile") }
+    static var statistics: String { text("statistics") }
+    static var seasonStats: String { text("seasonStats") }
+    static var userStatsSubtitle: String { text("userStatsSubtitle") }
+    static var noStatisticsAvailable: String { text("noStatisticsAvailable") }
+    static var season: String { text("season") }
+    static var jerseyNumber: String { text("jerseyNumber") }
+    static var save: String { text("save") }
+    static var none: String { text("none") }
+    static var confirmLogout: String { text("confirmLogout") }
+    static var deleteAccount: String { text("deleteAccount") }
+    static var deleteAccountConfirmTitle: String { text("deleteAccountConfirmTitle") }
+    static var deleteAccountConfirmMessage: String { text("deleteAccountConfirmMessage") }
+    static var deleteAccountSuccess: String { text("deleteAccountSuccess") }
+    static var deleteAccountError: String { text("deleteAccountError") }
+    static var accountDeletionInProgress: String { text("accountDeletionInProgress") }
+    static var cancelDeletion: String { text("cancelDeletion") }
+    static var accountDeletionCancelled: String { text("accountDeletionCancelled") }
+    static var cancelDeletionError: String { text("cancelDeletionError") }
+    static var biometricLogin: String { text("biometricLogin") }
+    static var biometricLoginDescription: String { text("biometricLoginDescription") }
+    static var biometricUnavailable: String { text("biometricUnavailable") }
+    static var biometricEnableReason: String { text("biometricEnableReason") }
+    static var biometricAuthenticationFailed: String { text("biometricAuthenticationFailed") }
+    static var biometricNotEnrolled: String { text("biometricNotEnrolled") }
+    static var biometricLockout: String { text("biometricLockout") }
+    static var biometricCancelled: String { text("biometricCancelled") }
+
+    static func accountDeletionScheduled(_ days: Int) -> String {
+        format("accountDeletionScheduled", days)
+    }
+
+    static var matchesPlayed: String { text("matchesPlayed") }
+    static var minutesPlayed: String { text("minutesPlayed") }
+    static var goals: String { text("goals") }
+    static var assists: String { text("assists") }
+    static var ownGoals: String { text("ownGoals") }
+    static var yellowCards: String { text("yellowCards") }
+    static var redCards: String { text("redCards") }
+    static var shotsOnTarget: String { text("shotsOnTarget") }
+    static var saves: String { text("saves") }
+    static var substitutionsIn: String { text("substitutionsIn") }
+    static var substitutionsOut: String { text("substitutionsOut") }
+
     static var logout: String { text("logout") }
     static var logoutInProgress: String { text("logoutInProgress") }
     static var signOutButton: String { text("signOutButton") }

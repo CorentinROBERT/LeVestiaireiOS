@@ -18,6 +18,48 @@ enum APIResponseDecoder {
         let message: String?
     }
 
+    static func decodeMeResponse(from data: Data) throws -> MeResponse {
+        let decoder = JSONDecoder()
+
+        if let response = try? decoder.decode(MeResponse.self, from: data),
+           response.user != nil || response.data != nil {
+            return response
+        }
+
+        throw DecodingError.dataCorrupted(
+            DecodingError.Context(
+                codingPath: [],
+                debugDescription: L10n.decodeApiResponseFailed("MeResponse")
+            )
+        )
+    }
+
+    static func decodeUser(from data: Data) throws -> User {
+        if let meResponse = try? decodeMeResponse(from: data),
+           let user = meResponse.user {
+            return user
+        }
+
+        if let envelope = try? JSONDecoder().decode(DataEnvelope<User>.self, from: data),
+           let user = envelope.data,
+           !user.id.isEmpty {
+            return user
+        }
+
+        let decoder = JSONDecoder()
+        if let user = try? decoder.decode(User.self, from: data),
+           !user.id.isEmpty {
+            return user
+        }
+
+        throw DecodingError.dataCorrupted(
+            DecodingError.Context(
+                codingPath: [],
+                debugDescription: L10n.decodeApiResponseFailed("User")
+            )
+        )
+    }
+
     static func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
         let decoder = JSONDecoder()
 
