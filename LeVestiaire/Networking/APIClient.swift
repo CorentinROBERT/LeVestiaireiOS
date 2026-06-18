@@ -131,8 +131,7 @@ final class APIClient {
         var (data, response) = try await performOnce(request)
 
         if retryOnUnauthorized,
-           response.statusCode == 401,
-           shouldAttemptTokenRefresh(for: request) {
+           shouldRetryWithTokenRefresh(response: response, data: data, request: request) {
             if let newAccessToken = await refreshAccessTokenViaInterceptor() {
                 var retryRequest = request
                 retryRequest.setValue("Bearer \(newAccessToken)", forHTTPHeaderField: "Authorization")
@@ -143,6 +142,50 @@ final class APIClient {
         }
 
         return (data, response)
+    }
+
+    private func shouldRetryWithTokenRefresh(
+        response: HTTPURLResponse,
+        data: Data,
+        request: URLRequest
+    ) -> Bool {
+        guard shouldAttemptTokenRefresh(for: request) else { return false }
+
+        switch response.statusCode {
+        case 401:
+            return true
+        case 403:
+            return isTokenAuthenticationFailure(data: data)
+        default:
+            return false
+        }
+    }
+
+    private func isTokenAuthenticationFailure(data: Data) -> Bool {
+        struct ErrorEnvelope: Decodable {
+            let error: String?
+            let message: String?
+        }
+
+        guard let envelope = try? JSONDecoder().decode(ErrorEnvelope.self, from: data) else {
+            return false
+        }
+
+        let text = [envelope.error, envelope.message]
+            .compactMap { $0?.lowercased() }
+            .joined(separator: " ")
+
+        guard !text.isEmpty else { return false }
+
+        if text.contains("error.auth") {
+            return true
+        }
+
+        let mentionsToken = ["token", "jwt", "bearer"].contains { text.contains($0) }
+        let mentionsFailure = ["invalid", "invalide", "expir", "unauthorized", "non autorisé"]
+            .contains { text.contains($0) }
+
+        return mentionsToken && mentionsFailure
     }
 
     private func performOnce(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {

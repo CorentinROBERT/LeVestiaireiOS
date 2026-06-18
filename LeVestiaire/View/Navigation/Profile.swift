@@ -286,7 +286,7 @@ struct Profile: View {
             UButton(
                 text: viewModel.isLoggingOut ? L10n.logoutInProgress : L10n.signOutButton,
                 textColor: AppPalette.Primary.onMain,
-                backgroundColor: AppPalette.Primary.dark,
+                backgroundColor: AppPalette.Primary.buttonStrong,
                 cornerRadius: 20,
                 isFullWidth: true,
                 trailingIcon: "rectangle.portrait.and.arrow.right",

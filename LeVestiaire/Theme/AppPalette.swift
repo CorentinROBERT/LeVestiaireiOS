@@ -42,6 +42,11 @@ enum AppPalette {
         )
         /// Texte sur bouton primaire
         static let onMain = Color.white
+        /// Fond bouton d'action forte (ex. déconnexion) — ne pas confondre avec `dark` (titres)
+        static let buttonStrong = adaptive(
+            light: rgb(0.10, 0.22, 0.48),
+            dark: rgb(0.40, 0.65, 0.98)
+        )
     }
 
     // MARK: - Neutres (blanc & gris bleuté)
