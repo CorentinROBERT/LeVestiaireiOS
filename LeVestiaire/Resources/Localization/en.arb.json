@@ -1187,7 +1187,7 @@
   "deleteAccountConfirmMessage": "This action is irreversible. All your data will be permanently deleted.",
   "deleteAccountSuccess": "Your deletion request has been sent",
   "deleteAccountError": "Error while requesting account deletion",
-  "accountDeletionScheduled": "Your account will be deleted in {days} days",
+  "accountDeletionScheduled": "Your account will be deleted in %lld days",
   "accountDeletionInProgress": "Account deletion in progress",
   "cancelDeletion": "Cancel deletion",
   "accountDeletionCancelled": "Your account deletion has been cancelled",
@@ -1316,7 +1316,7 @@
   "autoLoginFailedManual": "Automatic sign-in failed. Please sign in manually.",
   "verificationEmailResent": "A new verification email has been sent.",
   "verificationEmailResendFailed": "Unable to resend verification email.",
-  "resendEmailCooldown": "Resend email (%@s)",
+  "resendEmailCooldown": "Resend email (%llds)",
   "tipsTitle": "Tips",
   "forgetPasswordEmailHelper": "Please use the email from your registration.",
   "forgetPasswordDescription": "Enter the email associated with your account to receive a reset link.",
@@ -1384,7 +1384,7 @@
   "testUrlInProgress": "Testing...",
   "testUrlButton": "Test URL",
   "connectingToApi": "Connecting to API...",
-  "serverReachable": "Server reachable — HTTP %@ (%@ ms)",
+  "serverReachable": "Server reachable — HTTP %lld (%lld ms)",
   "apiEnvironmentDev": "Dev",
   "sessionRequired": "Session required. Please sign in again.",
   "invalidApiBaseUrl": "The API base URL is invalid.",
@@ -1427,5 +1427,8 @@
   "biometricAuthenticationFailed": "Biometric authentication failed",
   "biometricNotEnrolled": "No fingerprint or face is enrolled on this device",
   "biometricLockout": "Biometrics are locked. Try again later or use your passcode",
-  "biometricCancelled": "Biometric activation cancelled"
+  "biometricCancelled": "Biometric activation cancelled",
+  "biometricUnlockReason": "Unlock the app to continue",
+  "topConnection": "Top connection",
+  "otherCount": "Others"
 }

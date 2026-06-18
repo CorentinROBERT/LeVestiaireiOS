@@ -27,9 +27,11 @@ final class LoginViewModel: ObservableObject {
 
     private var developerTapCount = 0
     private var lastDeveloperTapDate: Date?
+    private var cancellables = Set<AnyCancellable>()
     private let authService: AuthService
     private let savedEmailStore: SavedLoginEmailStore
     private let pendingCredentialsStore: PendingAuthCredentialsStore
+    private let biometricStore: BiometricAuthStore
 
     var trimmedEmail: String {
         email.trimmed
@@ -38,20 +40,34 @@ final class LoginViewModel: ObservableObject {
     init(
         authService: AuthService,
         savedEmailStore: SavedLoginEmailStore,
-        pendingCredentialsStore: PendingAuthCredentialsStore
+        pendingCredentialsStore: PendingAuthCredentialsStore,
+        biometricStore: BiometricAuthStore
     ) {
         self.authService = authService
         self.savedEmailStore = savedEmailStore
         self.pendingCredentialsStore = pendingCredentialsStore
+        self.biometricStore = biometricStore
         self.email = savedEmailStore.load() ?? ""
+
+        authService.objectWillChange
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.objectWillChange.send()
+            }
+            .store(in: &cancellables)
     }
 
     convenience init() {
         self.init(
             authService: AuthService.shared,
             savedEmailStore: SavedLoginEmailStore.shared,
-            pendingCredentialsStore: PendingAuthCredentialsStore.shared
+            pendingCredentialsStore: PendingAuthCredentialsStore.shared,
+            biometricStore: BiometricAuthStore.shared
         )
+    }
+
+    var requiresPasswordReauthentication: Bool {
+        authService.requiresPasswordReauthentication
     }
 
     func registerDeveloperTap() {
@@ -112,6 +128,10 @@ final class LoginViewModel: ObservableObject {
             defer { isLoading = false }
             let response = await authService.login(email: trimmedEmail, password: password)
             if response.success && response.hasValidData {
+                guard authService.isAuthenticated else {
+                    validationMessage = biometricStore.lastErrorMessage ?? L10n.loginFailed
+                    return
+                }
                 return
             }
             if response.requiresVerification == true || response.isEmailVerified == false {

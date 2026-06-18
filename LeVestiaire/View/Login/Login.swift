@@ -124,7 +124,8 @@ struct Login: View {
                 text: $viewModel.email,
                 style: .light,
                 keyboardType: .emailAddress,
-                textContentType: .emailAddress,
+                textContentType: viewModel.requiresPasswordReauthentication ? nil : .emailAddress,
+                usesOneTimeCodeAutofill: viewModel.requiresPasswordReauthentication,
                 submitLabel: .next,
                 focusTag: 1,
                 focusedTag: $focusedField,
@@ -138,7 +139,8 @@ struct Login: View {
                 style: .light,
                 isSecure: true,
                 isPasswordVisible: $viewModel.isPasswordVisible,
-                textContentType: .password,
+                textContentType: viewModel.requiresPasswordReauthentication ? nil : .password,
+                usesOneTimeCodeAutofill: viewModel.requiresPasswordReauthentication,
                 submitLabel: .go,
                 onSubmit: viewModel.login,
                 focusTag: 2,
@@ -193,4 +195,5 @@ struct Login: View {
 
 #Preview {
     Login()
+        .environmentObject(AuthService.shared)
 }

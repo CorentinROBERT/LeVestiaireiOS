@@ -13,7 +13,9 @@ struct ContentView: View {
 
     var body: some View {
         Group {
-            if authService.isAuthenticated {
+            if !authService.isBootstrapComplete {
+                bootstrapView
+            } else if authService.isAuthenticated {
                 if authService.requiresSportProfileCompletion {
                     sportProfileRoot
                 } else {
@@ -23,9 +25,19 @@ struct ContentView: View {
                 unauthenticatedRoot
             }
         }
+        .animation(.easeInOut, value: authService.isBootstrapComplete)
         .animation(.easeInOut, value: authService.isAuthenticated)
         .animation(.easeInOut, value: authService.requiresSportProfileCompletion)
         .animation(.easeInOut, value: viewModel.currentScreen)
+    }
+
+    private var bootstrapView: some View {
+        ZStack {
+            AuthScreenBackground()
+                .ignoresSafeArea()
+            ProgressView()
+                .tint(AppPalette.Primary.main)
+        }
     }
 
     private var unauthenticatedRoot: some View {

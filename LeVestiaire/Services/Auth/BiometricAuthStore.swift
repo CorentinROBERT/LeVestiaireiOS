@@ -21,7 +21,8 @@ final class BiometricAuthStore: ObservableObject {
 
     private init(userDefaults: UserDefaults = .standard) {
         let storedValue = userDefaults.bool(forKey: Self.storageKey)
-        isEnabled = storedValue && Self.checkBiometricAvailability().isAvailable
+        let isAvailable = Self.checkBiometricAvailability().isAvailable
+        isEnabled = storedValue && isAvailable
     }
 
     var isAvailable: Bool {
@@ -50,13 +51,51 @@ final class BiometricAuthStore: ObservableObject {
     }
 
     @discardableResult
-    func enableWithVerification() async -> Bool {
+    func verifyForAccess() async -> Bool {
+        guard isEnabled else { return true }
+
+        let availability = Self.checkBiometricAvailability()
+        guard availability.isAvailable else {
+            lastErrorMessage = availability.errorMessage ?? L10n.biometricUnavailable
+            return false
+        }
+
+        lastErrorMessage = nil
+        isVerifying = true
+        defer { isVerifying = false }
+
+        let context = LAContext()
+        context.localizedCancelTitle = L10n.cancel
+
+        do {
+            try await evaluateBiometrics(
+                context: context,
+                reason: L10n.biometricUnlockReason
+            )
+            return true
+        } catch let error as LAError {
+            lastErrorMessage = localizedMessage(for: error)
+            return false
+        } catch {
+            lastErrorMessage = L10n.biometricAuthenticationFailed
+            return false
+        }
+    }
+
+    @discardableResult
+    func enableWithVerification(refreshToken: String?) async -> Bool {
         lastErrorMessage = nil
 
         let availability = Self.checkBiometricAvailability()
         guard availability.isAvailable else {
             persistEnabled(false)
             lastErrorMessage = availability.errorMessage ?? L10n.biometricUnavailable
+            return false
+        }
+
+        guard let refreshToken,
+              !refreshToken.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            lastErrorMessage = L10n.sessionRequired
             return false
         }
 

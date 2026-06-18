@@ -43,7 +43,8 @@ final class StatsService {
                 return response.seasons
             }
 
-            if let seasons = try? APIResponseDecoder.decode([String].self, from: data) {
+            if let seasons = try? APIResponseDecoder.decodePayload([String].self, from: data),
+               !seasons.isEmpty {
                 return seasons
             }
 
@@ -70,7 +71,7 @@ final class StatsService {
                 return nil
             }
 
-            return try APIResponseDecoder.decode(UserSeasonStats.self, from: data)
+            return try APIResponseDecoder.decodePayload(UserSeasonStats.self, from: data)
         } catch {
             return nil
         }

@@ -8,7 +8,11 @@
 import SwiftUI
 
 struct MainTabShell: View {
+    @EnvironmentObject private var authService: AuthService
     @StateObject private var viewModel = MainTabViewModel()
+
+    @AppStorage("accountDeletionBannerDismissedUserId")
+    private var dismissedBannerUserId = ""
 
     var body: some View {
         TabView {
@@ -31,6 +35,11 @@ struct MainTabShell: View {
             }
         }
         .tabBarMinimizeBehavior(.onScrollDown)
+        .onChange(of: authService.currentUser?.accountDeletion?.hasPendingDeletion) { _, hasPendingDeletion in
+            if hasPendingDeletion != true {
+                dismissedBannerUserId = ""
+            }
+        }
         .sheet(isPresented: $viewModel.showsNotificationCenter) {
             NavigationStack {
                 NotificationsView()
@@ -45,6 +54,15 @@ struct MainTabShell: View {
                     }
             }
         }
+    }
+
+    private var showsAccountDeletionBanner: Bool {
+        guard let user = authService.currentUser,
+              user.accountDeletion?.hasPendingDeletion == true else {
+            return false
+        }
+
+        return dismissedBannerUserId != user.id
     }
 
     private func mainTabRoot<Content: View>(
@@ -66,7 +84,15 @@ struct MainTabShell: View {
                     } label: {
                         Image(systemName: "bell.fill")
                     }
-                    .accessibilityLabel("Notifications")
+                    .accessibilityLabel(L10n.notifications)
+                }
+            }
+            .safeAreaInset(edge: .top, spacing: 0) {
+                if showsAccountDeletionBanner,
+                   let daysRemaining = authService.currentUser?.accountDeletion?.daysRemaining {
+                    AccountDeletionNavigationBanner(daysRemaining: daysRemaining) {
+                        dismissedBannerUserId = authService.currentUser?.id ?? ""
+                    }
                 }
             }
         }
@@ -75,4 +101,5 @@ struct MainTabShell: View {
 
 #Preview {
     MainTabShell()
+        .environmentObject(AuthService.shared)
 }

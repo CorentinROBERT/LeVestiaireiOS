@@ -29,10 +29,15 @@ final class APIClient {
 
     private let configuration: APIConfiguration
     private let session: URLSession
+    private weak var authInterceptor: APIAuthIntercepting?
 
     init(configuration: APIConfiguration, session: URLSession = .shared) {
         self.configuration = configuration
         self.session = session
+    }
+
+    func setAuthInterceptor(_ interceptor: APIAuthIntercepting?) {
+        authInterceptor = interceptor
     }
 
     func request(
@@ -41,7 +46,8 @@ final class APIClient {
         body: Data? = nil,
         timeout: TimeInterval = 30,
         headers: [String: String] = [:],
-        queryItems: [URLQueryItem] = []
+        queryItems: [URLQueryItem] = [],
+        retryOnUnauthorized: Bool = true
     ) async throws -> (Data, HTTPURLResponse) {
         let base = configuration.resolvedBaseURL.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !base.isEmpty, let baseURL = URL(string: base) else {
@@ -74,7 +80,7 @@ final class APIClient {
             request.setValue(value, forHTTPHeaderField: key)
         }
 
-        return try await perform(request)
+        return try await perform(request, retryOnUnauthorized: retryOnUnauthorized)
     }
 
     func uploadMultipart(
@@ -85,7 +91,8 @@ final class APIClient {
         mimeType: String,
         fileData: Data,
         timeout: TimeInterval = 60,
-        headers: [String: String] = [:]
+        headers: [String: String] = [:],
+        retryOnUnauthorized: Bool = true
     ) async throws -> (Data, HTTPURLResponse) {
         let boundary = "Boundary-\(UUID().uuidString)"
         let base = configuration.resolvedBaseURL.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -114,10 +121,31 @@ final class APIClient {
             request.setValue(value, forHTTPHeaderField: key)
         }
 
-        return try await perform(request)
+        return try await perform(request, retryOnUnauthorized: retryOnUnauthorized)
     }
 
-    func perform(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
+    func perform(
+        _ request: URLRequest,
+        retryOnUnauthorized: Bool = true
+    ) async throws -> (Data, HTTPURLResponse) {
+        var (data, response) = try await performOnce(request)
+
+        if retryOnUnauthorized,
+           response.statusCode == 401,
+           shouldAttemptTokenRefresh(for: request) {
+            if let newAccessToken = await refreshAccessTokenViaInterceptor() {
+                var retryRequest = request
+                retryRequest.setValue("Bearer \(newAccessToken)", forHTTPHeaderField: "Authorization")
+                (data, response) = try await performOnce(retryRequest)
+            } else {
+                await forceLogoutViaInterceptor()
+            }
+        }
+
+        return (data, response)
+    }
+
+    private func performOnce(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
         let start = Date()
         APILogger.logRequest(request)
 
@@ -144,6 +172,38 @@ final class APIClient {
             APILogger.logFailure(request: request, error: error, durationMs: durationMs)
             throw error
         }
+    }
+
+    private func shouldAttemptTokenRefresh(for request: URLRequest) -> Bool {
+        guard request.value(forHTTPHeaderField: "Authorization") != nil else {
+            return false
+        }
+
+        guard let path = request.url?.path.lowercased() else {
+            return false
+        }
+
+        let exemptPaths = [
+            "/api/v1/auth/refresh-token",
+            "/api/v1/auth/login",
+            "/api/v1/auth/register",
+            "/api/v1/auth/resend-verification",
+            "/api/v1/auth/check-verification",
+            "/api/v1/auth/request-password-reset",
+            "/api/v1/auth/confirm-password-reset",
+        ]
+
+        return !exemptPaths.contains(where: { path.hasSuffix($0) })
+    }
+
+    @MainActor
+    private func refreshAccessTokenViaInterceptor() async -> String? {
+        await authInterceptor?.refreshAccessToken()
+    }
+
+    @MainActor
+    private func forceLogoutViaInterceptor() async {
+        await authInterceptor?.forceLogout()
     }
 }
 

@@ -290,6 +290,7 @@ enum L10n {
     static var biometricNotEnrolled: String { text("biometricNotEnrolled") }
     static var biometricLockout: String { text("biometricLockout") }
     static var biometricCancelled: String { text("biometricCancelled") }
+    static var biometricUnlockReason: String { text("biometricUnlockReason") }
 
     static func accountDeletionScheduled(_ days: Int) -> String {
         format("accountDeletionScheduled", days)
@@ -306,6 +307,11 @@ enum L10n {
     static var saves: String { text("saves") }
     static var substitutionsIn: String { text("substitutionsIn") }
     static var substitutionsOut: String { text("substitutionsOut") }
+    static var injuries: String { text("injuries") }
+    static var shlag: String { text("shlag") }
+    static var manOfTheMatch: String { text("manOfTheMatch") }
+    static var otherCount: String { text("otherCount") }
+    static var topConnection: String { text("topConnection") }
 
     static var logout: String { text("logout") }
     static var logoutInProgress: String { text("logoutInProgress") }

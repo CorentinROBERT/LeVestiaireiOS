@@ -105,9 +105,9 @@ final class ProfileViewModel: ObservableObject {
         let seasons = await statsService.fetchAvailableSeasons()
         availableSeasons = seasons
 
-        if selectedSeason.isEmpty, let firstSeason = seasons.last ?? seasons.first {
-            selectedSeason = firstSeason
-        } else if !selectedSeason.isEmpty, !seasons.contains(selectedSeason), let fallback = seasons.last {
+        if selectedSeason.isEmpty {
+            selectedSeason = seasons.last ?? seasons.first ?? SeasonFormatter.currentSeason()
+        } else if !seasons.contains(selectedSeason), let fallback = seasons.last {
             selectedSeason = fallback
         }
 
@@ -235,5 +235,12 @@ final class ProfileViewModel: ObservableObject {
             userId: userId,
             season: selectedSeason
         )
+
+        if let season = seasonStats?.season,
+           !season.isEmpty,
+           !availableSeasons.contains(season) {
+            availableSeasons.append(season)
+            availableSeasons.sort()
+        }
     }
 }

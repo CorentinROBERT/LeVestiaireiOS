@@ -7,12 +7,13 @@
 
 import SwiftUI
 
-struct UCard<Content: View>: View {
+struct UCard<Content: View, TrailingHeader: View>: View {
     let title: String?
     let icon: String?
     let iconTint: Color
     let cornerRadius: CGFloat
     let padding: CGFloat
+    @ViewBuilder let trailingHeader: () -> TrailingHeader
     @ViewBuilder let content: () -> Content
 
     init(
@@ -21,6 +22,7 @@ struct UCard<Content: View>: View {
         iconTint: Color = AppPalette.Primary.main,
         cornerRadius: CGFloat = 20,
         padding: CGFloat = 20,
+        @ViewBuilder trailingHeader: @escaping () -> TrailingHeader,
         @ViewBuilder content: @escaping () -> Content
     ) {
         self.title = title
@@ -28,6 +30,24 @@ struct UCard<Content: View>: View {
         self.iconTint = iconTint
         self.cornerRadius = cornerRadius
         self.padding = padding
+        self.trailingHeader = trailingHeader
+        self.content = content
+    }
+
+    init(
+        title: String? = nil,
+        icon: String? = nil,
+        iconTint: Color = AppPalette.Primary.main,
+        cornerRadius: CGFloat = 20,
+        padding: CGFloat = 20,
+        @ViewBuilder content: @escaping () -> Content
+    ) where TrailingHeader == EmptyView {
+        self.title = title
+        self.icon = icon
+        self.iconTint = iconTint
+        self.cornerRadius = cornerRadius
+        self.padding = padding
+        self.trailingHeader = { EmptyView() }
         self.content = content
     }
 
@@ -43,6 +63,10 @@ struct UCard<Content: View>: View {
                     Text(title)
                         .font(.headline)
                         .foregroundStyle(AppPalette.Primary.dark)
+
+                    Spacer(minLength: 0)
+
+                    trailingHeader()
                 }
             }
 

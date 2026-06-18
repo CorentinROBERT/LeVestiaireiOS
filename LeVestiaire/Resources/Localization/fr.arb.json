@@ -1232,7 +1232,7 @@
   "deleteAccountConfirmMessage": "Cette action est irréversible. Toutes vos données seront définitivement supprimées.",
   "deleteAccountSuccess": "Votre demande de suppression a été envoyée",
   "deleteAccountError": "Erreur lors de la demande de suppression",
-  "accountDeletionScheduled": "Votre compte sera supprimé dans {days} jours",
+  "accountDeletionScheduled": "Votre compte sera supprimé dans %lld jours",
   "accountDeletionInProgress": "Suppression de compte en cours",
   "cancelDeletion": "Annuler la suppression",
   "accountDeletionCancelled": "La suppression de votre compte a été annulée",
@@ -1317,7 +1317,7 @@
   "autoLoginFailedManual": "Connexion automatique impossible. Veuillez vous connecter manuellement.",
   "verificationEmailResent": "Un nouvel email de vérification a été envoyé.",
   "verificationEmailResendFailed": "Impossible de renvoyer l'email de vérification.",
-  "resendEmailCooldown": "Renvoyer l'email (%@s)",
+  "resendEmailCooldown": "Renvoyer l'email (%llds)",
   "tipsTitle": "Conseils",
   "forgetPasswordEmailHelper": "Merci de renseigner l'email utilisé lors de votre inscription.",
   "forgetPasswordDescription": "Saisissez l'email associé à votre compte pour recevoir un lien de réinitialisation.",
@@ -1385,7 +1385,7 @@
   "testUrlInProgress": "Test en cours...",
   "testUrlButton": "Tester l'URL",
   "connectingToApi": "Connexion à l'API...",
-  "serverReachable": "Serveur joignable — HTTP %@ (%@ ms)",
+  "serverReachable": "Serveur joignable — HTTP %lld (%lld ms)",
   "apiEnvironmentDev": "Dev",
   "sessionRequired": "Session requise. Veuillez vous reconnecter.",
   "invalidApiBaseUrl": "L'URL de base de l'API est invalide.",
@@ -1428,5 +1428,8 @@
   "biometricAuthenticationFailed": "L'authentification biométrique a échoué",
   "biometricNotEnrolled": "Aucune empreinte ou visage n'est enregistré sur cet appareil",
   "biometricLockout": "La biométrie est verrouillée. Réessayez plus tard ou utilisez votre code",
-  "biometricCancelled": "Activation de la biométrie annulée"
+  "biometricCancelled": "Activation de la biométrie annulée",
+  "biometricUnlockReason": "Déverrouillez l'application pour continuer",
+  "topConnection": "Meilleure connexion",
+  "otherCount": "Autres"
 }

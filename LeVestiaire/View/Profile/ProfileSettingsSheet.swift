@@ -14,37 +14,43 @@ struct ProfileSettingsSheet: View {
 
     @State private var biometricToggleValue = false
     @State private var showsBiometricError = false
+    @State private var sheetHeight: CGFloat = 360
 
     init() {
         _biometricToggleValue = State(initialValue: BiometricAuthStore.shared.isEnabled)
     }
 
     var body: some View {
-        NavigationStack {
+        VStack(spacing: 0) {
+            sheetHeader
+
+            VStack(spacing: 20) {
+                languageCard
+                biometricCard
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 20)
+        }
+        .padding(.top, 8)
+        .background {
             ZStack {
                 AuthScreenBackground()
-                    .ignoresSafeArea()
 
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 20) {
-                        languageCard
-                        biometricCard
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 16)
+                GeometryReader { geometry in
+                    Color.clear.preference(
+                        key: SheetContentHeightPreferenceKey.self,
+                        value: geometry.size.height
+                    )
                 }
             }
-            .navigationTitle(L10n.settings)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(L10n.close) {
-                        dismiss()
-                    }
-                }
-            }
-            .environment(\.locale, localizationManager.locale)
         }
+        .environment(\.locale, localizationManager.locale)
+        .onPreferenceChange(SheetContentHeightPreferenceKey.self) { height in
+            guard height > 0 else { return }
+            sheetHeight = height
+        }
+        .presentationDetents([.height(sheetHeight)])
+        .presentationDragIndicator(.visible)
         .onChange(of: biometricToggleValue) { _, isOn in
             handleBiometricToggleChange(isOn)
         }
@@ -57,12 +63,37 @@ struct ProfileSettingsSheet: View {
         }
     }
 
+    private var sheetHeader: some View {
+        HStack(alignment: .center) {
+            Text(L10n.settings)
+                .font(.headline)
+                .foregroundStyle(AppPalette.Neutral.textPrimary)
+
+            Spacer()
+
+            Button(L10n.close) {
+                dismiss()
+            }
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(AppPalette.Primary.main)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .glassEffect(.regular, in: .rect(cornerRadius: 20))
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 28)
+        .padding(.bottom, 12)
+    }
+
     private func handleBiometricToggleChange(_ isOn: Bool) {
         if isOn {
             guard !biometricStore.isVerifying else { return }
 
             Task {
-                let success = await biometricStore.enableWithVerification()
+                let success = await biometricStore.enableWithVerification(
+                    refreshToken: AuthService.shared.refreshToken
+                )
                 if !success {
                     biometricToggleValue = false
                     showsBiometricError = true
@@ -121,6 +152,14 @@ struct ProfileSettingsSheet: View {
                     .foregroundStyle(AppPalette.Neutral.textSecondary)
             }
         }
+    }
+}
+
+private struct SheetContentHeightPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
     }
 }
 

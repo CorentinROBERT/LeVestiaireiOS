@@ -8,6 +8,11 @@
 import Combine
 import Foundation
 
+enum SessionGateFailure: Equatable {
+    case meFailed
+    case biometricFailed
+}
+
 final class AuthService: ObservableObject {
     static let shared = AuthService(
         client: APIClient.shared,
@@ -18,6 +23,8 @@ final class AuthService: ObservableObject {
 
     @Published private(set) var currentUser: User?
     @Published private(set) var isAuthenticated = false
+    @Published private(set) var isBootstrapComplete = false
+    @Published private(set) var requiresPasswordReauthentication = false
     @Published private(set) var requiresSportProfileCompletion = false
     @Published private(set) var authToken: String?
     @Published private(set) var tokenExpiry: Date?
@@ -27,6 +34,7 @@ final class AuthService: ObservableObject {
     private let pendingCredentialsStore: PendingAuthCredentialsStore
     private let sportProfileCompletionStore: SportProfileCompletionStore
     private var tokens: AuthTokens?
+    private var ongoingRefresh: Task<Bool, Never>?
 
     init(
         client: APIClient,
@@ -38,6 +46,7 @@ final class AuthService: ObservableObject {
         self.tokenStore = tokenStore
         self.pendingCredentialsStore = pendingCredentialsStore
         self.sportProfileCompletionStore = sportProfileCompletionStore
+        client.setAuthInterceptor(self)
     }
 
     var refreshToken: String? {
@@ -58,22 +67,26 @@ final class AuthService: ObservableObject {
 
     @MainActor
     func initialize() async {
-        loadStoredTokens()
-        guard isAuthenticated else { return }
-
-        let isSessionValid = await validateStoredSession()
-        if !isSessionValid {
-            await logout()
+        guard loadPendingTokens() else {
+            isBootstrapComplete = true
             return
         }
 
+        if await completeSessionGate() != nil {
+            requiresPasswordReauthentication = true
+            await logout()
+            isBootstrapComplete = true
+            return
+        }
+
+        requiresPasswordReauthentication = false
+        isBootstrapComplete = true
         await refreshSportProfileRequirement()
-        await fetchCurrentUser()
     }
 
     @MainActor
     @discardableResult
-    func fetchCurrentUser() async -> User? {
+    func fetchCurrentUser(retryOnUnauthorized: Bool = true) async -> User? {
         guard let accessToken = authToken, !accessToken.isEmpty else {
             return nil
         }
@@ -82,7 +95,8 @@ final class AuthService: ObservableObject {
             let (data, response) = try await client.request(
                 path: APIEndpoints.me,
                 method: "GET",
-                headers: ["Authorization": "Bearer \(accessToken)"]
+                headers: ["Authorization": "Bearer \(accessToken)"],
+                retryOnUnauthorized: retryOnUnauthorized
             )
 
             guard (200...299).contains(response.statusCode) else {
@@ -264,6 +278,7 @@ final class AuthService: ObservableObject {
         currentUser = nil
         isAuthenticated = false
         requiresSportProfileCompletion = false
+        requiresPasswordReauthentication = true
         authToken = nil
         tokenExpiry = nil
         tokens = nil
@@ -273,18 +288,64 @@ final class AuthService: ObservableObject {
     }
 
     @MainActor
-    private func loadStoredTokens() {
-        guard let storedTokens = tokenStore.loadTokens() else { return }
+    private func clearTransientSession() {
+        currentUser = nil
+        authToken = nil
+        tokens = nil
+        isAuthenticated = false
+    }
+
+    @MainActor
+    private func loadPendingTokens() -> Bool {
+        guard let storedTokens = tokenStore.loadTokens() else { return false }
 
         tokens = storedTokens
         authToken = storedTokens.accessToken
+        return true
+    }
+
+    @MainActor
+    @discardableResult
+    private func completeSessionGate() async -> SessionGateFailure? {
+        guard let accessToken = authToken, !accessToken.isEmpty,
+              let refreshToken = tokens?.refreshToken, !refreshToken.isEmpty else {
+            return .meFailed
+        }
+
+        guard await fetchCurrentUser(retryOnUnauthorized: false) != nil else {
+            return .meFailed
+        }
+
+        if BiometricAuthStore.shared.isEnabled {
+            let verified = await BiometricAuthStore.shared.verifyForAccess()
+            guard verified else {
+                return .biometricFailed
+            }
+        }
+
+        tokenStore.saveTokens(accessToken: accessToken, refreshToken: refreshToken)
         isAuthenticated = true
+        requiresPasswordReauthentication = false
+        return nil
     }
 
     @MainActor
     private func establishSession(from loginResponse: LoginResponse) async {
-        persistSessionIfNeeded(from: loginResponse)
-        guard isAuthenticated else { return }
+        guard loginResponse.success,
+              loginResponse.hasValidData,
+              let accessToken = loginResponse.accessToken,
+              let refreshToken = loginResponse.refreshToken else {
+            return
+        }
+
+        authToken = accessToken
+        tokens = AuthTokens(accessToken: accessToken, refreshToken: refreshToken)
+
+        guard await completeSessionGate() == nil else {
+            clearTransientSession()
+            return
+        }
+
         await refreshSportProfileRequirement()
     }
 
@@ -347,23 +408,67 @@ final class AuthService: ObservableObject {
         tokens = AuthTokens(accessToken: accessToken, refreshToken: refreshToken)
         authToken = accessToken
         isAuthenticated = true
+        requiresPasswordReauthentication = false
         currentUser = loginResponse.user
     }
 
-    private func validateStoredSession() async -> Bool {
-        guard let accessToken = authToken, !accessToken.isEmpty else {
+    @MainActor
+    @discardableResult
+    func refreshAccessTokenIfNeeded() async -> Bool {
+        if let ongoingRefresh {
+            return await ongoingRefresh.value
+        }
+
+        let task = Task { @MainActor [weak self] in
+            await self?.performRefresh() ?? false
+        }
+        ongoingRefresh = task
+        defer { ongoingRefresh = nil }
+        return await task.value
+    }
+
+    @MainActor
+    private func performRefresh() async -> Bool {
+        guard let refreshToken = tokens?.refreshToken, !refreshToken.isEmpty else {
             return false
         }
 
         do {
-            let (_, response) = try await client.request(
-                path: APIEndpoints.me,
-                method: "GET",
-                headers: ["Authorization": "Bearer \(accessToken)"]
+            let body = try JSONEncoder().encode(["refreshToken": refreshToken])
+            let (data, response) = try await client.request(
+                path: APIEndpoints.refresh,
+                method: "POST",
+                body: body,
+                retryOnUnauthorized: false
             )
-            return (200...299).contains(response.statusCode)
+
+            guard (200...299).contains(response.statusCode) else {
+                return false
+            }
+
+            let loginResponse = APIResponseDecoder.decodeLoginResponse(from: data)
+            guard loginResponse.success, loginResponse.hasValidData else {
+                return false
+            }
+
+            persistSessionIfNeeded(from: loginResponse)
+            return isAuthenticated
         } catch {
             return false
         }
+    }
+}
+
+extension AuthService: APIAuthIntercepting {
+    func refreshAccessToken() async -> String? {
+        let refreshed = await refreshAccessTokenIfNeeded()
+        guard refreshed, let accessToken = authToken, !accessToken.isEmpty else {
+            return nil
+        }
+        return accessToken
+    }
+
+    func forceLogout() async {
+        await logout()
     }
 }

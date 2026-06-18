@@ -22,7 +22,7 @@ enum APIResponseDecoder {
         let decoder = JSONDecoder()
 
         if let response = try? decoder.decode(MeResponse.self, from: data),
-           response.user != nil || response.data != nil {
+           response.user != nil {
             return response
         }
 
@@ -80,6 +80,27 @@ enum APIResponseDecoder {
         )
     }
 
+    /// Décode un objet contenu dans `data` (payload API), pas l'enveloppe complète.
+    static func decodePayload<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
+        let decoder = JSONDecoder()
+
+        if let envelope = try? decoder.decode(DataEnvelope<T>.self, from: data),
+           let nested = envelope.data {
+            return nested
+        }
+
+        if let value = try? decoder.decode(T.self, from: data) {
+            return value
+        }
+
+        throw DecodingError.dataCorrupted(
+            DecodingError.Context(
+                codingPath: [],
+                debugDescription: L10n.decodeApiResponseFailed(String(describing: type))
+            )
+        )
+    }
+
     static func decodeLoginResponse(from data: Data) -> LoginResponse {
         if let response = try? decode(LoginResponse.self, from: data) {
             return response
@@ -100,11 +121,19 @@ enum APIResponseDecoder {
     }
 
     static func decodeSportProfileResponse(from data: Data) -> SportProfileResponse {
-        if let response = try? decode(SportProfileResponse.self, from: data) {
+        let decoder = JSONDecoder()
+
+        if let response = try? decoder.decode(SportProfileResponse.self, from: data),
+           response.hasValidData || response.success {
             return response
         }
 
-        if let envelope = try? JSONDecoder().decode(MessageEnvelope.self, from: data) {
+        if let envelope = try? decoder.decode(DataEnvelope<SportProfileData>.self, from: data),
+           let profileData = envelope.data {
+            return SportProfileResponse(success: true, data: profileData)
+        }
+
+        if let envelope = try? decoder.decode(MessageEnvelope.self, from: data) {
             return SportProfileResponse(
                 success: envelope.success ?? false,
                 message: envelope.message,

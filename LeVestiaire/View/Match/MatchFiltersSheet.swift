@@ -69,6 +69,11 @@ struct MatchFiltersSheet: View {
                 dismiss()
             }
             .font(.subheadline.weight(.semibold))
+            .foregroundStyle(AppPalette.Primary.main)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .glassEffect(.regular, in: .rect(cornerRadius: 20))
+            .buttonStyle(.plain)
         }
         .padding(.horizontal, 20)
         .padding(.top, 28)

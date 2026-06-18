@@ -20,6 +20,11 @@ struct UserSeasonStats: Decodable, Equatable {
     let minutesPlayed: Int
     let substitutionsIn: Int
     let substitutionsOut: Int
+    let injuries: Int
+    let shlagCount: Int
+    let manOfTheMatchCount: Int
+    let otherCount: Int
+    let topConnection: String?
 
     var hasAnyValue: Bool {
         matchesPlayed > 0
@@ -33,6 +38,11 @@ struct UserSeasonStats: Decodable, Equatable {
             || minutesPlayed > 0
             || substitutionsIn > 0
             || substitutionsOut > 0
+            || injuries > 0
+            || shlagCount > 0
+            || manOfTheMatchCount > 0
+            || otherCount > 0
+            || !(topConnection?.isEmpty ?? true)
     }
 
     init(
@@ -47,7 +57,12 @@ struct UserSeasonStats: Decodable, Equatable {
         saves: Int = 0,
         minutesPlayed: Int = 0,
         substitutionsIn: Int = 0,
-        substitutionsOut: Int = 0
+        substitutionsOut: Int = 0,
+        injuries: Int = 0,
+        shlagCount: Int = 0,
+        manOfTheMatchCount: Int = 0,
+        otherCount: Int = 0,
+        topConnection: String? = nil
     ) {
         self.season = season
         self.matchesPlayed = matchesPlayed
@@ -61,6 +76,11 @@ struct UserSeasonStats: Decodable, Equatable {
         self.minutesPlayed = minutesPlayed
         self.substitutionsIn = substitutionsIn
         self.substitutionsOut = substitutionsOut
+        self.injuries = injuries
+        self.shlagCount = shlagCount
+        self.manOfTheMatchCount = manOfTheMatchCount
+        self.otherCount = otherCount
+        self.topConnection = topConnection
     }
 
     init(from decoder: Decoder) throws {
@@ -78,6 +98,11 @@ struct UserSeasonStats: Decodable, Equatable {
         minutesPlayed = Self.decodeInt(from: container, forKey: .minutesPlayed)
         substitutionsIn = Self.decodeInt(from: container, forKey: .substitutionsIn)
         substitutionsOut = Self.decodeInt(from: container, forKey: .substitutionsOut)
+        injuries = Self.decodeInt(from: container, forKey: .injuries)
+        shlagCount = Self.decodeInt(from: container, forKey: .shlagCount)
+        manOfTheMatchCount = Self.decodeInt(from: container, forKey: .manOfTheMatchCount)
+        otherCount = Self.decodeInt(from: container, forKey: .otherCount)
+        topConnection = Self.decodeTopConnection(from: container)
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -93,6 +118,36 @@ struct UserSeasonStats: Decodable, Equatable {
         case minutesPlayed
         case substitutionsIn
         case substitutionsOut
+        case injuries
+        case shlagCount
+        case manOfTheMatchCount
+        case otherCount
+        case topConnection
+    }
+
+    private struct TopConnectionUser: Decodable {
+        let firstName: String?
+        let lastName: String?
+    }
+
+    private static func decodeTopConnection(
+        from container: KeyedDecodingContainer<CodingKeys>
+    ) -> String? {
+        if let value = try? container.decodeIfPresent(String.self, forKey: .topConnection),
+           !value.isEmpty {
+            return value
+        }
+
+        if let user = try? container.decodeIfPresent(TopConnectionUser.self, forKey: .topConnection) {
+            let parts = [user.firstName, user.lastName]
+                .compactMap { $0 }
+                .filter { !$0.isEmpty }
+            if !parts.isEmpty {
+                return parts.joined(separator: " ")
+            }
+        }
+
+        return nil
     }
 
     private static func decodeInt<K: CodingKey>(
@@ -134,6 +189,18 @@ struct AvailableSeasonsData: Decodable, Equatable {
 }
 
 enum SeasonFormatter {
+    static func currentSeason(referenceDate: Date = Date()) -> String {
+        let calendar = Calendar.current
+        let year = calendar.component(.year, from: referenceDate)
+        let month = calendar.component(.month, from: referenceDate)
+
+        if month >= 8 {
+            return "\(year)-\(year + 1)"
+        }
+
+        return "\(year - 1)-\(year)"
+    }
+
     static func shortLabel(for season: String) -> String {
         let parts = season.split(separator: "-", omittingEmptySubsequences: false)
         guard parts.count == 2 else { return season }
