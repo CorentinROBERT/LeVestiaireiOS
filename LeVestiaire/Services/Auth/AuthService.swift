@@ -312,7 +312,7 @@ final class AuthService: ObservableObject {
             return .meFailed
         }
 
-        guard await fetchCurrentUser(retryOnUnauthorized: false) != nil else {
+        guard await fetchCurrentUser(retryOnUnauthorized: true) != nil else {
             return .meFailed
         }
 
@@ -404,12 +404,17 @@ final class AuthService: ObservableObject {
             return
         }
 
-        tokenStore.saveTokens(accessToken: accessToken, refreshToken: refreshToken)
-        tokens = AuthTokens(accessToken: accessToken, refreshToken: refreshToken)
-        authToken = accessToken
+        applyRefreshedTokens(accessToken: accessToken, refreshToken: refreshToken)
         isAuthenticated = true
         requiresPasswordReauthentication = false
         currentUser = loginResponse.user
+    }
+
+    @MainActor
+    private func applyRefreshedTokens(accessToken: String, refreshToken: String) {
+        tokens = AuthTokens(accessToken: accessToken, refreshToken: refreshToken)
+        authToken = accessToken
+        tokenStore.saveTokens(accessToken: accessToken, refreshToken: refreshToken)
     }
 
     @MainActor
@@ -447,12 +452,24 @@ final class AuthService: ObservableObject {
             }
 
             let loginResponse = APIResponseDecoder.decodeLoginResponse(from: data)
-            guard loginResponse.success, loginResponse.hasValidData else {
+            guard loginResponse.success, loginResponse.hasValidTokens,
+                  let accessToken = loginResponse.accessToken,
+                  !accessToken.isEmpty else {
                 return false
             }
 
-            persistSessionIfNeeded(from: loginResponse)
-            return isAuthenticated
+            let refreshToken = loginResponse.refreshToken ?? tokens?.refreshToken
+            guard let refreshToken, !refreshToken.isEmpty else {
+                return false
+            }
+
+            applyRefreshedTokens(accessToken: accessToken, refreshToken: refreshToken)
+
+            if let user = loginResponse.user {
+                currentUser = user
+            }
+
+            return true
         } catch {
             return false
         }

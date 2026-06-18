@@ -140,9 +140,11 @@ struct Matchs: View {
             .padding(.horizontal, ActionButtonMetrics.horizontalPadding)
             .padding(.vertical, ActionButtonMetrics.verticalPadding)
             .frame(maxWidth: .infinity, minHeight: ActionButtonMetrics.height, alignment: .leading)
+            .contentShape(.rect(cornerRadius: ActionButtonMetrics.cornerRadius))
             .glassEffect(.regular, in: .rect(cornerRadius: ActionButtonMetrics.cornerRadius))
         }
         .buttonStyle(.plain)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityLabel(L10n.createMatch)
     }
 

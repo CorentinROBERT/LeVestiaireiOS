@@ -17,7 +17,11 @@ struct LoginResponse: Decodable, Equatable {
     let requiresVerification: Bool?
 
     var hasValidData: Bool {
-        data?.user != nil && data?.token != nil
+        data?.user != nil && data?.hasToken == true
+    }
+
+    var hasValidTokens: Bool {
+        data?.hasToken == true
     }
 
     var user: User? {
@@ -90,5 +94,27 @@ struct LoginData: Decodable, Equatable {
     var hasRefreshToken: Bool {
         guard let refreshToken else { return false }
         return !refreshToken.isEmpty
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case user
+        case token
+        case accessToken
+        case refreshToken
+    }
+
+    init(user: User? = nil, token: String? = nil, refreshToken: String? = nil) {
+        self.user = user
+        self.token = token
+        self.refreshToken = refreshToken
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        user = try container.decodeIfPresent(User.self, forKey: .user)
+        token = try container.decodeIfPresent(String.self, forKey: .token)
+            ?? container.decodeIfPresent(String.self, forKey: .accessToken)
+        refreshToken = try container.decodeIfPresent(String.self, forKey: .refreshToken)
     }
 }
