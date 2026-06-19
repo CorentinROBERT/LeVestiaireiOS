@@ -10,11 +10,39 @@ import re
 import sys
 from pathlib import Path
 
-PLACEHOLDER_PATTERN = re.compile(r"\{[^}]+\}")
+PLACEHOLDER_PATTERN = re.compile(r"\{([^}]+)\}")
+
+# Placeholders that map to integer format specifiers in String(format:locale:arguments:).
+INTEGER_PLACEHOLDER_NAMES = frozenset({
+    "count",
+    "number",
+    "seconds",
+    "second",
+    "loaded",
+    "total",
+    "code",
+    "value",
+    "goals",
+    "assists",
+    "points",
+    "days",
+    "hours",
+    "minutes",
+    "duration",
+    "durationMs",
+    "statusCode",
+    "index",
+})
+
+
+def placeholder_to_spec(name: str) -> str:
+    if name in INTEGER_PLACEHOLDER_NAMES:
+        return "%lld"
+    return "%@"
 
 
 def convert_placeholders(value: str) -> str:
-    return PLACEHOLDER_PATTERN.sub("%@", value)
+    return PLACEHOLDER_PATTERN.sub(lambda match: placeholder_to_spec(match.group(1)), value)
 
 
 def load_arb(path: Path) -> dict[str, str]:

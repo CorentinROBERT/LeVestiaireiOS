@@ -38,7 +38,8 @@ enum APIEndpoints {
 
     static let teams = "/api/v1/teams"
     static let teamById = "/api/v1/teams/{id}"
-    static let userTeams = "/api/v1/teams/user"
+    static let teamsMe = "/api/v1/teams/me"
+    static let userTeams = teamsMe
 
     static func updateTeam(_ teamId: String) -> String {
         "/api/v1/teams/\(teamId)"

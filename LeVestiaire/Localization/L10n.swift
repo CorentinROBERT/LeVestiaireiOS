@@ -317,6 +317,19 @@ enum L10n {
     static var logoutInProgress: String { text("logoutInProgress") }
     static var signOutButton: String { text("signOutButton") }
     static var teamTabDescription: String { text("teamTabDescription") }
+    static var showAssignedPlayers: String { text("showAssignedPlayers") }
+
+    static func compositionAlternativesLabel(count: Int) -> String {
+        count == 1
+            ? text("compositionAlternativesLabelOne")
+            : format("compositionAlternativesLabelMany", count)
+    }
+
+    static var removePlayerFromPosition: String { text("removePlayerFromPosition") }
+    static var deleteAlternativeFormation: String { text("deleteAlternativeFormation") }
+    static var deleteComposition: String { text("deleteComposition") }
+    static var confirmDeletion: String { text("confirmDeletion") }
+    static var confirmDeletionMessage: String { text("confirmDeletionMessage") }
 
     // MARK: - Profile photo
 

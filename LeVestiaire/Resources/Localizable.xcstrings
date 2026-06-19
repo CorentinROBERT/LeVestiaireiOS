@@ -313,7 +313,6 @@
       }
     },
     "addGuest" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -329,8 +328,23 @@
         }
       }
     },
+    "addGuestActionSubtitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a player without an account"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajoutez un joueur sans compte"
+          }
+        }
+      }
+    },
     "addGuestDescription" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -449,7 +463,6 @@
       }
     },
     "admin" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -708,13 +721,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Alternative formation %@ must have exactly 7 starters (currently: %@)"
+            "value" : "Alternative formation %@ must have exactly 7 starters (currently: %lld)"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Formation alternative %@ doit avoir exactement 7 titulaires (actuellement: %@)"
+            "value" : "Formation alternative %@ doit avoir exactement 7 titulaires (actuellement: %lld)"
           }
         }
       }
@@ -737,7 +750,6 @@
       }
     },
     "alternativeFormations" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -759,13 +771,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ alternative formation%@"
+            "value" : "%lld alternative formation%@"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ formation%@ alternative%@"
+            "value" : "%lld formation%@ alternative%@"
           }
         }
       }
@@ -793,13 +805,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : " (%@ alternative%@ saved%@)"
+            "value" : " (%lld alternative%@ saved%@)"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : " (%@ alternative%@ sauvegardée%@)"
+            "value" : " (%lld alternative%@ sauvegardée%@)"
           }
         }
       }
@@ -827,13 +839,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Alternative: %@ with %@ players"
+            "value" : "Alternative: %@ with %lld players"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Alternative: %@ avec %@ joueurs"
+            "value" : "Alternative: %@ avec %lld joueurs"
           }
         }
       }
@@ -1139,7 +1151,6 @@
       }
     },
     "assistProvider" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1358,7 +1369,6 @@
       }
     },
     "aucuneCompositionCreee" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1375,7 +1385,6 @@
       }
     },
     "aucuneEquipeSelectionnee" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2016,7 +2025,6 @@
       }
     },
     "cancelInvitation" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2033,7 +2041,6 @@
       }
     },
     "cancelInvitationConfirm" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2517,7 +2524,6 @@
       }
     },
     "composition" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2533,8 +2539,39 @@
         }
       }
     },
+    "compositionAlternativesLabelMany" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld alternative formations"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld formations alternatives"
+          }
+        }
+      }
+    },
+    "compositionAlternativesLabelOne" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 alternative formation"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 formation alternative"
+          }
+        }
+      }
+    },
     "compositionCreatedSuccessfully" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2585,7 +2622,6 @@
       }
     },
     "compositionDeletedSuccessfully" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2619,7 +2655,6 @@
       }
     },
     "compositionMain" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2636,7 +2671,6 @@
       }
     },
     "compositionModifiedSuccessfully" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2670,18 +2704,17 @@
       }
     },
     "compositionMustHave7StartersCurrently" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A 7v7 football composition must have exactly 7 starters (currently: %@)"
+            "value" : "A 7v7 football composition must have exactly 7 starters (currently: %lld)"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Une composition de foot à 7 doit avoir exactement 7 titulaires (actuellement: %@)"
+            "value" : "Une composition de foot à 7 doit avoir exactement 7 titulaires (actuellement: %lld)"
           }
         }
       }
@@ -2704,7 +2737,6 @@
       }
     },
     "compositionNamePlaceholder" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2721,7 +2753,6 @@
       }
     },
     "compositionNameRequired" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2738,18 +2769,17 @@
       }
     },
     "compositionNumber" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Composition %@"
+            "value" : "Composition %lld"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Composition %@"
+            "value" : "Composition %lld"
           }
         }
       }
@@ -2772,7 +2802,6 @@
       }
     },
     "compositions" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2789,7 +2818,6 @@
       }
     },
     "compositionsDescription" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2806,7 +2834,6 @@
       }
     },
     "compositionStarters" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2823,7 +2850,6 @@
       }
     },
     "compositionSubstitutes" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2862,13 +2888,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ variant%@"
+            "value" : "%lld variant%@"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ variante%@"
+            "value" : "%lld variante%@"
           }
         }
       }
@@ -2990,6 +3016,22 @@
         }
       }
     },
+    "confirmDeleteComposition" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete composition \"%@\"?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer la composition « %@ » ?"
+          }
+        }
+      }
+    },
     "confirmDeleteConversation" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3059,7 +3101,6 @@
       }
     },
     "confirmDeletion" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3076,7 +3117,6 @@
       }
     },
     "confirmDeletionMessage" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3093,7 +3133,6 @@
       }
     },
     "confirmerQuitterEquipe" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3110,7 +3149,6 @@
       }
     },
     "confirmerSuppressionEquipe" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3294,6 +3332,22 @@
         }
       }
     },
+    "confirmRemovePlayer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove %@ from the team?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retirer %@ de l'équipe ?"
+          }
+        }
+      }
+    },
     "confirmStartMatch" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3451,13 +3505,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Conversion AlternativeFormation: %@ %@"
+            "value" : "Conversion AlternativeFormation: %lld %@"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Conversion AlternativeFormation: %@ %@"
+            "value" : "Conversion AlternativeFormation: %lld %@"
           }
         }
       }
@@ -3485,13 +3539,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to send crash report: %@"
+            "value" : "Failed to send crash report: %lld"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Échec de l'envoi du rapport de crash: %@"
+            "value" : "Échec de l'envoi du rapport de crash: %lld"
           }
         }
       }
@@ -3848,7 +3902,6 @@
       }
     },
     "creerComposition" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3865,7 +3918,6 @@
       }
     },
     "creerNouvelleEquipe" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3882,7 +3934,6 @@
       }
     },
     "creerUneEquipe" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4317,7 +4368,6 @@
       }
     },
     "delete" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4409,6 +4459,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Votre demande de suppression a été envoyée"
+          }
+        }
+      }
+    },
+    "deleteAlternativeFormation" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete alternative formation"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer la formation alternative"
+          }
+        }
+      }
+    },
+    "deleteAlternativeFormationConfirm" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to delete alternative formation \"%@\"?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Êtes-vous sûr de vouloir supprimer la formation alternative « %@ » ?"
+          }
+        }
+      }
+    },
+    "deleteComposition" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete composition"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer la composition"
           }
         }
       }
@@ -4565,7 +4663,6 @@
       }
     },
     "deleteTeam" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4923,13 +5020,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Displaying %@ alternatives"
+            "value" : "Displaying %lld alternatives"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Affichage de %@ alternatives"
+            "value" : "Affichage de %lld alternatives"
           }
         }
       }
@@ -4940,13 +5037,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Displaying %@ composition alternative formations"
+            "value" : "Displaying %lld composition alternative formations"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Affichage de %@ alternatives de Composition"
+            "value" : "Affichage de %lld alternatives de Composition"
           }
         }
       }
@@ -5051,7 +5148,6 @@
       }
     },
     "edit" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5381,6 +5477,70 @@
         }
       }
     },
+    "emptyPlayersMessage" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invite players or add guests to build your roster."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invitez des joueurs ou ajoutez des invités pour constituer votre effectif."
+          }
+        }
+      }
+    },
+    "emptyPlayersTitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No players on the team"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun joueur dans l'équipe"
+          }
+        }
+      }
+    },
+    "emptyRankingsTitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empty leaderboard"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Classement vide"
+          }
+        }
+      }
+    },
+    "emptyStatsTitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No statistics yet"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pas encore de statistiques"
+          }
+        }
+      }
+    },
     "english" : {
       "localizations" : {
         "en" : {
@@ -5430,7 +5590,6 @@
       }
     },
     "enterEmail" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5953,8 +6112,24 @@
         }
       }
     },
-    "errorCompositionValidation" : {
+    "errorcompositionlocked" : {
       "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This composition is locked and cannot be modified"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette composition est figée et ne peut pas être modifiée"
+          }
+        }
+      }
+    },
+    "errorCompositionValidation" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7093,7 +7268,6 @@
       }
     },
     "errorTeamCreation" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7110,7 +7284,6 @@
       }
     },
     "errorTeamDeletion" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7127,7 +7300,6 @@
       }
     },
     "errorTeamLoading" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7139,6 +7311,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Erreur lors du chargement des équipes"
+          }
+        }
+      }
+    },
+    "errorteammembernotfound" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Team member not found"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Membre de l'équipe introuvable"
           }
         }
       }
@@ -7178,7 +7367,6 @@
       }
     },
     "errorTeamUpdate" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -8196,13 +8384,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ expired invitations removed"
+            "value" : "%lld expired invitations removed"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ invitations expirées supprimées"
+            "value" : "%lld invitations expirées supprimées"
           }
         }
       }
@@ -8588,7 +8776,6 @@
       }
     },
     "firstNameRequired" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -9328,7 +9515,6 @@
       }
     },
     "formation" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -9435,13 +9621,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Formation changed to %@ - Positions: %@"
+            "value" : "Formation changed to %lld - Positions: %lld"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Formation changée vers %@ - Positions: %@"
+            "value" : "Formation changée vers %lld - Positions: %lld"
           }
         }
       }
@@ -9515,7 +9701,6 @@
       }
     },
     "formationNotDefined" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -9903,7 +10088,6 @@
       }
     },
     "generalStatistics" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -10122,7 +10306,6 @@
       }
     },
     "guestAdded" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -10139,7 +10322,6 @@
       }
     },
     "guestLabel" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -11256,13 +11438,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Invalid invitation code: %@"
+            "value" : "Invalid invitation code: %lld"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Code d'invitation invalide : %@"
+            "value" : "Code d'invitation invalide : %lld"
           }
         }
       }
@@ -11300,7 +11482,6 @@
       }
     },
     "invitationAccepted" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -11322,19 +11503,18 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Invitation already accepted: %@"
+            "value" : "Invitation already accepted: %lld"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Invitation déjà acceptée: %@"
+            "value" : "Invitation déjà acceptée: %lld"
           }
         }
       }
     },
     "invitationCancelled" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -11402,7 +11582,6 @@
       }
     },
     "invitationDeclined" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -11441,13 +11620,29 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Invitation expired: %@"
+            "value" : "Invitation expired: %lld"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Invitation expirée: %@"
+            "value" : "Invitation expirée: %lld"
+          }
+        }
+      }
+    },
+    "invitationExpiredStatus" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expired"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expirée"
           }
         }
       }
@@ -11470,7 +11665,6 @@
       }
     },
     "invitationResent" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -11509,19 +11703,18 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Invitation sent: %@ - Code: %@"
+            "value" : "Invitation sent: %@ - Code: %lld"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Invitation envoyée : %@ - Code : %@"
+            "value" : "Invitation envoyée : %@ - Code : %lld"
           }
         }
       }
     },
     "invitationSentSuccessfully" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -11572,7 +11765,6 @@
       }
     },
     "invite" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -11606,7 +11798,6 @@
       }
     },
     "invitePlayer" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -11622,8 +11813,23 @@
         }
       }
     },
+    "invitePlayerActionSubtitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send an email invitation"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Envoyez une invitation par e-mail"
+          }
+        }
+      }
+    },
     "invitePlayerDescription" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -11640,7 +11846,6 @@
       }
     },
     "inviterJoueur" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -11740,7 +11945,6 @@
       }
     },
     "jerseyNumberRange" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -11779,13 +11983,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Number: %@"
+            "value" : "Number: %lld"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Numéro: %@"
+            "value" : "Numéro: %lld"
           }
         }
       }
@@ -12093,7 +12297,6 @@
       }
     },
     "leaderboard" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -12195,7 +12398,6 @@
       }
     },
     "leaveTeam" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -12217,13 +12419,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You are an administrator but there are %@ other administrator(s). You can leave the team."
+            "value" : "You are an administrator but there are %lld other administrator(s). You can leave the team."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vous êtes administrateur mais il y a %@ autre(s) administrateur(s). Vous pouvez quitter l'équipe."
+            "value" : "Vous êtes administrateur mais il y a %lld autre(s) administrateur(s). Vous pouvez quitter l'équipe."
           }
         }
       }
@@ -12909,7 +13111,6 @@
       }
     },
     "manager" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -13939,7 +14140,6 @@
       }
     },
     "members" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -13951,6 +14151,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Membres"
+          }
+        }
+      }
+    },
+    "membersCount" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld members"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld membres"
           }
         }
       }
@@ -14281,7 +14497,6 @@
       }
     },
     "modifyTeamInformation" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -14314,7 +14529,6 @@
       }
     },
     "monEquipe" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -14628,6 +14842,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aucune image sélectionnée"
+          }
+        }
+      }
+    },
+    "noInvitationsSent" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No invitations sent"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune invitation envoyée"
           }
         }
       }
@@ -15702,7 +15932,6 @@
       }
     },
     "optional" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -15753,8 +15982,20 @@
       }
     },
     "otherCount" : {
-      "comment" : "Label for a count of an unknown type of stat.",
-      "isCommentAutoGenerated" : true
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Others"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autres"
+          }
+        }
+      }
     },
     "otherEvents" : {
       "extractionState" : "stale",
@@ -16137,7 +16378,6 @@
       }
     },
     "pending" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -16149,6 +16389,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "En attente"
+          }
+        }
+      }
+    },
+    "pendingInvitationsCount" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld pending"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld en attente"
           }
         }
       }
@@ -16388,7 +16645,6 @@
       }
     },
     "player" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -16490,7 +16746,6 @@
       }
     },
     "playerEmailHint" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -16580,13 +16835,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No.%@"
+            "value" : "No.%lld"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "N°%@"
+            "value" : "N°%lld"
           }
         }
       }
@@ -16660,7 +16915,6 @@
       }
     },
     "players" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -16682,13 +16936,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ selected"
+            "value" : "%lld selected"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ sélectionné(s)"
+            "value" : "%lld sélectionné(s)"
           }
         }
       }
@@ -16699,19 +16953,18 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Create conversation (%@)"
+            "value" : "Create conversation (%lld)"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Créer la conversation (%@)"
+            "value" : "Créer la conversation (%lld)"
           }
         }
       }
     },
     "playerSelectionNoFriends" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -16762,7 +17015,6 @@
       }
     },
     "playerStatistics" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17067,7 +17319,6 @@
       }
     },
     "positionCodeATT" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17084,7 +17335,6 @@
       }
     },
     "positionCodeDEF" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17101,7 +17351,6 @@
       }
     },
     "positionCodeGK" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17118,7 +17367,6 @@
       }
     },
     "positionCodeMID" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17924,7 +18172,6 @@
       }
     },
     "quitterEquipeSucces" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -18031,13 +18278,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This quiz contain %@ false answers identified"
+            "value" : "This quiz contain %lld false answers identified"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ce quiz contient %@ fausses réponses à identifier"
+            "value" : "Ce quiz contient %lld fausses réponses à identifier"
           }
         }
       }
@@ -18252,13 +18499,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Received invitations (%@)"
+            "value" : "Received invitations (%lld)"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Invitations reçues (%@)"
+            "value" : "Invitations reçues (%lld)"
           }
         }
       }
@@ -18544,6 +18791,22 @@
         }
       }
     },
+    "removePlayerFromPosition" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove from position"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retirer de la position"
+          }
+        }
+      }
+    },
     "removeProfilePhoto" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -18579,7 +18842,6 @@
       }
     },
     "resend" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -18633,13 +18895,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Resend in %@ seconds"
+            "value" : "Resend in %lld seconds"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Renvoyer dans %@ secondes"
+            "value" : "Renvoyer dans %lld secondes"
           }
         }
       }
@@ -19007,7 +19269,6 @@
       }
     },
     "roleUpdatedTo" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19271,7 +19532,6 @@
       }
     },
     "scorers" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19606,7 +19866,6 @@
       }
     },
     "selectionnezEquipeOuCreez" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19809,18 +20068,17 @@
       }
     },
     "sentInvitations" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sent invitations (%@)"
+            "value" : "Sent invitations (%lld)"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Invitations envoyées (%@)"
+            "value" : "Invitations envoyées (%lld)"
           }
         }
       }
@@ -19999,12 +20257,6 @@
             "state" : "translated",
             "value" : "Share this code with players you want to invite:"
           }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Partagez ce code avec les joueurs que vous souhaitez inviter :"
-          }
         }
       }
     },
@@ -20087,6 +20339,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tirs cadrés"
+          }
+        }
+      }
+    },
+    "showAssignedPlayers" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show already placed players"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher les joueurs déjà placés"
           }
         }
       }
@@ -21086,7 +21354,6 @@
       }
     },
     "successPlayerRemoved" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -21188,7 +21455,6 @@
       }
     },
     "successTeamUpdated" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -21357,7 +21623,6 @@
       }
     },
     "supprimerJoueur" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -21386,6 +21651,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Inverser les joueurs"
+          }
+        }
+      }
+    },
+    "switchTeam" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Switch team"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Changer d'équipe"
           }
         }
       }
@@ -21476,7 +21757,6 @@
       }
     },
     "tacticalInstructionsPlaceholder" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -21493,7 +21773,6 @@
       }
     },
     "tacticalNotes" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -21628,7 +21907,6 @@
       }
     },
     "teamCreatedSuccessfully" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -21679,7 +21957,6 @@
       }
     },
     "teamDeletedSuccessfully" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -21696,7 +21973,6 @@
       }
     },
     "teamDescription" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -21713,7 +21989,6 @@
       }
     },
     "teamDescriptionHint" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -21764,7 +22039,6 @@
       }
     },
     "teamInformation" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -21815,7 +22089,6 @@
       }
     },
     "teamLogoOptional" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -21866,7 +22139,6 @@
       }
     },
     "teamName" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -21917,7 +22189,6 @@
       }
     },
     "teamNameHint" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -21934,7 +22205,6 @@
       }
     },
     "teamNameMinLength" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -21968,7 +22238,6 @@
       }
     },
     "teamNotFound" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -21990,19 +22259,18 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Team not found for invitation: %@"
+            "value" : "Team not found for invitation: %lld"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Équipe non trouvée pour l'invitation: %@"
+            "value" : "Équipe non trouvée pour l'invitation: %lld"
           }
         }
       }
     },
     "teamOptions" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -22019,7 +22287,6 @@
       }
     },
     "teamSettings" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -22036,7 +22303,6 @@
       }
     },
     "teamStatistics" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -22048,6 +22314,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vos statistiques d'équipe"
+          }
+        }
+      }
+    },
+    "teamTabCompositions" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lineups"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compos."
           }
         }
       }
@@ -22064,6 +22346,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gérez vos équipes et vos joueurs."
+          }
+        }
+      }
+    },
+    "teamTabRankings" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rankings"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Classement"
+          }
+        }
+      }
+    },
+    "teamTabRoster" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Roster"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effectif"
+          }
+        }
+      }
+    },
+    "teamTabStats" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stats"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stats"
           }
         }
       }
@@ -22538,8 +22868,20 @@
       }
     },
     "topConnection" : {
-      "comment" : "Label for the top connection.",
-      "isCommentAutoGenerated" : true
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Top connection"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meilleure connexion"
+          }
+        }
+      }
     },
     "total" : {
       "extractionState" : "stale",
@@ -22593,7 +22935,6 @@
       }
     },
     "transferAdministration" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -23065,7 +23406,6 @@
       }
     },
     "user" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -23323,13 +23663,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A 7-a-side football composition must have exactly 7 players (currently: %@)"
+            "value" : "A 7-a-side football composition must have exactly 7 players (currently: %lld)"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Une composition de football à 7 doit avoir exactement 7 joueurs (actuellement: %@)"
+            "value" : "Une composition de football à 7 doit avoir exactement 7 joueurs (actuellement: %lld)"
           }
         }
       }
@@ -23442,13 +23782,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Variant %@"
+            "value" : "Variant %lld"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Variante %@"
+            "value" : "Variante %lld"
           }
         }
       }
@@ -23939,13 +24279,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You have %@ wrong answer(s) left to find"
+            "value" : "You have %lld wrong answer(s) left to find"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Il vous reste %@ fausse(s) réponse(s) à trouver"
+            "value" : "Il vous reste %lld fausse(s) réponse(s) à trouver"
           }
         }
       }
@@ -24047,7 +24387,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vos appartenances aux équipes"
+            "value" : "Équipe sélectionnée"
           }
         }
       }

@@ -1,0 +1,458 @@
+//
+//  CompositionEditorSheet.swift
+//  LeVestaire
+//
+
+import SwiftUI
+
+struct CompositionEditorSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @ObservedObject var viewModel: TeamViewModel
+    let composition: TeamComposition?
+
+    @State private var tabs: [CompositionTabDraft] = []
+    @State private var selectedTabId = ""
+    @State private var deletedAlternativeIds: [String] = []
+    @State private var showsDeleteAlternativeConfirmation = false
+    @State private var showsDeleteCompositionConfirmation = false
+    @State private var pickerContext: PickerContext?
+    @FocusState private var focusedField: Int?
+
+    private enum Field {
+        static let name = 1
+        static let notes = 2
+    }
+
+    private var members: [TeamMember] {
+        viewModel.selectedTeam?.resolvedMembers ?? []
+    }
+
+    private var canEdit: Bool {
+        viewModel.canManageTeam
+    }
+
+    private var selectedTabIndex: Int {
+        tabs.firstIndex(where: { $0.id == selectedTabId }) ?? 0
+    }
+
+    private var selectedTab: CompositionTabDraft? {
+        tabs.first { $0.id == selectedTabId }
+    }
+
+    private var canDeleteSelectedTab: Bool {
+        canEdit && selectedTab?.isMain == false
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 20) {
+                    tabSelector
+                    if tabs.indices.contains(selectedTabIndex) {
+                        compositionForm(for: $tabs[selectedTabIndex])
+                    }
+                    if canEdit {
+                        saveButton
+
+                        if composition != nil {
+                            deleteCompositionButton
+                        }
+                    }
+                }
+                .padding(20)
+            }
+            .scrollDismissesKeyboard(.interactively)
+            .background(AuthScreenBackground())
+            .navigationTitle(
+                composition == nil
+                    ? L10n.text("creerComposition")
+                    : L10n.text("composition")
+            )
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(L10n.cancel) { dismiss() }
+                }
+                if canEdit {
+                    ToolbarItemGroup(placement: .topBarTrailing) {
+                        if canDeleteSelectedTab {
+                            Button(role: .destructive) {
+                                showsDeleteAlternativeConfirmation = true
+                            } label: {
+                                Image(systemName: "minus")
+                            }
+                        }
+
+                        Button {
+                            addAlternativeTab()
+                        } label: {
+                            Image(systemName: "plus")
+                        }
+                    }
+                }
+            }
+        }
+        .alert(L10n.deleteAlternativeFormation, isPresented: $showsDeleteAlternativeConfirmation) {
+            Button(L10n.cancel, role: .cancel) {}
+            Button(L10n.text("delete"), role: .destructive) {
+                removeSelectedAlternativeTab()
+            }
+        } message: {
+            if let selectedTab {
+                Text(
+                    L10n.format(
+                        "deleteAlternativeFormationConfirm",
+                        tabLabel(for: selectedTab)
+                    )
+                )
+            }
+        }
+        .alert(L10n.confirmDeletion, isPresented: $showsDeleteCompositionConfirmation) {
+            Button(L10n.cancel, role: .cancel) {}
+            Button(L10n.text("delete"), role: .destructive) {
+                deleteComposition()
+            }
+        } message: {
+            Text(L10n.confirmDeletionMessage)
+        }
+        .onAppear(perform: bootstrapTabs)
+        .onReceive(
+            Foundation.NotificationCenter.default.publisher(
+                for: UIResponder.keyboardWillHideNotification
+            )
+        ) { _ in
+            focusedField = nil
+        }
+        .safeAreaInset(edge: .bottom, spacing: 12) {
+            if focusedField != nil {
+                HStack {
+                    Spacer()
+                    Button(L10n.done) {
+                        focusedField = nil
+                    }
+                    .fontWeight(.semibold)
+                    .foregroundStyle(AppPalette.Primary.main)
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 14)
+                .glassEffect(.regular, in: .rect(cornerRadius: 20))
+                .padding(.horizontal, 16)
+            }
+        }
+        .sheet(item: $pickerContext) { context in
+            PlayerPositionPickerSheet(
+                members: members,
+                assignedMemberIds: assignedMemberIds(excluding: context),
+                slotOccupant: slotOccupant(for: context),
+                onSelect: { member in
+                    applySelection(member: member, context: context)
+                },
+                onClear: {
+                    clearSelection(context: context)
+                }
+            )
+        }
+    }
+
+    private var tabSelector: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(tabs) { tab in
+                    Button {
+                        selectedTabId = tab.id
+                    } label: {
+                        Text(tabLabel(for: tab))
+                            .font(.caption.weight(.semibold))
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 8)
+                            .background(
+                                Capsule()
+                                    .fill(selectedTabId == tab.id ? AppPalette.Primary.main : AppPalette.Neutral.surface)
+                            )
+                            .foregroundStyle(selectedTabId == tab.id ? .white : AppPalette.Neutral.textPrimary)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func compositionForm(for tab: Binding<CompositionTabDraft>) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            UGlassTextField(
+                placeholder: L10n.text("compositionNamePlaceholder"),
+                icon: "doc.text.fill",
+                text: tab.name,
+                autocapitalization: .words,
+                focusTag: Field.name,
+                focusedTag: $focusedField,
+                usesSystemKeyboardToolbar: false
+            )
+            .disabled(!canEdit)
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text(L10n.text("formation"))
+                    .font(.subheadline.weight(.semibold))
+
+                Picker(L10n.text("formation"), selection: tab.formationKey) {
+                    ForEach(FormationCatalog.all) { formation in
+                        Text(formation.displayName).tag(formation.id)
+                    }
+                }
+                .pickerStyle(.menu)
+                .disabled(!canEdit)
+                .onChange(of: tab.wrappedValue.formationKey) { _, _ in
+                    tab.wrappedValue.starterAssignments = [:]
+                }
+            }
+
+            FormationFieldView(
+                formationKey: tab.wrappedValue.formationKey,
+                members: members,
+                assignments: tab.wrappedValue.starterAssignments,
+                onPositionTapped: { positionId in
+                    guard canEdit else { return }
+                    focusedField = nil
+                    pickerContext = PickerContext(
+                        tabId: tab.wrappedValue.id,
+                        positionId: positionId,
+                        substituteIndex: nil
+                    )
+                }
+            )
+
+            SubstitutesBenchView(
+                members: members,
+                substituteMemberIds: tab.wrappedValue.substituteMemberIds,
+                onBenchSlotTapped: { index in
+                    guard canEdit else { return }
+                    focusedField = nil
+                    pickerContext = PickerContext(
+                        tabId: tab.wrappedValue.id,
+                        positionId: nil,
+                        substituteIndex: index
+                    )
+                }
+            )
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text(L10n.text("tacticalNotes"))
+                    .font(.subheadline.weight(.semibold))
+
+                TextField(
+                    L10n.text("tacticalInstructionsPlaceholder"),
+                    text: tab.tacticalNotes,
+                    axis: .vertical
+                )
+                .lineLimit(3...6)
+                .padding(12)
+                .glassEffect(.regular, in: .rect(cornerRadius: 16))
+                .focused($focusedField, equals: Field.notes)
+                .disabled(!canEdit)
+            }
+        }
+    }
+
+    private var saveButton: some View {
+        Button(L10n.text("save")) {
+            focusedField = nil
+            Task {
+                if await viewModel.saveComposition(
+                    tabs: tabs,
+                    deletedAlternativeIds: deletedAlternativeIds
+                ) {
+                    dismiss()
+                }
+            }
+        }
+        .primarySheetButton(isLoading: viewModel.isSubmitting)
+        .disabled(viewModel.isSubmitting)
+    }
+
+    private var deleteCompositionButton: some View {
+        Button(L10n.deleteComposition) {
+            focusedField = nil
+            showsDeleteCompositionConfirmation = true
+        }
+        .font(.subheadline.weight(.semibold))
+        .foregroundStyle(AppPalette.Semantic.error)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 14)
+        .glassEffect(.regular, in: .rect(cornerRadius: 18))
+        .buttonStyle(.plain)
+        .disabled(viewModel.isSubmitting)
+    }
+
+    private func deleteComposition() {
+        guard let composition else { return }
+
+        Task {
+            if await viewModel.deleteComposition(composition) {
+                dismiss()
+            }
+        }
+    }
+
+    private func tabLabel(for tab: CompositionTabDraft) -> String {
+        if tab.isMain {
+            return L10n.text("compositionMain")
+        }
+        if tab.name.isEmpty {
+            return L10n.text("alternativeFormations")
+        }
+        return tab.name
+    }
+
+    private func bootstrapTabs() {
+        if let composition {
+            tabs = CompositionTabDraft.from(composition: composition)
+        } else {
+            tabs = [CompositionTabDraft(name: "", isMain: true)]
+        }
+        deletedAlternativeIds = []
+        selectedTabId = tabs.first?.id ?? ""
+    }
+
+    private func addAlternativeTab() {
+        let tab = CompositionTabDraft(
+            name: L10n.format("compositionNumber", tabs.count),
+            isMain: false
+        )
+        tabs.append(tab)
+        selectedTabId = tab.id
+    }
+
+    private func removeSelectedAlternativeTab() {
+        guard let index = tabs.firstIndex(where: { $0.id == selectedTabId }),
+              !tabs[index].isMain else { return }
+
+        if let serverAlternativeId = tabs[index].serverAlternativeId {
+            deletedAlternativeIds.append(serverAlternativeId)
+        }
+
+        tabs.remove(at: index)
+        selectedTabId = tabs.first(where: \.isMain)?.id ?? tabs.first?.id ?? ""
+    }
+
+    private func assignedMemberIds(excluding context: PickerContext) -> Set<String> {
+        guard let tab = tabs.first(where: { $0.id == context.tabId }) else { return [] }
+
+        var ids = Set<String>()
+        ids.formUnion(tab.starterAssignments.values)
+        ids.formUnion(tab.substituteMemberIds.compactMap { $0 })
+
+        if let positionId = context.positionId,
+           let current = tab.starterAssignments[positionId] {
+            ids.remove(current)
+        }
+
+        if let substituteIndex = context.substituteIndex,
+           let current = tab.substituteMemberIds[substituteIndex] {
+            ids.remove(current)
+        }
+
+        return ids
+    }
+
+    private func applySelection(member: TeamMember, context: PickerContext) {
+        guard let index = tabs.firstIndex(where: { $0.id == context.tabId }) else { return }
+
+        let memberKey = member.userId ?? member.id
+
+        clearMemberFromTab(
+            &tabs[index],
+            member: member,
+            excludingPositionId: context.positionId,
+            excludingSubstituteIndex: context.substituteIndex
+        )
+
+        if let positionId = context.positionId {
+            tabs[index].starterAssignments[positionId] = memberKey
+        } else if let substituteIndex = context.substituteIndex {
+            tabs[index].substituteMemberIds[substituteIndex] = memberKey
+        }
+    }
+
+    private func clearMemberFromTab(
+        _ tab: inout CompositionTabDraft,
+        member: TeamMember,
+        excludingPositionId: String? = nil,
+        excludingSubstituteIndex: Int? = nil
+    ) {
+        for (positionId, assignedKey) in tab.starterAssignments {
+            guard positionId != excludingPositionId else { continue }
+            if memberMatchesAssignment(assignedKey, member: member) {
+                tab.starterAssignments.removeValue(forKey: positionId)
+            }
+        }
+
+        for substituteIndex in tab.substituteMemberIds.indices {
+            guard substituteIndex != excludingSubstituteIndex else { continue }
+            guard let assignedKey = tab.substituteMemberIds[substituteIndex] else { continue }
+            if memberMatchesAssignment(assignedKey, member: member) {
+                tab.substituteMemberIds[substituteIndex] = nil
+            }
+        }
+    }
+
+    private func memberMatchesAssignment(_ assignedKey: String, member: TeamMember) -> Bool {
+        assignedKey == member.id || assignedKey == member.userId
+    }
+
+    private func slotOccupant(for context: PickerContext) -> TeamMember? {
+        guard let tab = tabs.first(where: { $0.id == context.tabId }) else { return nil }
+
+        let memberKey: String?
+        if let positionId = context.positionId {
+            memberKey = tab.starterAssignments[positionId]
+        } else if let substituteIndex = context.substituteIndex {
+            memberKey = tab.substituteMemberIds[substituteIndex]
+        } else {
+            memberKey = nil
+        }
+
+        guard let memberKey else { return nil }
+        return members.first { $0.id == memberKey || $0.userId == memberKey }
+    }
+
+    private func clearSelection(context: PickerContext) {
+        guard let index = tabs.firstIndex(where: { $0.id == context.tabId }) else { return }
+
+        if let positionId = context.positionId {
+            tabs[index].starterAssignments.removeValue(forKey: positionId)
+        } else if let substituteIndex = context.substituteIndex {
+            tabs[index].substituteMemberIds[substituteIndex] = nil
+        }
+    }
+}
+
+private struct PickerContext: Identifiable {
+    let id = UUID()
+    let tabId: String
+    let positionId: String?
+    let substituteIndex: Int?
+}
+
+#if DEBUG
+#Preview("Création") {
+    CompositionEditorSheet(viewModel: .preview(), composition: nil)
+        .teamPreviewEnvironment()
+}
+
+#Preview("Édition") {
+    CompositionEditorSheet(
+        viewModel: .preview(),
+        composition: TeamPreviewData.compositions[0]
+    )
+    .teamPreviewEnvironment()
+}
+
+#Preview("Lecture seule") {
+    CompositionEditorSheet(
+        viewModel: .preview(role: .player),
+        composition: TeamPreviewData.compositions[0]
+    )
+    .teamPreviewEnvironment()
+}
+#endif

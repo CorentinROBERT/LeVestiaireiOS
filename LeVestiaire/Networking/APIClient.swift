@@ -92,6 +92,7 @@ final class APIClient {
         fileData: Data,
         timeout: TimeInterval = 60,
         headers: [String: String] = [:],
+        additionalFields: [String: String] = [:],
         retryOnUnauthorized: Bool = true
     ) async throws -> (Data, HTTPURLResponse) {
         let boundary = "Boundary-\(UUID().uuidString)"
@@ -104,6 +105,11 @@ final class APIClient {
         let url = baseURL.appending(path: normalizedPath)
 
         var body = Data()
+        for (key, value) in additionalFields {
+            body.append("--\(boundary)\r\n")
+            body.append("Content-Disposition: form-data; name=\"\(key)\"\r\n\r\n")
+            body.append("\(value)\r\n")
+        }
         body.append("--\(boundary)\r\n")
         body.append("Content-Disposition: form-data; name=\"\(fieldName)\"; filename=\"\(fileName)\"\r\n")
         body.append("Content-Type: \(mimeType)\r\n\r\n")
