@@ -18,6 +18,7 @@ struct MatchCardView: View {
                     scoreRow(scoreText)
                 }
                 infoRow
+                availabilityFooter
             }
         }
         .overlay {
@@ -46,7 +47,7 @@ struct MatchCardView: View {
                 .lineLimit(2)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            Text(match.status.displayName)
+            Text(match.resolvedStatusLabel)
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(AppPalette.Primary.onMain)
                 .padding(.horizontal, 10)
@@ -55,6 +56,23 @@ struct MatchCardView: View {
                     Capsule()
                         .fill(match.status.color)
                 )
+        }
+    }
+
+    @ViewBuilder
+    private var availabilityFooter: some View {
+        if match.canRespondFromListing, let label = match.myAvailabilityLabel {
+            Label(label, systemImage: "hand.raised.fill")
+                .font(.caption)
+                .foregroundStyle(AppPalette.Primary.main)
+        } else if match.showsPrepareOnListing, let summary = match.availabilitySummaryLabel {
+            Label(summary, systemImage: "person.2.fill")
+                .font(.caption)
+                .foregroundStyle(AppPalette.Neutral.textSecondary)
+        } else if match.status.isPreparationStatus, let label = match.myAvailabilityLabel {
+            Label(label, systemImage: "hand.raised.fill")
+                .font(.caption)
+                .foregroundStyle(AppPalette.Neutral.textSecondary)
         }
     }
 
@@ -147,7 +165,8 @@ struct MatchCardView: View {
     }
 }
 
-#Preview {
+#if DEBUG
+#Preview("Upcoming") {
     ZStack {
         AuthScreenBackground()
 
@@ -166,3 +185,33 @@ struct MatchCardView: View {
         .padding()
     }
 }
+
+#Preview("Draft joueur") {
+    ZStack {
+        AuthScreenBackground()
+
+        MatchCardView(
+            match: MatchItem(
+                id: "2",
+                title: "Match amical",
+                status: .draft,
+                myAvailabilityStatus: .available,
+                capabilities: MatchCapabilities(
+                    canRespond: true,
+                    canManageAvailability: false,
+                    canManageComposition: false,
+                    canPublish: false,
+                    canStartMatch: false,
+                    canManageEvents: false,
+                    canUpdateScore: false,
+                    canFinishMatch: false
+                ),
+                opponentTeam: "FC Rivaux",
+                location: "Stade municipal",
+                date: Date()
+            )
+        )
+        .padding()
+    }
+}
+#endif

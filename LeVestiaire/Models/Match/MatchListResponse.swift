@@ -102,12 +102,14 @@ struct PaginationInfo: Decodable, Equatable {
 
 struct MatchFilters: Equatable {
     var statuses: Set<MatchStatus> = []
+    var teamIds: Set<String> = []
     var fromDate: Date?
     var toDate: Date?
 
     var activeFilterCount: Int {
         var count = 0
         if !statuses.isEmpty { count += 1 }
+        if !teamIds.isEmpty { count += 1 }
         if fromDate != nil { count += 1 }
         if toDate != nil { count += 1 }
         return count
@@ -115,5 +117,33 @@ struct MatchFilters: Equatable {
 
     var hasActiveFilters: Bool {
         activeFilterCount > 0
+    }
+
+    func includes(_ item: MatchItem) -> Bool {
+        if !statuses.isEmpty, !statuses.contains(item.status) {
+            return false
+        }
+
+        if !teamIds.isEmpty {
+            guard let teamId = item.teamId, teamIds.contains(teamId) else {
+                return false
+            }
+        }
+
+        if let fromDate {
+            let startOfFromDate = Calendar.current.startOfDay(for: fromDate)
+            if item.date < startOfFromDate {
+                return false
+            }
+        }
+
+        if let toDate {
+            let startOfDayAfterToDate = Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: toDate)) ?? toDate
+            if item.date >= startOfDayAfterToDate {
+                return false
+            }
+        }
+
+        return true
     }
 }

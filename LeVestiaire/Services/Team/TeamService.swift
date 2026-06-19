@@ -229,6 +229,17 @@ final class TeamService {
     }
 
     @MainActor
+    func mergeGuest(guestId: String, userId: String) async throws {
+        let body = try JSONEncoder().encode(MergeGuestRequest(userId: userId))
+        let (data, response) = try await authorizedRequest(
+            path: APIEndpoints.mergeGuest(guestId),
+            method: "POST",
+            body: body
+        )
+        try validate(response: response, data: data, fallback: L10n.text("errorTeamUpdate"))
+    }
+
+    @MainActor
     func updateMemberRole(teamId: String, memberId: String, role: TeamRole) async throws {
         let body = try JSONEncoder().encode(UpdateMemberRoleRequest(role: role.rawValue))
         let (data, response) = try await authorizedRequest(

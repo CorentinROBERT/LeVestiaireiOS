@@ -9,6 +9,7 @@ import SwiftUI
 
 struct MatchFiltersSheet: View {
     @Binding var filters: MatchFilters
+    let teams: [SquadTeam]
     let onApply: () -> Void
     let onReset: () -> Void
 
@@ -16,12 +17,18 @@ struct MatchFiltersSheet: View {
     @State private var draftFilters: MatchFilters
     @State private var sheetHeight: CGFloat = 380
 
+    private var showsTeamSection: Bool {
+        teams.count > 1
+    }
+
     init(
         filters: Binding<MatchFilters>,
+        teams: [SquadTeam] = [],
         onApply: @escaping () -> Void,
         onReset: @escaping () -> Void
     ) {
         _filters = filters
+        self.teams = teams
         self.onApply = onApply
         self.onReset = onReset
         _draftFilters = State(initialValue: filters.wrappedValue)
@@ -32,6 +39,9 @@ struct MatchFiltersSheet: View {
             sheetHeader
 
             VStack(alignment: .leading, spacing: 24) {
+                if showsTeamSection {
+                    teamSection
+                }
                 statusSection
                 periodSection
                 actionButtons
@@ -78,6 +88,34 @@ struct MatchFiltersSheet: View {
         .padding(.horizontal, 20)
         .padding(.top, 28)
         .padding(.bottom, 12)
+    }
+
+    private var teamSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(L10n.filterTeamsLabel)
+                .font(.headline)
+                .foregroundStyle(AppPalette.Neutral.textPrimary)
+
+            FlowLayout(spacing: 8) {
+                ForEach(teams) { team in
+                    let isSelected = draftFilters.teamIds.contains(team.id)
+                    Button {
+                        toggleTeam(team.id)
+                    } label: {
+                        Text(team.name)
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(isSelected ? AppPalette.Primary.onMain : AppPalette.Primary.main)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(
+                                Capsule()
+                                    .fill(isSelected ? AppPalette.Primary.main : AppPalette.Primary.soft)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
     }
 
     private var statusSection: some View {
@@ -169,6 +207,14 @@ struct MatchFiltersSheet: View {
         }
     }
 
+    private func toggleTeam(_ teamId: String) {
+        if draftFilters.teamIds.contains(teamId) {
+            draftFilters.teamIds.remove(teamId)
+        } else {
+            draftFilters.teamIds.insert(teamId)
+        }
+    }
+
     private func dateField(
         title: String,
         date: Date?,
@@ -246,3 +292,46 @@ private struct FlowLayout: Layout {
         return (CGSize(width: maxWidth, height: y + rowHeight), frames)
     }
 }
+
+#if DEBUG
+private struct MatchFiltersSheetPreviewHost: View {
+    @State private var filters: MatchFilters
+    let teams: [SquadTeam]
+
+    init(
+        filters: MatchFilters = MatchFilters(),
+        teams: [SquadTeam] = TeamPreviewData.teams()
+    ) {
+        _filters = State(initialValue: filters)
+        self.teams = teams
+    }
+
+    var body: some View {
+        MatchFiltersSheet(
+            filters: $filters,
+            teams: teams,
+            onApply: {},
+            onReset: {}
+        )
+    }
+}
+
+#Preview("Multi-équipes") {
+    MatchFiltersSheetPreviewHost(
+        filters: MatchFilters(
+            statuses: [.upcoming, .finished],
+            teamIds: ["team-1"],
+            fromDate: Date(),
+            toDate: nil
+        )
+    )
+    .teamPreviewEnvironment()
+}
+
+#Preview("Une équipe") {
+    MatchFiltersSheetPreviewHost(
+        teams: TeamPreviewData.teams(includeSecond: false)
+    )
+    .teamPreviewEnvironment()
+}
+#endif

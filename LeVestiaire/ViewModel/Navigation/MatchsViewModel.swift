@@ -18,8 +18,16 @@ final class MatchsViewModel: ObservableObject {
     @Published var filters = MatchFilters()
     @Published var showsFilters = false
     @Published var showsCreateMatch = false
+    @Published var editingMatch: MatchDetail?
+
+    @Published private(set) var userTeams: [SquadTeam] = []
+
+    @Published private(set) var submittingAvailabilityMatchIds: Set<String> = []
+    @Published private(set) var isPreparingEditMatch = false
+    @Published var availabilityFeedback: String?
 
     private let matchService: MatchService
+    private let teamService: TeamService
     private var currentPage = 1
     private var hasReachedMax = false
     private var loadGeneration = 0
@@ -42,17 +50,36 @@ final class MatchsViewModel: ObservableObject {
         hasReachedMax && !matches.isEmpty
     }
 
-    init(matchService: MatchService) {
+    var showsTeamFilter: Bool {
+        userTeams.count > 1
+    }
+
+    func teamName(for id: String) -> String? {
+        userTeams.first { $0.id == id }?.name
+    }
+
+    init(matchService: MatchService, teamService: TeamService) {
         self.matchService = matchService
+        self.teamService = teamService
     }
 
     convenience init() {
-        self.init(matchService: MatchService.shared)
+        self.init(matchService: MatchService.shared, teamService: TeamService.shared)
     }
 
     func initialize() async {
         guard matches.isEmpty else { return }
-        await loadMatches(page: 1, append: false)
+        async let teamsTask: Void = loadUserTeams()
+        async let matchesTask: Void = loadMatches(page: 1, append: false)
+        _ = await (teamsTask, matchesTask)
+    }
+
+    private func loadUserTeams() async {
+        do {
+            userTeams = try await teamService.fetchUserTeams()
+        } catch {
+            userTeams = []
+        }
     }
 
     func refresh() async {
@@ -77,6 +104,82 @@ final class MatchsViewModel: ObservableObject {
     func resetFilters() async {
         filters = MatchFilters()
         await loadMatches(page: 1, append: false)
+    }
+
+    func isSubmittingAvailability(for matchId: String) -> Bool {
+        submittingAvailabilityMatchIds.contains(matchId)
+    }
+
+    func submitAvailability(for matchId: String, status: MatchAvailabilityStatus) async {
+        guard !submittingAvailabilityMatchIds.contains(matchId) else { return }
+
+        submittingAvailabilityMatchIds.insert(matchId)
+        availabilityFeedback = nil
+        defer { submittingAvailabilityMatchIds.remove(matchId) }
+
+        do {
+            _ = try await matchService.updateMyAvailability(matchId: matchId, status: status)
+            let detail = try await matchService.fetchMatch(id: matchId)
+            if let index = matches.firstIndex(where: { $0.id == matchId }) {
+                matches[index] = detail.toMatchItem()
+            }
+        } catch let error as MatchServiceError {
+            availabilityFeedback = error.errorDescription
+        } catch {
+            availabilityFeedback = error.localizedDescription
+        }
+    }
+
+    func insertCreatedMatch(_ detail: MatchDetail) {
+        updateMatchInListing(detail, insertIfMissing: true)
+    }
+
+    func updateMatchInListing(_ detail: MatchDetail, insertIfMissing: Bool = false) {
+        let item = detail.toMatchItem()
+        guard !item.id.isEmpty else { return }
+
+        if filters.includes(item) {
+            if let index = matches.firstIndex(where: { $0.id == item.id }) {
+                matches[index] = item
+            } else if insertIfMissing {
+                matches.insert(item, at: 0)
+                totalItems += 1
+            }
+        } else if let index = matches.firstIndex(where: { $0.id == item.id }) {
+            matches.remove(at: index)
+            totalItems = max(0, totalItems - 1)
+        }
+    }
+
+    func refreshMatchInListing(id: String) async {
+        guard !id.isEmpty else { return }
+
+        do {
+            let detail = try await matchService.fetchMatch(id: id)
+            updateMatchInListing(detail)
+        } catch {
+            // Ignore listing sync errors on back navigation.
+        }
+    }
+
+    func openEditMatch(id: String) async {
+        guard !isPreparingEditMatch else { return }
+
+        isPreparingEditMatch = true
+        availabilityFeedback = nil
+        defer { isPreparingEditMatch = false }
+
+        do {
+            editingMatch = try await matchService.fetchMatch(id: id)
+        } catch let error as MatchServiceError {
+            availabilityFeedback = error.errorDescription
+        } catch {
+            availabilityFeedback = error.localizedDescription
+        }
+    }
+
+    func closeEditMatch() {
+        editingMatch = nil
     }
 
     private func loadMatches(page: Int, append: Bool, isRefresh: Bool = false) async {
@@ -104,6 +207,7 @@ final class MatchsViewModel: ObservableObject {
             let criteria = MatchFetchCriteria(
                 page: page,
                 statuses: filters.statuses,
+                teamIds: filters.teamIds,
                 fromDate: filters.fromDate,
                 toDate: filters.toDate
             )

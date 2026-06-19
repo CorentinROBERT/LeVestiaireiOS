@@ -72,9 +72,15 @@ struct TeamStatsSection: View {
             TeamMemberAvatar(initials: player.initials)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(player.displayName)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(AppPalette.Neutral.textPrimary)
+                HStack(spacing: 6) {
+                    Text(player.displayName)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(AppPalette.Neutral.textPrimary)
+
+                    if player.isGuest {
+                        TeamGuestBadge()
+                    }
+                }
 
                 HStack(spacing: 12) {
                     TeamPlayerStatBadge(label: L10n.matchesPlayed, value: player.matchesPlayed)

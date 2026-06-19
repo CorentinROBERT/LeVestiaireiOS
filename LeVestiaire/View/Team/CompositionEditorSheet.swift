@@ -295,13 +295,7 @@ struct CompositionEditorSheet: View {
     }
 
     private func tabLabel(for tab: CompositionTabDraft) -> String {
-        if tab.isMain {
-            return L10n.text("compositionMain")
-        }
-        if tab.name.isEmpty {
-            return L10n.text("alternativeFormations")
-        }
-        return tab.name
+        tab.displayLabel
     }
 
     private func bootstrapTabs() {
@@ -358,7 +352,7 @@ struct CompositionEditorSheet: View {
     private func applySelection(member: TeamMember, context: PickerContext) {
         guard let index = tabs.firstIndex(where: { $0.id == context.tabId }) else { return }
 
-        let memberKey = member.userId ?? member.id
+        let memberKey = member.compositionMemberKey
 
         clearMemberFromTab(
             &tabs[index],
@@ -371,6 +365,10 @@ struct CompositionEditorSheet: View {
             tabs[index].starterAssignments[positionId] = memberKey
         } else if let substituteIndex = context.substituteIndex {
             tabs[index].substituteMemberIds[substituteIndex] = memberKey
+        }
+
+        if let jerseyNumber = member.jerseyNumber {
+            tabs[index].memberJerseyNumbers[memberKey] = jerseyNumber
         }
     }
 
@@ -397,7 +395,7 @@ struct CompositionEditorSheet: View {
     }
 
     private func memberMatchesAssignment(_ assignedKey: String, member: TeamMember) -> Bool {
-        assignedKey == member.id || assignedKey == member.userId
+        member.matchesCompositionMemberKey(assignedKey)
     }
 
     private func slotOccupant(for context: PickerContext) -> TeamMember? {
@@ -413,7 +411,7 @@ struct CompositionEditorSheet: View {
         }
 
         guard let memberKey else { return nil }
-        return members.first { $0.id == memberKey || $0.userId == memberKey }
+        return members.first { $0.matchesCompositionMemberKey(memberKey) }
     }
 
     private func clearSelection(context: PickerContext) {

@@ -30,6 +30,7 @@ final class TeamViewModel: ObservableObject {
 
     @Published var invitationPendingCancellation: TeamInvitation?
     @Published var memberPendingRemoval: TeamMember?
+    @Published var guestPendingMerge: TeamMember?
     @Published var compositionPendingDeletion: TeamComposition?
 
     @Published private(set) var compositionsLoadError: String?
@@ -81,10 +82,7 @@ final class TeamViewModel: ObservableObject {
     var hasTeams: Bool { !teams.isEmpty }
 
     var currentUserRole: TeamRole? {
-        selectedTeam?.currentUserRole
-            ?? selectedTeam?.resolvedMembers.first(where: { member in
-                member.userId == authService.currentUser?.id
-            })?.role
+        selectedTeam?.resolvedCurrentUserRole(userId: authService.currentUser?.id)
     }
 
     var canManageTeam: Bool {
@@ -438,6 +436,40 @@ final class TeamViewModel: ObservableObject {
         }
     }
 
+    var mergeableTeamMembers: [TeamMember] {
+        selectedTeam?.resolvedMembers.filter { member in
+            !member.isGuest && !(member.userId ?? member.id).isEmpty
+        } ?? []
+    }
+
+    func presentMergeGuest(_ guest: TeamMember) {
+        guestPendingMerge = guest
+    }
+
+    func mergeGuest(with member: TeamMember) async -> Bool {
+        guard let guest = guestPendingMerge, guest.isGuest else { return false }
+
+        let userId = member.userId ?? member.id
+        guard !userId.isEmpty else {
+            showError(L10n.text("pleaseSelectAssociatedPlayer"))
+            return false
+        }
+
+        isSubmitting = true
+        defer { isSubmitting = false }
+
+        do {
+            try await teamService.mergeGuest(guestId: guest.id, userId: userId)
+            guestPendingMerge = nil
+            await refreshSelectedTeamContent()
+            showSuccess(L10n.text("guestMerged"))
+            return true
+        } catch {
+            showError(error.localizedDescription)
+            return false
+        }
+    }
+
     func confirmRemoveMember(_ member: TeamMember) {
         memberPendingRemoval = member
     }
@@ -633,18 +665,25 @@ final class TeamViewModel: ObservableObject {
         isRefreshingTeam = true
         defer { isRefreshingTeam = false }
 
-        if let cached = teams.first(where: { $0.id == selectedTeamId }) {
-            selectedTeam = cached
+        do {
+            async let teamTask = teamService.fetchTeam(id: selectedTeamId)
+            async let guestsTask = teamService.fetchTeamGuests(teamId: selectedTeamId)
+
+            let team = try await teamTask
+            let guests = (try? await guestsTask) ?? []
+            selectedTeam = team.withGuests(guests)
+
+            if let index = teams.firstIndex(where: { $0.id == selectedTeamId }),
+               let selectedTeam {
+                teams[index] = selectedTeam
+            }
             errorMessage = nil
-        } else {
-            do {
-                selectedTeam = try await teamService.fetchTeam(id: selectedTeamId)
-                if let index = teams.firstIndex(where: { $0.id == selectedTeamId }),
-                   let selectedTeam {
-                    teams[index] = selectedTeam
-                }
+        } catch {
+            if let cached = teams.first(where: { $0.id == selectedTeamId }) {
+                let guests = (try? await teamService.fetchTeamGuests(teamId: selectedTeamId)) ?? []
+                selectedTeam = cached.withGuests(guests)
                 errorMessage = nil
-            } catch {
+            } else {
                 selectedTeam = nil
                 errorMessage = error.localizedDescription
             }
@@ -720,10 +759,17 @@ final class TeamViewModel: ObservableObject {
         defer { isLoadingStats = false }
 
         do {
-            teamSeasonStats = try await statsService.fetchTeamSeasonStats(
+            if var stats = try await statsService.fetchTeamSeasonStats(
                 teamId: selectedTeamId,
                 season: selectedStatsSeason
-            )
+            ) {
+                if let team = selectedTeam {
+                    stats = stats.enrichedWithRosterGuests(from: team)
+                }
+                teamSeasonStats = stats
+            } else {
+                teamSeasonStats = nil
+            }
             statsLoadError = nil
         } catch {
             teamSeasonStats = nil

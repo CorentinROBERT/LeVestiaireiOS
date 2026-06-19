@@ -5,6 +5,34 @@
 
 import Foundation
 
+enum CompositionMemberKey {
+    static let guestPrefix = "guest_"
+
+    static func isGuestKey(_ key: String) -> Bool {
+        key.hasPrefix(guestPrefix)
+    }
+
+    static func forGuest(_ rawId: String) -> String {
+        guard !rawId.isEmpty else { return rawId }
+        return rawId.hasPrefix(guestPrefix) ? rawId : "\(guestPrefix)\(rawId)"
+    }
+
+    static func rawGuestId(from key: String) -> String {
+        isGuestKey(key) ? String(key.dropFirst(guestPrefix.count)) : key
+    }
+
+    static func variants(for key: String) -> Set<String> {
+        guard !key.isEmpty else { return [] }
+        var keys: Set<String> = [key]
+        if isGuestKey(key) {
+            keys.insert(rawGuestId(from: key))
+        } else {
+            keys.insert(forGuest(key))
+        }
+        return keys
+    }
+}
+
 struct TeamComposition: Identifiable, Decodable, Equatable {
     let id: String
     let name: String
@@ -24,6 +52,33 @@ struct TeamComposition: Identifiable, Decodable, Equatable {
     var resolvedAlternatives: [CompositionAlternative] { alternatives }
     var alternativeCount: Int { resolvedAlternatives.count }
     var hasAlternativeFormations: Bool { alternativeCount > 0 }
+
+    var allAssignments: [CompositionAssignment] {
+        resolvedAlternatives.reduce(into: resolvedStarters + resolvedSubstitutes) { result, alternative in
+            result.append(contentsOf: alternative.starters)
+            result.append(contentsOf: alternative.substitutes)
+        }
+    }
+
+    func enriched(from other: TeamComposition) -> TeamComposition {
+        TeamComposition(
+            id: id.isEmpty ? other.id : id,
+            name: name.isEmpty ? other.name : name,
+            formation: formation ?? other.formation,
+            tacticalNotes: tacticalNotes ?? other.tacticalNotes,
+            teamId: teamId ?? other.teamId,
+            matchId: matchId ?? other.matchId,
+            isLocked: isLocked ?? other.isLocked,
+            isActive: isActive ?? other.isActive,
+            starters: starters.isEmpty ? other.starters : starters,
+            substitutes: substitutes.isEmpty ? other.substitutes : substitutes,
+            alternatives: alternatives.isEmpty ? other.alternatives : alternatives
+        )
+    }
+
+    func enrichedWithTemplate(_ template: TeamComposition) -> TeamComposition {
+        enriched(from: template)
+    }
 
     init(
         id: String,
@@ -70,8 +125,18 @@ struct TeamComposition: Identifiable, Decodable, Equatable {
             positions: positions,
             tactic: formation ?? FormationCatalog.defaultFormationKey
         )
-        starters = parsed.starters
-        substitutes = parsed.substitutes
+        var resolvedStarters = parsed.starters
+        var resolvedSubstitutes = parsed.substitutes
+
+        if resolvedStarters.isEmpty {
+            resolvedStarters = try container.decodeIfPresent([CompositionAssignment].self, forKey: .starters) ?? []
+        }
+        if resolvedSubstitutes.isEmpty {
+            resolvedSubstitutes = try container.decodeIfPresent([CompositionAssignment].self, forKey: .substitutes) ?? []
+        }
+
+        starters = resolvedStarters
+        substitutes = resolvedSubstitutes
 
         alternatives = try container.decodeIfPresent([CompositionAlternative].self, forKey: .alternativeFormations)
             ?? container.decodeIfPresent([CompositionAlternative].self, forKey: .alternatives)
@@ -89,6 +154,8 @@ struct TeamComposition: Identifiable, Decodable, Equatable {
         case positions
         case alternativeFormations
         case alternatives
+        case starters
+        case substitutes
         case teamId
         case matchId
         case isLocked
@@ -124,8 +191,18 @@ struct CompositionAlternative: Identifiable, Decodable, Equatable {
             positions: positions,
             tactic: formation ?? FormationCatalog.defaultFormationKey
         )
-        starters = parsed.starters
-        substitutes = parsed.substitutes
+        var resolvedStarters = parsed.starters
+        var resolvedSubstitutes = parsed.substitutes
+
+        if resolvedStarters.isEmpty {
+            resolvedStarters = try container.decodeIfPresent([CompositionAssignment].self, forKey: .starters) ?? []
+        }
+        if resolvedSubstitutes.isEmpty {
+            resolvedSubstitutes = try container.decodeIfPresent([CompositionAssignment].self, forKey: .substitutes) ?? []
+        }
+
+        starters = resolvedStarters
+        substitutes = resolvedSubstitutes
     }
 
     init(
@@ -153,6 +230,8 @@ struct CompositionAlternative: Identifiable, Decodable, Equatable {
         case description
         case tacticalNotes
         case positions
+        case starters
+        case substitutes
     }
 }
 
@@ -193,8 +272,17 @@ struct CompositionPositionSlot: Decodable, Equatable {
     let isStarter: Bool?
     let jerseyNumber: Int?
 
-    var resolvedUserId: String? {
-        user?.id
+    var resolvedMemberId: String? {
+        if let userId = user?.id {
+            if user?.isGuest == true {
+                return CompositionMemberKey.forGuest(userId)
+            }
+            return userId
+        }
+        if let guestId = guest?.id, !guestId.isEmpty {
+            return CompositionMemberKey.forGuest(guestId)
+        }
+        return nil
     }
 
     var firstName: String? {
@@ -216,6 +304,7 @@ struct CompositionPlayerUser: Decodable, Equatable {
     let firstName: String?
     let lastName: String?
     let status: String?
+    let isGuest: Bool?
 
     private enum CodingKeys: String, CodingKey {
         case mongoId = "_id"
@@ -224,15 +313,32 @@ struct CompositionPlayerUser: Decodable, Equatable {
         case firstName
         case lastName
         case status
+        case isGuest
     }
 
     init(from decoder: Decoder) throws {
+        if let singleValue = try? decoder.singleValueContainer(),
+           let rawId = try? singleValue.decode(String.self),
+           !rawId.isEmpty {
+            let guest = CompositionMemberKey.isGuestKey(rawId)
+            id = guest ? CompositionMemberKey.rawGuestId(from: rawId) : rawId
+            email = nil
+            firstName = nil
+            lastName = nil
+            status = guest ? "guest" : nil
+            isGuest = guest
+            return
+        }
+
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try TeamDecoding.decodeId(from: container)
         email = try container.decodeIfPresent(String.self, forKey: .email)
         firstName = try container.decodeIfPresent(String.self, forKey: .firstName)
         lastName = try container.decodeIfPresent(String.self, forKey: .lastName)
         status = try container.decodeIfPresent(String.self, forKey: .status)
+        isGuest = try container.decodeIfPresent(Bool.self, forKey: .isGuest)
+            ?? (status?.lowercased() == "guest")
+            ?? CompositionMemberKey.isGuestKey(id)
     }
 }
 
@@ -263,7 +369,7 @@ struct CompositionPositionDetail: Decodable, Equatable {
     let category: String?
 }
 
-struct CompositionAssignment: Identifiable, Equatable {
+struct CompositionAssignment: Identifiable, Equatable, Decodable {
     let id: String
     let position: String?
     let memberId: String?
@@ -303,6 +409,31 @@ struct CompositionAssignment: Identifiable, Equatable {
         self.jerseyNumber = jerseyNumber
         self.isStarter = isStarter
     }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        position = try container.decodeIfPresent(String.self, forKey: .position)
+        memberId = try container.decodeIfPresent(String.self, forKey: .memberId)
+            ?? container.decodeIfPresent(String.self, forKey: .playerId)
+        playerId = try container.decodeIfPresent(String.self, forKey: .playerId)
+        firstName = try container.decodeIfPresent(String.self, forKey: .firstName)
+        lastName = try container.decodeIfPresent(String.self, forKey: .lastName)
+        jerseyNumber = try container.decodeIfPresent(Int.self, forKey: .jerseyNumber)
+        isStarter = try container.decodeIfPresent(Bool.self, forKey: .isStarter) ?? true
+        id = try container.decodeIfPresent(String.self, forKey: .id)
+            ?? "\(position ?? "slot")-\(memberId ?? playerId ?? UUID().uuidString)"
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case position
+        case memberId
+        case playerId
+        case firstName
+        case lastName
+        case jerseyNumber
+        case isStarter
+    }
 }
 
 enum CompositionPositionsParser {
@@ -340,14 +471,14 @@ enum CompositionPositionsParser {
             let starterSlots = slots.filter { $0.isStarter != false }
 
             for (index, slot) in starterSlots.enumerated() {
-                guard index < slotIds.count, let userId = slot.resolvedUserId else { continue }
+                guard index < slotIds.count, let memberId = slot.resolvedMemberId else { continue }
                 let slotKey = slotIds[index]
-                assignments[slotKey] = userId
+                assignments[slotKey] = memberId
                 starters.append(
                     CompositionAssignment(
                         position: slotKey,
-                        memberId: userId,
-                        playerId: userId,
+                        memberId: memberId,
+                        playerId: memberId,
                         firstName: slot.firstName,
                         lastName: slot.lastName,
                         jerseyNumber: slot.jerseyNumber,
@@ -357,13 +488,13 @@ enum CompositionPositionsParser {
             }
         }
 
-        for slot in positions.substitutes where slot.isSubstitute {
-            guard let userId = slot.resolvedUserId else { continue }
+        for slot in positions.substitutes where slot.isStarter != true {
+            guard let memberId = slot.resolvedMemberId else { continue }
             substitutes.append(
                 CompositionAssignment(
                     position: slot.position?.code ?? "SUB",
-                    memberId: userId,
-                    playerId: userId,
+                    memberId: memberId,
+                    playerId: memberId,
                     firstName: slot.firstName,
                     lastName: slot.lastName,
                     jerseyNumber: slot.jerseyNumber,
@@ -450,12 +581,310 @@ struct CompositionSlotRequest: Encodable {
     let memberId: String
 }
 
+enum CompositionPositionCatalog {
+    private static let referenceCreationDate = "2026-01-01T00:00:00.000Z"
+
+    struct Definition {
+        let id: String
+        let name: String
+        let code: String
+        let category: String
+        let displayOrder: Int
+        let isAvailable: Bool
+        let creationDate: String
+    }
+
+    static func definition(forSlotId slotId: String) -> Definition {
+        switch slotId {
+        case "GK":
+            return Definition(
+                id: "gk",
+                name: "Goalkeeper",
+                code: "GK",
+                category: "Goalkeeper",
+                displayOrder: 1,
+                isAvailable: true,
+                creationDate: referenceCreationDate
+            )
+        case let id where id.hasPrefix("D"):
+            return Definition(
+                id: "def_1",
+                name: "Left Back",
+                code: "DL",
+                category: "Defense",
+                displayOrder: 2,
+                isAvailable: true,
+                creationDate: referenceCreationDate
+            )
+        case let id where id.hasPrefix("M"):
+            return Definition(
+                id: "mid_1",
+                name: "Defensive Midfielder",
+                code: "MD",
+                category: "Midfield",
+                displayOrder: 5,
+                isAvailable: true,
+                creationDate: referenceCreationDate
+            )
+        case let id where id.hasPrefix("A"):
+            return Definition(
+                id: "att_1",
+                name: "Forward",
+                code: "ATT",
+                category: "Attack",
+                displayOrder: 7,
+                isAvailable: true,
+                creationDate: referenceCreationDate
+            )
+        default:
+            return Definition(
+                id: "def_1",
+                name: "Left Back",
+                code: "DL",
+                category: "Defense",
+                displayOrder: 2,
+                isAvailable: true,
+                creationDate: referenceCreationDate
+            )
+        }
+    }
+}
+
+struct CompositionPositionMetaSaveRequest: Encodable {
+    let id: String
+    let name: String
+    let code: String
+    let category: String
+    let isAvailable: Bool
+    let displayOrder: Int
+    let creationDate: String
+
+    init(definition: CompositionPositionCatalog.Definition) {
+        id = definition.id
+        name = definition.name
+        code = definition.code
+        category = definition.category
+        isAvailable = definition.isAvailable
+        displayOrder = definition.displayOrder
+        creationDate = definition.creationDate
+    }
+}
+
+struct CompositionPlayerRefSaveRequest: Encodable {
+    let id: String
+    let firstName: String?
+    let lastName: String?
+    let email: String?
+
+    init(id: String, firstName: String? = nil, lastName: String? = nil, email: String? = nil) {
+        self.id = id
+        self.firstName = firstName
+        self.lastName = lastName
+        self.email = email
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id = "_id"
+        case firstName
+        case lastName
+        case email
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encodeIfPresent(firstName, forKey: .firstName)
+        try container.encodeIfPresent(lastName, forKey: .lastName)
+        try container.encodeIfPresent(email, forKey: .email)
+    }
+}
+
+struct CompositionGuestRefSaveRequest: Encodable {
+    let id: String
+    let firstName: String?
+    let lastName: String?
+
+    init(id: String, firstName: String? = nil, lastName: String? = nil) {
+        self.id = id
+        self.firstName = firstName
+        self.lastName = lastName
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id = "_id"
+        case firstName
+        case lastName
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encodeIfPresent(firstName, forKey: .firstName)
+        try container.encodeIfPresent(lastName, forKey: .lastName)
+    }
+}
+
+struct CompositionPositionSlotSaveRequest: Encodable {
+    let user: CompositionPlayerRefSaveRequest?
+    let guest: CompositionGuestRefSaveRequest?
+    let position: CompositionPositionMetaSaveRequest
+    let isStarter: Bool
+    let jerseyNumber: Int?
+
+    private enum CodingKeys: String, CodingKey {
+        case user
+        case guest
+        case position
+        case isStarter
+        case jerseyNumber
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encodeIfPresent(user, forKey: .user)
+        try container.encodeIfPresent(guest, forKey: .guest)
+        try container.encode(position, forKey: .position)
+        try container.encode(isStarter, forKey: .isStarter)
+        try container.encodeIfPresent(jerseyNumber, forKey: .jerseyNumber)
+    }
+
+    static func make(
+        memberId: String,
+        slotId: String,
+        isStarter: Bool,
+        jerseyNumber: Int?,
+        member: TeamMember? = nil
+    ) -> CompositionPositionSlotSaveRequest {
+        let position = CompositionPositionMetaSaveRequest(
+            definition: CompositionPositionCatalog.definition(forSlotId: slotId)
+        )
+
+        if CompositionMemberKey.isGuestKey(memberId) {
+            let rawGuestId = CompositionMemberKey.rawGuestId(from: memberId)
+            let guestKey = CompositionMemberKey.forGuest(rawGuestId)
+            return CompositionPositionSlotSaveRequest(
+                user: CompositionPlayerRefSaveRequest(
+                    id: guestKey,
+                    firstName: member?.firstName,
+                    lastName: member?.lastName,
+                    email: member?.email
+                ),
+                guest: CompositionGuestRefSaveRequest(
+                    id: rawGuestId,
+                    firstName: member?.firstName,
+                    lastName: member?.lastName
+                ),
+                position: position,
+                isStarter: isStarter,
+                jerseyNumber: jerseyNumber
+            )
+        }
+
+        return CompositionPositionSlotSaveRequest(
+            user: CompositionPlayerRefSaveRequest(
+                id: memberId,
+                firstName: member?.firstName,
+                lastName: member?.lastName,
+                email: member?.email
+            ),
+            guest: nil,
+            position: position,
+            isStarter: isStarter,
+            jerseyNumber: jerseyNumber
+        )
+    }
+}
+
+struct CompositionPositionsSaveRequest: Encodable {
+    let goalkeeper: [CompositionPositionSlotSaveRequest]
+    let defense: [CompositionPositionSlotSaveRequest]
+    let midfield: [CompositionPositionSlotSaveRequest]
+    let attack: [CompositionPositionSlotSaveRequest]
+    let substitutes: [CompositionPositionSlotSaveRequest]
+
+    private enum CodingKeys: String, CodingKey {
+        case goalkeeper = "Goalkeeper"
+        case defense = "Defense"
+        case midfield = "Midfield"
+        case attack = "Attack"
+        case substitutes
+    }
+
+    static func from(tab: CompositionTabDraft, members: [TeamMember] = []) -> CompositionPositionsSaveRequest {
+        let template = FormationCatalog.template(for: tab.formationKey) ?? FormationCatalog.all[0]
+
+        func starterSlots(for category: String) -> [CompositionPositionSlotSaveRequest] {
+            template.slotIds(forCategory: category).compactMap { slotId in
+                guard let memberId = tab.starterAssignments[slotId] else { return nil }
+                let member = members.first { $0.matchesCompositionMemberKey(memberId) }
+                return CompositionPositionSlotSaveRequest.make(
+                    memberId: memberId,
+                    slotId: slotId,
+                    isStarter: true,
+                    jerseyNumber: CompositionJerseyResolver.resolve(
+                        for: memberId,
+                        members: members,
+                        storedJerseyNumbers: tab.memberJerseyNumbers
+                    ),
+                    member: member
+                )
+            }
+        }
+
+        let substitutes = tab.substituteMemberIds.compactMap { memberId -> CompositionPositionSlotSaveRequest? in
+            guard let memberId else { return nil }
+            let member = members.first { $0.matchesCompositionMemberKey(memberId) }
+            return CompositionPositionSlotSaveRequest.make(
+                memberId: memberId,
+                slotId: "SUB",
+                isStarter: false,
+                jerseyNumber: CompositionJerseyResolver.resolve(
+                    for: memberId,
+                    members: members,
+                    storedJerseyNumbers: tab.memberJerseyNumbers
+                ),
+                member: member
+            )
+        }
+
+        return CompositionPositionsSaveRequest(
+            goalkeeper: starterSlots(for: "Goalkeeper"),
+            defense: starterSlots(for: "Defense"),
+            midfield: starterSlots(for: "Midfield"),
+            attack: starterSlots(for: "Attack"),
+            substitutes: substitutes
+        )
+    }
+}
+
+enum CompositionJerseyResolver {
+    static func resolve(
+        for memberId: String,
+        members: [TeamMember],
+        storedJerseyNumbers: [String: Int]
+    ) -> Int? {
+        for key in CompositionMemberKey.variants(for: memberId) {
+            if let stored = storedJerseyNumbers[key] {
+                return stored
+            }
+        }
+
+        if let member = members.first(where: { $0.matchesCompositionMemberKey(memberId) }),
+           let jerseyNumber = member.jerseyNumber {
+            return jerseyNumber
+        }
+
+        return nil
+    }
+}
+
 struct CompositionTabDraft: Identifiable, Equatable {
     let id: String
     var name: String
     var formationKey: String
     var starterAssignments: [String: String]
     var substituteMemberIds: [String?]
+    var memberJerseyNumbers: [String: Int]
     var tacticalNotes: String
     var isMain: Bool
     var serverAlternativeId: String?
@@ -468,6 +897,7 @@ struct CompositionTabDraft: Identifiable, Equatable {
         formationKey: String = FormationCatalog.defaultFormationKey,
         starterAssignments: [String: String] = [:],
         substituteMemberIds: [String?] = Array(repeating: nil, count: substituteCount),
+        memberJerseyNumbers: [String: Int] = [:],
         tacticalNotes: String = "",
         isMain: Bool = false,
         serverAlternativeId: String? = nil
@@ -477,6 +907,7 @@ struct CompositionTabDraft: Identifiable, Equatable {
         self.formationKey = formationKey
         self.starterAssignments = starterAssignments
         self.substituteMemberIds = substituteMemberIds
+        self.memberJerseyNumbers = memberJerseyNumbers
         self.tacticalNotes = tacticalNotes
         self.isMain = isMain
         self.serverAlternativeId = serverAlternativeId
@@ -490,6 +921,9 @@ struct CompositionTabDraft: Identifiable, Equatable {
                 formationKey: composition.formation ?? FormationCatalog.defaultFormationKey,
                 starterAssignments: assignmentsDictionary(from: composition.resolvedStarters),
                 substituteMemberIds: substituteSlots(from: composition.resolvedSubstitutes),
+                memberJerseyNumbers: jerseyNumbersDictionary(
+                    from: composition.resolvedStarters + composition.resolvedSubstitutes
+                ),
                 tacticalNotes: composition.tacticalNotes ?? "",
                 isMain: true,
                 serverAlternativeId: nil
@@ -504,6 +938,9 @@ struct CompositionTabDraft: Identifiable, Equatable {
                     formationKey: alternative.formation ?? FormationCatalog.defaultFormationKey,
                     starterAssignments: assignmentsDictionary(from: alternative.starters),
                     substituteMemberIds: substituteSlots(from: alternative.substitutes),
+                    memberJerseyNumbers: jerseyNumbersDictionary(
+                        from: alternative.starters + alternative.substitutes
+                    ),
                     tacticalNotes: alternative.tacticalNotes ?? "",
                     isMain: false,
                     serverAlternativeId: alternative.id
@@ -547,6 +984,168 @@ struct CompositionTabDraft: Identifiable, Equatable {
             slots.append(nil)
         }
         return Array(slots.prefix(substituteCount))
+    }
+
+    private static func jerseyNumbersDictionary(from assignments: [CompositionAssignment]) -> [String: Int] {
+        var result: [String: Int] = [:]
+        for assignment in assignments {
+            guard let memberId = assignment.resolvedMemberId,
+                  let jerseyNumber = assignment.jerseyNumber else { continue }
+            result[memberId] = jerseyNumber
+        }
+        return result
+    }
+}
+
+extension CompositionTabDraft {
+    var displayLabel: String {
+        if isMain {
+            return L10n.text("compositionMain")
+        }
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            return L10n.text("alternativeFormations")
+        }
+        return trimmed
+    }
+
+    var formationDisplayName: String {
+        FormationCatalog.template(for: formationKey)?.displayName ?? formationKey
+    }
+
+    var filledStarterCount: Int {
+        starterAssignments.count
+    }
+
+    var filledSubstituteCount: Int {
+        substituteMemberIds.compactMap { $0 }.count
+    }
+}
+
+enum CompositionDisplayMemberResolver {
+    static func members(
+        for tab: CompositionTabDraft,
+        in composition: TeamComposition,
+        pool: [TeamMember]
+    ) -> [TeamMember] {
+        var resolved: [String: TeamMember] = [:]
+
+        func store(_ member: TeamMember, for key: String) {
+            guard !key.isEmpty else { return }
+            resolved[key] = member
+            for variant in CompositionMemberKey.variants(for: key) {
+                resolved[variant] = member
+            }
+        }
+
+        for member in pool {
+            store(member, for: member.compositionMemberKey)
+        }
+
+        for assignment in composition.allAssignments {
+            guard let memberId = assignment.resolvedMemberId else { continue }
+            guard resolved[memberId] == nil else { continue }
+
+            let isGuest = CompositionMemberKey.isGuestKey(memberId)
+            let member = TeamMember(
+                id: isGuest ? CompositionMemberKey.rawGuestId(from: memberId) : memberId,
+                userId: isGuest ? nil : memberId,
+                firstName: assignment.firstName,
+                lastName: assignment.lastName,
+                isGuest: isGuest
+            )
+            store(member, for: memberId)
+        }
+
+        let requiredKeys = tab.starterAssignments.values + tab.substituteMemberIds.compactMap { $0 }
+        var ordered: [TeamMember] = []
+        var seen = Set<String>()
+
+        for key in requiredKeys {
+            guard !seen.contains(key) else { continue }
+            seen.insert(key)
+            if let member = member(for: key, in: resolved) {
+                ordered.append(member)
+            }
+        }
+
+        for member in pool where !seen.contains(member.compositionMemberKey) {
+            ordered.append(member)
+        }
+
+        return ordered
+    }
+
+    private static func member(for key: String, in resolved: [String: TeamMember]) -> TeamMember? {
+        if let member = resolved[key] {
+            return member
+        }
+        for variant in CompositionMemberKey.variants(for: key) {
+            if let member = resolved[variant] {
+                return member
+            }
+        }
+        return nil
+    }
+
+    static func substituteEntries(
+        for tab: CompositionTabDraft,
+        in composition: TeamComposition,
+        pool: [TeamMember]
+    ) -> [CompositionSubstituteEntry] {
+        let members = members(for: tab, in: composition, pool: pool)
+
+        return tab.substituteMemberIds.compactMap { memberId in
+            guard let memberId else { return nil }
+
+            let member = members.first { $0.matchesCompositionMemberKey(memberId) }
+            let assignment = composition.allAssignments.first { assignment in
+                guard let assignmentId = assignment.resolvedMemberId else { return false }
+                return CompositionMemberKey.variants(for: memberId).contains(assignmentId)
+            }
+
+            let displayName: String = {
+                if let member, !member.displayName.isEmpty {
+                    return member.displayName
+                }
+                if let assignment, !assignment.displayName.isEmpty {
+                    return assignment.displayName
+                }
+                return memberId
+            }()
+
+            let fieldDisplayName: String = {
+                if let member {
+                    return member.fieldDisplayName
+                }
+                return TeamMember.fieldDisplayName(
+                    firstName: assignment?.firstName,
+                    lastName: assignment?.lastName,
+                    fallback: displayName
+                )
+            }()
+
+            return CompositionSubstituteEntry(
+                id: memberId,
+                initials: member?.initials ?? CompositionSubstituteEntry.initials(from: displayName),
+                displayName: displayName,
+                fieldDisplayName: fieldDisplayName
+            )
+        }
+    }
+}
+
+struct CompositionSubstituteEntry: Identifiable, Equatable {
+    let id: String
+    let initials: String
+    let displayName: String
+    let fieldDisplayName: String
+
+    static func initials(from name: String) -> String {
+        let parts = name.split(separator: " ")
+        let letters = parts.prefix(2).compactMap(\.first)
+        let value = String(letters).uppercased()
+        return value.isEmpty ? "?" : value
     }
 }
 

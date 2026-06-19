@@ -152,6 +152,7 @@ struct TeamPlayerSeasonStats: Identifiable, Decodable, Equatable {
     let id: String
     let firstName: String?
     let lastName: String?
+    let isGuest: Bool
     let goals: Int
     let ownGoals: Int
     let assists: Int
@@ -196,6 +197,7 @@ struct TeamPlayerSeasonStats: Identifiable, Decodable, Equatable {
         id: String,
         firstName: String? = nil,
         lastName: String? = nil,
+        isGuest: Bool = false,
         goals: Int = 0,
         ownGoals: Int = 0,
         assists: Int = 0,
@@ -216,6 +218,7 @@ struct TeamPlayerSeasonStats: Identifiable, Decodable, Equatable {
         self.id = id
         self.firstName = firstName
         self.lastName = lastName
+        self.isGuest = isGuest
         self.goals = goals
         self.ownGoals = ownGoals
         self.assists = assists
@@ -236,10 +239,11 @@ struct TeamPlayerSeasonStats: Identifiable, Decodable, Equatable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        let user = try container.decodeIfPresent(User.self, forKey: .user)
-        id = user?.id ?? UUID().uuidString
-        firstName = user?.firstName
-        lastName = user?.lastName
+        let profile = PlayerProfile.decode(from: container)
+        id = profile.id
+        firstName = profile.firstName
+        lastName = profile.lastName
+        isGuest = profile.isGuest
         goals = SeasonStatsDecoding.int(from: container, forKey: .goals)
         ownGoals = SeasonStatsDecoding.int(from: container, forKey: .ownGoals)
         assists = SeasonStatsDecoding.int(from: container, forKey: .assists)
@@ -260,6 +264,7 @@ struct TeamPlayerSeasonStats: Identifiable, Decodable, Equatable {
 
     private enum CodingKeys: String, CodingKey {
         case user
+        case guest
         case goals
         case ownGoals
         case assists
@@ -278,28 +283,96 @@ struct TeamPlayerSeasonStats: Identifiable, Decodable, Equatable {
         case matchesPlayed
     }
 
-    private struct User: Decodable {
+    private struct PlayerProfile {
         let id: String
         let firstName: String?
         let lastName: String?
+        let isGuest: Bool
 
-        private enum CodingKeys: String, CodingKey {
+        static func decode(from container: KeyedDecodingContainer<TeamPlayerSeasonStats.CodingKeys>) -> PlayerProfile {
+            if let user = try? container.decode(PlayerRef.self, forKey: .user) {
+                return user.resolvedProfile(defaultIsGuest: false)
+            }
+            if let guest = try? container.decode(PlayerRef.self, forKey: .guest) {
+                return guest.resolvedProfile(defaultIsGuest: true)
+            }
+            return PlayerProfile(
+                id: UUID().uuidString,
+                firstName: nil,
+                lastName: nil,
+                isGuest: false
+            )
+        }
+    }
+
+    private struct PlayerRef: Decodable {
+        let mongoId: String?
+        let id: String?
+        let firstName: String?
+        let lastName: String?
+        let isGuest: Bool?
+
+        enum CodingKeys: String, CodingKey {
             case mongoId = "_id"
             case id
             case firstName
             case lastName
+            case isGuest
         }
 
-        init(from decoder: Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            if let mongoId = try container.decodeIfPresent(String.self, forKey: .mongoId) {
-                id = mongoId
+        func resolvedProfile(defaultIsGuest: Bool) -> PlayerProfile {
+            let rawId = mongoId ?? id ?? ""
+            let guest = isGuest ?? defaultIsGuest
+            let normalizedId: String
+            if guest, !rawId.isEmpty {
+                normalizedId = rawId.hasPrefix("guest_") ? rawId : "guest_\(rawId)"
             } else {
-                id = try container.decode(String.self, forKey: .id)
+                normalizedId = rawId.isEmpty ? UUID().uuidString : rawId
             }
-            firstName = try container.decodeIfPresent(String.self, forKey: .firstName)
-            lastName = try container.decodeIfPresent(String.self, forKey: .lastName)
+
+            return PlayerProfile(
+                id: normalizedId,
+                firstName: firstName,
+                lastName: lastName,
+                isGuest: guest
+            )
         }
+    }
+}
+
+extension TeamSeasonStatsPayload {
+    func enrichedWithRosterGuests(from team: SquadTeam) -> TeamSeasonStatsPayload {
+        let knownIds = Set(players.flatMap { player -> [String] in
+            if player.isGuest {
+                let rawId = player.id.hasPrefix("guest_") ? String(player.id.dropFirst(6)) : player.id
+                return [player.id, rawId]
+            }
+            return [player.id]
+        })
+
+        let missingGuests = team.resolvedMembers
+            .filter { member in
+                member.isGuest
+                    && !knownIds.contains(member.id)
+                    && !knownIds.contains("guest_\(member.id)")
+            }
+            .map { member in
+                TeamPlayerSeasonStats(
+                    id: member.id.hasPrefix("guest_") ? member.id : "guest_\(member.id)",
+                    firstName: member.firstName,
+                    lastName: member.lastName,
+                    isGuest: true
+                )
+            }
+
+        guard !missingGuests.isEmpty else { return self }
+
+        return TeamSeasonStatsPayload(
+            teamId: teamId,
+            season: season,
+            totals: totals,
+            players: players + missingGuests
+        )
     }
 }
 

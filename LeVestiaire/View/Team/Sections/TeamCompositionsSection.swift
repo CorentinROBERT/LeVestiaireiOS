@@ -65,7 +65,7 @@ struct TeamCompositionsSection: View {
                         .foregroundStyle(AppPalette.Neutral.textSecondary)
 
                     if composition.hasAlternativeFormations {
-                        compositionAlternativesBadge(count: composition.alternativeCount)
+                        CompositionAlternativesBadge(count: composition.alternativeCount)
                     }
                 }
                 Spacer()
@@ -88,22 +88,5 @@ struct TeamCompositionsSection: View {
                 }
             }
         }
-    }
-
-    private func compositionAlternativesBadge(count: Int) -> some View {
-        HStack(spacing: 4) {
-            Image(systemName: "square.stack.3d.up.fill")
-                .font(.caption2)
-            Text(L10n.compositionAlternativesLabel(count: count))
-                .font(.caption2.weight(.medium))
-        }
-        .foregroundStyle(AppPalette.Primary.main)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background {
-            Capsule()
-                .fill(AppPalette.Primary.soft)
-        }
-        .accessibilityLabel(L10n.compositionAlternativesLabel(count: count))
     }
 }

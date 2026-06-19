@@ -1,22 +1,21 @@
 //
-//  CreateMatchSheet.swift
+//  EditMatchSheet.swift
 //  LeVestaire
-//
-//  Created by Corentin Robert on 17/06/2026.
 //
 
 import SwiftUI
 
-struct CreateMatchSheet: View {
+struct EditMatchSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var viewModel = CreateMatchViewModel()
+    @StateObject private var viewModel: EditMatchViewModel
 
-    let onCreated: (MatchDetail) -> Void
+    let onSaved: (MatchDetail) -> Void
 
-    @State private var sheetHeight: CGFloat = 620
+    @State private var sheetHeight: CGFloat = 580
 
-    init(onCreated: @escaping (MatchDetail) -> Void = { _ in }) {
-        self.onCreated = onCreated
+    init(match: MatchDetail, onSaved: @escaping (MatchDetail) -> Void) {
+        _viewModel = StateObject(wrappedValue: EditMatchViewModel(match: match))
+        self.onSaved = onSaved
     }
 
     var body: some View {
@@ -25,14 +24,7 @@ struct CreateMatchSheet: View {
 
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
-                    if viewModel.isLoadingTeams {
-                        ProgressView(L10n.loading)
-                            .frame(maxWidth: .infinity)
-                    } else if viewModel.manageableTeams.isEmpty {
-                        emptyTeamsState
-                    } else {
-                        formContent
-                    }
+                    formContent
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
@@ -52,18 +44,15 @@ struct CreateMatchSheet: View {
         }
         .onPreferenceChange(MatchSheetHeightPreferenceKey.self) { height in
             guard height > 0 else { return }
-            sheetHeight = min(height, 720)
+            sheetHeight = min(height, 680)
         }
         .presentationDetents([.height(sheetHeight)])
         .presentationDragIndicator(.visible)
-        .task {
-            await viewModel.loadTeams(force: true)
-        }
     }
 
     private var sheetHeader: some View {
         HStack {
-            Text(L10n.createMatchTitle)
+            Text(L10n.editMatchTitle)
                 .font(.headline)
                 .foregroundStyle(AppPalette.Neutral.textPrimary)
 
@@ -86,14 +75,6 @@ struct CreateMatchSheet: View {
 
     private var formContent: some View {
         VStack(alignment: .leading, spacing: 20) {
-            Text(L10n.matchCreatedDraftHint)
-                .font(.caption)
-                .foregroundStyle(AppPalette.Neutral.textSecondary)
-
-            if viewModel.showsTeamPicker {
-                teamPicker
-            }
-
             UGlassTextField(
                 placeholder: L10n.text("opponentTeam"),
                 icon: "shield.fill",
@@ -110,13 +91,6 @@ struct CreateMatchSheet: View {
 
             dateSection
 
-            UGlassTextField(
-                placeholder: L10n.text("description"),
-                icon: "text.alignleft",
-                text: $viewModel.description,
-                autocapitalization: .sentences
-            )
-
             if let errorMessage = viewModel.errorMessage {
                 Text(errorMessage)
                     .font(.caption)
@@ -124,15 +98,15 @@ struct CreateMatchSheet: View {
             }
 
             UButton(
-                text: L10n.createMatch,
+                text: L10n.saveChanges,
                 textColor: AppPalette.Primary.onMain,
                 backgroundColor: AppPalette.Primary.main,
                 cornerRadius: 12,
                 isFullWidth: true,
                 onPress: {
                     Task {
-                        if let match = await viewModel.createMatch() {
-                            onCreated(match)
+                        if let match = await viewModel.saveChanges() {
+                            onSaved(match)
                             dismiss()
                         }
                     }
@@ -140,22 +114,6 @@ struct CreateMatchSheet: View {
             )
             .opacity(viewModel.canSubmit ? 1 : 0.5)
             .disabled(!viewModel.canSubmit)
-        }
-    }
-
-    private var teamPicker: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(L10n.team)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(AppPalette.Neutral.textSecondary)
-
-            Picker(L10n.team, selection: $viewModel.selectedTeamId) {
-                ForEach(viewModel.manageableTeams) { team in
-                    Text(team.name).tag(Optional(team.id))
-                }
-            }
-            .pickerStyle(.menu)
-            .tint(AppPalette.Primary.main)
         }
     }
 
@@ -191,20 +149,6 @@ struct CreateMatchSheet: View {
         .padding(14)
         .glassEffect(.regular, in: .rect(cornerRadius: 14))
     }
-
-    private var emptyTeamsState: some View {
-        UCard(icon: "person.3.fill", iconTint: AppPalette.Neutral.textTertiary) {
-            Text(
-                viewModel.hasInactiveManageableTeams
-                    ? L10n.text("inactiveTeamMessage")
-                    : L10n.createMatchNoManageableTeam
-            )
-            .font(.subheadline)
-            .foregroundStyle(AppPalette.Neutral.textSecondary)
-            .multilineTextAlignment(.center)
-            .frame(maxWidth: .infinity)
-        }
-    }
 }
 
 private struct MatchSheetHeightPreferenceKey: PreferenceKey {
@@ -214,11 +158,3 @@ private struct MatchSheetHeightPreferenceKey: PreferenceKey {
         value = max(value, nextValue())
     }
 }
-
-#if DEBUG
-#Preview {
-    CreateMatchSheet()
-        .environmentObject(LocalizationManager.shared)
-        .environment(\.locale, LocalizationManager.shared.locale)
-}
-#endif

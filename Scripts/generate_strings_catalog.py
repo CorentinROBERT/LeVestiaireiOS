@@ -20,6 +20,7 @@ INTEGER_PLACEHOLDER_NAMES = frozenset({
     "second",
     "loaded",
     "total",
+    "responded",
     "code",
     "value",
     "goals",

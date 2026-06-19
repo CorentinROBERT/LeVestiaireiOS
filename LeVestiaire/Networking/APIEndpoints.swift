@@ -71,6 +71,10 @@ enum APIEndpoints {
         "/api/v1/guests/\(guestId)"
     }
 
+    static func mergeGuest(_ guestId: String) -> String {
+        "/api/v1/guests/\(guestId)/merge"
+    }
+
     // MARK: - Team Invitations
 
     static func teamInvite(_ teamId: String) -> String {
@@ -151,6 +155,10 @@ enum APIEndpoints {
         "/api/v1/matches/\(matchId)/availability"
     }
 
+    static func matchAvailabilityRoster(_ matchId: String) -> String {
+        "/api/v1/matches/\(matchId)/availability/roster"
+    }
+
     static func matchAvailabilityMe(_ matchId: String) -> String {
         "/api/v1/matches/\(matchId)/availability/me"
     }
@@ -161,6 +169,14 @@ enum APIEndpoints {
 
     static func matchLockComposition(_ matchId: String) -> String {
         "/api/v1/matches/\(matchId)/composition/lock"
+    }
+
+    static func matchComposition(_ matchId: String) -> String {
+        "/api/v1/matches/\(matchId)/composition"
+    }
+
+    static func matchAvailabilityPlayer(_ matchId: String, playerId: String) -> String {
+        "/api/v1/matches/\(matchId)/availability/\(playerId)"
     }
 
     // MARK: - Compositions

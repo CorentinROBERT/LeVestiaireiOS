@@ -48,6 +48,7 @@ struct SquadTeam: Identifiable, Decodable, Equatable {
     let adminId: String?
     let managerIds: [String]?
     let members: [TeamMember]?
+    let guests: [TeamGuest]?
     let memberCount: Int?
     let currentUserRole: TeamRole?
     let invitationCode: String?
@@ -59,14 +60,66 @@ struct SquadTeam: Identifiable, Decodable, Equatable {
     let updatedAt: String?
 
     var resolvedMemberCount: Int {
-        if let memberCount, memberCount > 0 {
-            return memberCount
+        let rosterCount = resolvedMembers.count
+        if rosterCount > 0 {
+            return rosterCount
         }
-        return members?.count ?? 0
+        return memberCount ?? 0
     }
 
     var resolvedMembers: [TeamMember] {
-        members ?? []
+        let regularMembers = members ?? []
+        let embeddedGuestIds = Set(regularMembers.filter(\.isGuest).map(\.id))
+        let additionalGuests = (guests ?? [])
+            .filter { !embeddedGuestIds.contains($0.id) }
+            .map { $0.asTeamMember(teamId: id) }
+        return regularMembers + additionalGuests
+    }
+
+    func withGuests(_ guests: [TeamGuest]) -> SquadTeam {
+        SquadTeam(
+            id: id,
+            name: name,
+            description: description,
+            logoUrl: logoUrl,
+            adminId: adminId,
+            managerIds: managerIds,
+            members: members,
+            guests: guests,
+            memberCount: memberCount,
+            currentUserRole: currentUserRole,
+            invitationCode: invitationCode,
+            invitationExpiryDate: invitationExpiryDate,
+            sport: sport,
+            league: league,
+            isActive: isActive,
+            createdAt: createdAt,
+            updatedAt: updatedAt
+        )
+    }
+
+    func resolvedCurrentUserRole(userId: String?) -> TeamRole? {
+        if let currentUserRole {
+            return currentUserRole
+        }
+
+        guard let userId, !userId.isEmpty else { return nil }
+
+        if adminId == userId {
+            return .admin
+        }
+
+        if let managerIds, managerIds.contains(userId) {
+            return .manager
+        }
+
+        return resolvedMembers.first(where: { member in
+            member.userId == userId || member.id == userId
+        })?.role
+    }
+
+    func userCanManageTeam(userId: String?) -> Bool {
+        resolvedCurrentUserRole(userId: userId)?.canManageTeam == true
     }
 
     init(
@@ -77,6 +130,7 @@ struct SquadTeam: Identifiable, Decodable, Equatable {
         adminId: String? = nil,
         managerIds: [String]? = nil,
         members: [TeamMember]? = nil,
+        guests: [TeamGuest]? = nil,
         memberCount: Int? = nil,
         currentUserRole: TeamRole? = nil,
         invitationCode: String? = nil,
@@ -94,6 +148,7 @@ struct SquadTeam: Identifiable, Decodable, Equatable {
         self.adminId = adminId
         self.managerIds = managerIds
         self.members = members
+        self.guests = guests
         self.memberCount = memberCount
         self.currentUserRole = currentUserRole
         self.invitationCode = invitationCode
@@ -119,10 +174,13 @@ struct SquadTeam: Identifiable, Decodable, Equatable {
         adminId = try container.decodeIfPresent(String.self, forKey: .adminId)
         managerIds = try container.decodeIfPresent([String].self, forKey: .managerIds)
         members = try container.decodeIfPresent([TeamMember].self, forKey: .members)
+            ?? container.decodeIfPresent([TeamMember].self, forKey: .players)
+        guests = try container.decodeIfPresent([TeamGuest].self, forKey: .guests)
         memberCount = TeamDecoding.decodeInt(from: container, forKey: .memberCount)
         currentUserRole = TeamRole.decode(from: container, forKey: .currentUserRole)
             ?? TeamRole.decode(from: container, forKey: .role)
             ?? TeamRole.decode(from: container, forKey: .userRole)
+            ?? TeamRole.decode(from: container, forKey: .myRole)
         invitationCode = try container.decodeIfPresent(String.self, forKey: .invitationCode)
         invitationExpiryDate = try container.decodeIfPresent(String.self, forKey: .invitationExpiryDate)
         sport = try container.decodeIfPresent(String.self, forKey: .sport)
@@ -144,10 +202,13 @@ struct SquadTeam: Identifiable, Decodable, Equatable {
         case adminId
         case managerIds
         case members
+        case players
+        case guests
         case memberCount
         case currentUserRole
         case role
         case userRole
+        case myRole
         case invitationCode
         case invitationExpiryDate
         case sport
@@ -190,6 +251,27 @@ struct TeamMember: Identifiable, Decodable, Equatable {
         let last = lastName?.first.map(String.init) ?? ""
         let value = (first + last).uppercased()
         return value.isEmpty ? "?" : value
+    }
+
+    /// Ex. « Lucas M » — prénom + initiale du nom, pour les terrains compacts.
+    var fieldDisplayName: String {
+        Self.fieldDisplayName(firstName: firstName, lastName: lastName, fallback: displayName)
+    }
+
+    static func fieldDisplayName(firstName: String?, lastName: String?, fallback: String) -> String {
+        let first = firstName?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let last = lastName?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+
+        if !first.isEmpty, let initial = last.first {
+            return "\(first) \(String(initial).uppercased())"
+        }
+        if !first.isEmpty {
+            return first
+        }
+        if !last.isEmpty {
+            return last
+        }
+        return fallback
     }
 
     init(
@@ -246,7 +328,12 @@ struct TeamMember: Identifiable, Decodable, Equatable {
         position = try container.decodeIfPresent(String.self, forKey: .position)
         joinedAt = try container.decodeIfPresent(String.self, forKey: .joinedAt)
         isActive = try container.decodeIfPresent(Bool.self, forKey: .isActive)
-        isGuest = (try? container.decodeIfPresent(Bool.self, forKey: .isGuest)) ?? false
+        if let type = try container.decodeIfPresent(String.self, forKey: .type),
+           type.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == "guest" {
+            isGuest = true
+        } else {
+            isGuest = (try? container.decodeIfPresent(Bool.self, forKey: .isGuest)) ?? false
+        }
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -264,6 +351,7 @@ struct TeamMember: Identifiable, Decodable, Equatable {
         case joinedAt
         case isActive
         case isGuest
+        case type
         case user
     }
 
@@ -294,6 +382,67 @@ struct TeamGuest: Identifiable, Decodable, Equatable {
             return email
         }
         return L10n.text("guestLabel")
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try TeamDecoding.decodeId(from: container)
+        firstName = try container.decodeIfPresent(String.self, forKey: .firstName)
+        lastName = try container.decodeIfPresent(String.self, forKey: .lastName)
+        email = try container.decodeIfPresent(String.self, forKey: .email)
+        jerseyNumber = TeamDecoding.decodeInt(from: container, forKey: .jerseyNumber)
+            ?? TeamDecoding.decodeInt(from: container, forKey: .number)
+        notes = try container.decodeIfPresent(String.self, forKey: .notes)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case mongoId = "_id"
+        case id
+        case firstName
+        case lastName
+        case email
+        case jerseyNumber
+        case number
+        case notes
+    }
+}
+
+extension TeamGuest {
+    func asTeamMember(teamId: String? = nil) -> TeamMember {
+        TeamMember(
+            id: id,
+            teamId: teamId,
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+            jerseyNumber: jerseyNumber,
+            isGuest: true
+        )
+    }
+}
+
+extension TeamMember {
+    var compositionMemberKey: String {
+        if isGuest {
+            return CompositionMemberKey.forGuest(id)
+        }
+        return userId ?? id
+    }
+
+    var compositionKeyVariants: Set<String> {
+        if isGuest {
+            return CompositionMemberKey.variants(for: CompositionMemberKey.forGuest(id))
+        }
+
+        var keys: Set<String> = [id]
+        if let userId {
+            keys.insert(userId)
+        }
+        return keys
+    }
+
+    func matchesCompositionMemberKey(_ key: String) -> Bool {
+        !compositionKeyVariants.isDisjoint(with: CompositionMemberKey.variants(for: key))
     }
 }
 
@@ -339,6 +488,10 @@ struct CreateGuestRequest: Encodable {
     let email: String?
     let jerseyNumber: Int?
     let notes: String?
+}
+
+struct MergeGuestRequest: Encodable {
+    let userId: String
 }
 
 struct UpdateMemberRoleRequest: Encodable {
@@ -400,6 +553,10 @@ struct RankingPlayerEntry: Identifiable, Decodable, Equatable {
         if goals > 0, assists == 0 { return goals }
         if assists > 0, goals == 0 { return assists }
         return goals + assists
+    }
+
+    var isGuest: Bool {
+        id.hasPrefix("guest_")
     }
 
     init(

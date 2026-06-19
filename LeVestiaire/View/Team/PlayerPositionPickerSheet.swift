@@ -19,12 +19,10 @@ struct PlayerPositionPickerSheet: View {
 
     private var filteredMembers: [TeamMember] {
         members.filter { member in
-            let memberKey = member.id
             if showsAssignedPlayers {
                 return true
             }
-            return !assignedMemberIds.contains(memberKey)
-                && !(member.userId.map { assignedMemberIds.contains($0) } ?? false)
+            return !assignedMemberIds.contains(where: { member.matchesCompositionMemberKey($0) })
         }
     }
 
@@ -85,8 +83,7 @@ struct PlayerPositionPickerSheet: View {
 
                                 Spacer()
 
-                                if assignedMemberIds.contains(member.id)
-                                    || (member.userId.map { assignedMemberIds.contains($0) } ?? false) {
+                                if assignedMemberIds.contains(where: { member.matchesCompositionMemberKey($0) }) {
                                     Text(L10n.text("compositionStarters"))
                                         .font(.caption2)
                                         .foregroundStyle(AppPalette.Neutral.textTertiary)

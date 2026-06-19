@@ -368,6 +368,11 @@ struct TeamPodiumView: View {
                 .foregroundStyle(AppPalette.Neutral.textPrimary)
                 .lineLimit(2)
                 .multilineTextAlignment(.center)
+
+            if entry.isGuest {
+                TeamGuestBadge()
+            }
+
             Text("\(entry.scoreValue)")
                 .font(.subheadline.weight(.bold))
                 .foregroundStyle(AppPalette.Primary.dark)

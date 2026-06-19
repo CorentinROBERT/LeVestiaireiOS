@@ -9,6 +9,11 @@ import SwiftUI
 
 struct Matchs: View {
     @StateObject private var viewModel = MatchsViewModel()
+    @State private var openedMatchDetail: MatchDetailRoute?
+
+    private struct MatchDetailRoute: Identifiable, Hashable {
+        let id: String
+    }
 
     private enum ActionButtonMetrics {
         static let cornerRadius: CGFloat = 18
@@ -33,11 +38,15 @@ struct Matchs: View {
             }
         }
         .navigationDestination(for: String.self) { matchId in
-            MatchDetailView(matchId: matchId)
+            matchDetailView(matchId: matchId)
+        }
+        .navigationDestination(item: $openedMatchDetail) { route in
+            matchDetailView(matchId: route.id)
         }
         .sheet(isPresented: $viewModel.showsFilters) {
             MatchFiltersSheet(
                 filters: $viewModel.filters,
+                teams: viewModel.userTeams,
                 onApply: {
                     Task { await viewModel.applyFilters(viewModel.filters) }
                 },
@@ -47,10 +56,31 @@ struct Matchs: View {
             )
         }
         .sheet(isPresented: $viewModel.showsCreateMatch) {
-            CreateMatchSheet()
+            CreateMatchSheet { detail in
+                viewModel.insertCreatedMatch(detail)
+                openedMatchDetail = MatchDetailRoute(id: detail.id)
+            }
+        }
+        .sheet(item: $viewModel.editingMatch) { match in
+            EditMatchSheet(match: match) { updatedMatch in
+                viewModel.updateMatchInListing(updatedMatch)
+            }
+        }
+        .overlay {
+            if viewModel.isPreparingEditMatch {
+                ProgressView(L10n.loading)
+                    .padding(20)
+                    .glassEffect(.regular, in: .rect(cornerRadius: 16))
+            }
         }
         .task {
             await viewModel.initialize()
+        }
+    }
+
+    private func matchDetailView(matchId: String) -> some View {
+        MatchDetailView(matchId: matchId) { id in
+            Task { await viewModel.refreshMatchInListing(id: id) }
         }
     }
 
@@ -71,13 +101,7 @@ struct Matchs: View {
                     emptyState
                 } else {
                     ForEach(viewModel.matches) { match in
-                        NavigationLink(value: match.id) {
-                            MatchCardView(match: match)
-                        }
-                        .buttonStyle(.plain)
-                        .task {
-                            await viewModel.loadNextPageIfNeeded(currentMatch: match)
-                        }
+                        matchRow(match)
                     }
 
                     paginationFooter
@@ -89,6 +113,67 @@ struct Matchs: View {
         }
         .refreshable {
             await viewModel.refresh()
+        }
+        .overlay(alignment: .bottom) {
+            if let feedback = viewModel.availabilityFeedback {
+                Text(feedback)
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(AppPalette.Primary.onMain)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(
+                        Capsule().fill(AppPalette.Semantic.error)
+                    )
+                    .padding(.bottom, 12)
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                            viewModel.availabilityFeedback = nil
+                        }
+                    }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func matchRow(_ match: MatchItem) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            NavigationLink(value: match.id) {
+                MatchCardView(match: match)
+            }
+            .buttonStyle(.plain)
+            .contextMenu {
+                if match.canEditFromListing {
+                    Button {
+                        Task { await viewModel.openEditMatch(id: match.id) }
+                    } label: {
+                        Label(L10n.editMatchInfo, systemImage: "pencil")
+                    }
+                }
+            }
+
+            if match.canRespondFromListing {
+                MatchAvailabilityQuickRespondBar(
+                    selectedStatus: match.myAvailabilityStatus,
+                    isSubmitting: viewModel.isSubmittingAvailability(for: match.id)
+                ) { status in
+                    Task {
+                        await viewModel.submitAvailability(for: match.id, status: status)
+                    }
+                }
+            }
+        }
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            if match.canEditFromListing {
+                Button {
+                    Task { await viewModel.openEditMatch(id: match.id) }
+                } label: {
+                    Label(L10n.editMatchInfo, systemImage: "pencil")
+                }
+                .tint(AppPalette.Primary.main)
+            }
+        }
+        .task {
+            await viewModel.loadNextPageIfNeeded(currentMatch: match)
         }
     }
 
@@ -214,6 +299,12 @@ struct Matchs: View {
             let labels = viewModel.filters.statuses
                 .sorted { $0.rawValue < $1.rawValue }
                 .map(\.displayName)
+            parts.append(labels.joined(separator: ", "))
+        }
+        if !viewModel.filters.teamIds.isEmpty {
+            let labels = viewModel.filters.teamIds
+                .sorted()
+                .compactMap { viewModel.teamName(for: $0) ?? $0 }
             parts.append(labels.joined(separator: ", "))
         }
         if viewModel.filters.fromDate != nil || viewModel.filters.toDate != nil {

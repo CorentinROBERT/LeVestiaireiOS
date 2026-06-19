@@ -50,6 +50,7 @@ enum L10n {
     static var reset: String { text("reset") }
     static var apply: String { text("apply") }
     static var filterStatusLabel: String { text("filterStatusLabel") }
+    static var filterTeamsLabel: String { text("filterTeamsLabel") }
     static var modify: String { text("modify") }
     static var retry: String { text("retry") }
     static var error: String { text("error") }
@@ -73,6 +74,56 @@ enum L10n {
     static var cancelled: String { text("cancelled") }
     static var postponed: String { text("postponed") }
     static var upcoming: String { text("upcoming") }
+    static var draft: String { text("draft") }
+    static var availabilityClosed: String { text("availabilityClosed") }
+    static var publishBlockerMissingMinimalInfo: String { text("publishBlockerMissingMinimalInfo") }
+    static var publishBlockerMissingComposition: String { text("publishBlockerMissingComposition") }
+    static var publishBlockerInsufficientAvailability: String { text("publishBlockerInsufficientAvailability") }
+    static var indicateYourAvailability: String { text("indicateYourAvailability") }
+    static var publishMatchAction: String { text("publishMatchAction") }
+    static var publishMatchConfirmation: String { text("publishMatchConfirmation") }
+    static var availabilityForcedByStaff: String { text("availabilityForcedByStaff") }
+    static var matchPreparationHubTitle: String { text("matchPreparationHubTitle") }
+    static var matchCreatedDraftHint: String { text("matchCreatedDraftHint") }
+    static var includeMatchTime: String { text("includeMatchTime") }
+    static var createMatchNoManageableTeam: String { text("createMatchNoManageableTeam") }
+    static var eventMinuteLabel: String { text("eventMinuteLabel") }
+    static var selectPlayer: String { text("selectPlayer") }
+    static var applyTeamTemplate: String { text("applyTeamTemplate") }
+    static var editMatchComposition: String { text("editMatchComposition") }
+    static var editMatchTitle: String { text("editMatchTitle") }
+    static var editMatchInfo: String { text("editMatchInfo") }
+    static var viewMatchComposition: String { text("viewMatchComposition") }
+    static var cancelMatch: String { text("cancelMatch") }
+    static var postponeMatch: String { text("postponeMatch") }
+    static var postponeMatchConfirmation: String { text("postponeMatchConfirmation") }
+    static var saveChanges: String { text("saveChanges") }
+
+    static func compositionStartersCount(_ count: Int) -> String {
+        format("compositionStartersCount", count)
+    }
+
+    static func compositionSubstitutesCount(_ count: Int) -> String {
+        format("compositionSubstitutesCount", count)
+    }
+
+    static var compositionViewerAlternativesHint: String { text("compositionViewerAlternativesHint") }
+
+    static func myAvailabilityResponse(_ status: String) -> String {
+        format("myAvailabilityResponse", status)
+    }
+
+    static func availabilityResponsesSummary(responded: Int, total: Int) -> String {
+        format("availabilityResponsesSummary", responded, total)
+    }
+
+    static func presentPlayersCount(_ count: Int) -> String {
+        format("presentPlayersCount", count)
+    }
+
+    static func selectablePlayersCount(_ count: Int) -> String {
+        format("selectablePlayersCount", count)
+    }
     static var scoreHidden: String { text("scoreHidden") }
     static var vs: String { text("vs") }
     static var opponentToBeDefined: String { text("opponentToBeDefined") }

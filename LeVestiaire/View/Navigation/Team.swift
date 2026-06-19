@@ -88,6 +88,10 @@ struct Team: View {
         .refreshable {
             await viewModel.refresh(currentTab: selectedTab)
         }
+        .sheet(item: $viewModel.guestPendingMerge) { guest in
+            MergeGuestSheet(viewModel: viewModel, guest: guest)
+                .presentationDetents([.medium, .large])
+        }
         .sheet(item: $viewModel.activeSheet, onDismiss: {
             viewModel.editingComposition = nil
         }) { sheet in

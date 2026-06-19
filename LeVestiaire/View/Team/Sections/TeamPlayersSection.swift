@@ -61,7 +61,11 @@ struct TeamPlayersSection: View {
 
             if viewModel.canManageTeam {
                 Menu {
-                    if !member.isGuest {
+                    if member.isGuest {
+                        Button(L10n.text("mergeGuestWithPlayer")) {
+                            viewModel.presentMergeGuest(member)
+                        }
+                    } else {
                         ForEach(TeamRole.allCases) { role in
                             Button(role.localizedLabel) {
                                 Task { await viewModel.updateMemberRole(memberId: member.id, role: role) }

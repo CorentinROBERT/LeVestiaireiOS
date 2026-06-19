@@ -69,6 +69,10 @@ struct TeamRankingsSection: View {
                 .font(.subheadline)
                 .foregroundStyle(AppPalette.Neutral.textPrimary)
 
+            if entry.isGuest {
+                TeamGuestBadge()
+            }
+
             Spacer()
 
             Text("\(entry.scoreValue)")
