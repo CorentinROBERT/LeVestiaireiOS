@@ -7,35 +7,105 @@ import SwiftUI
 
 struct TeamInvitationsSection: View {
     @ObservedObject var viewModel: TeamViewModel
+    @State private var isExpanded = false
 
     var body: some View {
-        UCard(
-            title: L10n.format("sentInvitations", viewModel.teamInvitations.count),
-            icon: "envelope.open.fill"
-        ) {
-            if viewModel.isLoadingInvitations {
-                TeamLoadingPlaceholder(rowCount: 2)
-            } else if let error = viewModel.invitationsLoadError {
-                TeamSectionErrorView(message: error) {
-                    Task { await viewModel.retryInvitations() }
-                }
-            } else if viewModel.teamInvitations.isEmpty {
-                TeamEmptyState(
-                    icon: "envelope",
-                    title: L10n.text("noInvitationsSent"),
-                    actionTitle: L10n.text("inviterJoueur"),
-                    action: {
-                        viewModel.activeSheet = .invitePlayer
-                    }
-                )
-            } else {
-                VStack(spacing: 12) {
-                    ForEach(viewModel.teamInvitations) { invitation in
-                        invitationRow(invitation)
-                    }
+        UCard {
+            VStack(alignment: .leading, spacing: isExpanded ? 16 : 12) {
+                headerButton
+
+                if isExpanded {
+                    expandedContent
+                } else {
+                    collapsedSummary
                 }
             }
         }
+    }
+
+    private var headerButton: some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.25)) {
+                isExpanded.toggle()
+            }
+            TeamHaptics.lightImpact()
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "envelope.open.fill")
+                    .foregroundStyle(AppPalette.Primary.main)
+
+                Text(L10n.format("sentInvitations", viewModel.teamInvitations.count))
+                    .font(.headline)
+                    .foregroundStyle(AppPalette.Primary.dark)
+
+                Spacer(minLength: 0)
+
+                if viewModel.isLoadingInvitations {
+                    ProgressView()
+                        .controlSize(.small)
+                }
+
+                Image(systemName: "chevron.down")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(AppPalette.Neutral.textSecondary)
+                    .rotationEffect(.degrees(isExpanded ? 180 : 0))
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    private var collapsedSummary: some View {
+        if let error = viewModel.invitationsLoadError {
+            TeamSectionErrorText(message: error)
+        } else if viewModel.isLoadingInvitations {
+            Text(L10n.loading)
+                .font(.caption)
+                .foregroundStyle(AppPalette.Neutral.textSecondary)
+        } else if viewModel.teamInvitations.isEmpty {
+            Text(L10n.text("noInvitationsSent"))
+                .font(.caption)
+                .foregroundStyle(AppPalette.Neutral.textSecondary)
+        } else {
+            Text(pendingInvitationsSummary)
+                .font(.caption)
+                .foregroundStyle(AppPalette.Neutral.textSecondary)
+        }
+    }
+
+    @ViewBuilder
+    private var expandedContent: some View {
+        if viewModel.isLoadingInvitations {
+            TeamLoadingPlaceholder(rowCount: 2)
+        } else if let error = viewModel.invitationsLoadError {
+            TeamSectionErrorView(message: error) {
+                Task { await viewModel.retryInvitations() }
+            }
+        } else if viewModel.teamInvitations.isEmpty {
+            TeamEmptyState(
+                icon: "envelope",
+                title: L10n.text("noInvitationsSent"),
+                actionTitle: L10n.text("inviterJoueur"),
+                action: {
+                    viewModel.activeSheet = .invitePlayer
+                }
+            )
+        } else {
+            VStack(spacing: 12) {
+                ForEach(viewModel.teamInvitations) { invitation in
+                    invitationRow(invitation)
+                }
+            }
+        }
+    }
+
+    private var pendingInvitationsSummary: String {
+        let pendingCount = viewModel.teamInvitations.filter { $0.status == .pending }.count
+        if pendingCount > 0 {
+            return L10n.format("pendingInvitationsCount", pendingCount)
+        }
+        return L10n.format("sentInvitations", viewModel.teamInvitations.count)
     }
 
     private func invitationRow(_ invitation: TeamInvitation) -> some View {
