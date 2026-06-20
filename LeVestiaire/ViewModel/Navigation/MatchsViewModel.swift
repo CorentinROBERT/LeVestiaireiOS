@@ -121,7 +121,10 @@ final class MatchsViewModel: ObservableObject {
             _ = try await matchService.updateMyAvailability(matchId: matchId, status: status)
             let detail = try await matchService.fetchMatch(id: matchId)
             if let index = matches.firstIndex(where: { $0.id == matchId }) {
-                matches[index] = detail.toMatchItem()
+                matches[index] = detail.toMatchItem().preservingListingContext(
+                    from: matches[index],
+                    teamNameResolver: teamName(for:)
+                )
             }
         } catch let error as MatchServiceError {
             availabilityFeedback = error.errorDescription
@@ -135,8 +138,12 @@ final class MatchsViewModel: ObservableObject {
     }
 
     func updateMatchInListing(_ detail: MatchDetail, insertIfMissing: Bool = false) {
-        let item = detail.toMatchItem()
+        var item = detail.toMatchItem().resolvingHomeTeamName(using: teamName(for:))
         guard !item.id.isEmpty else { return }
+
+        if let index = matches.firstIndex(where: { $0.id == item.id }) {
+            item = item.preservingListingContext(from: matches[index], teamNameResolver: teamName(for:))
+        }
 
         if filters.includes(item) {
             if let index = matches.firstIndex(where: { $0.id == item.id }) {

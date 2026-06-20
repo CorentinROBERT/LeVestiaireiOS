@@ -48,6 +48,10 @@ struct MatchDetailView: View {
             VStack(alignment: .leading, spacing: 16) {
                 matchHeroCard(match)
 
+                if match.status == .cancelled {
+                    cancelledBanner
+                }
+
                 if viewModel.showsRespondSection {
                     availabilityRespondSection(match)
                 }
@@ -56,16 +60,17 @@ struct MatchDetailView: View {
                     MatchPrepareHubSection(viewModel: viewModel)
                 }
 
-                if match.status == .upcoming {
+                if match.status == .upcoming, !viewModel.showsPrepareHub {
                     MatchUpcomingActionsSection(viewModel: viewModel)
                 }
 
-                if viewModel.showsLivePanel {
-                    MatchLiveSection(viewModel: viewModel, match: match)
-                }
-
-                if !viewModel.showsPrepareHub, match.composition != nil {
-                    MatchCompositionSummarySection(viewModel: viewModel, match: match)
+                if let tabConfiguration = viewModel.tabConfiguration {
+                    MatchDetailTabsSection(
+                        viewModel: viewModel,
+                        match: match,
+                        configuration: tabConfiguration
+                    )
+                    .id("\(match.id)-\(match.status.rawValue)")
                 }
 
                 if let errorMessage = viewModel.errorMessage {
@@ -78,14 +83,51 @@ struct MatchDetailView: View {
         }
     }
 
+    private var cancelledBanner: some View {
+        UCard(title: L10n.text("matchCancelled"), icon: "xmark.circle.fill") {
+            Text(L10n.text("matchCancelledBeforeStart"))
+                .font(.subheadline)
+                .foregroundStyle(AppPalette.Neutral.textSecondary)
+        }
+    }
+
     private func matchHeroCard(_ match: MatchDetail) -> some View {
-        UCard(title: match.resolvedStatusLabel, icon: "sportscourt.fill") {
-            VStack(alignment: .leading, spacing: 8) {
+        UCard(title: match.title, icon: "sportscourt.fill") {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 8) {
+                    Text(match.resolvedStatusLabel)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(AppPalette.Primary.onMain)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule()
+                                .fill(match.status.color)
+                        )
+
+                    Spacer(minLength: 0)
+                }
+
+                if let homeTeamName = match.homeTeamName, !homeTeamName.isEmpty {
+                    Text(homeTeamName)
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(AppPalette.Primary.main)
+                }
+
                 if let opponentTeam = match.opponentTeam, !opponentTeam.isEmpty {
-                    Text(opponentTeam)
+                    Text("\(L10n.vs) \(opponentTeam)")
                         .font(.headline)
                         .foregroundStyle(AppPalette.Neutral.textPrimary)
                 }
+
+                HStack(spacing: 12) {
+                    Label(match.toMatchItem().formattedDate, systemImage: "calendar")
+                    if let time = match.toMatchItem().formattedTime {
+                        Label(time, systemImage: "clock")
+                    }
+                }
+                .font(.caption)
+                .foregroundStyle(AppPalette.Neutral.textSecondary)
 
                 if let location = match.location, !location.isEmpty {
                     Label(location, systemImage: "mappin.and.ellipse")

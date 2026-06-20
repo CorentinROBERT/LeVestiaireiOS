@@ -89,6 +89,70 @@ struct MatchItem: Identifiable, Decodable, Hashable {
             )
     }
 
+    func preservingListingContext(
+        from previous: MatchItem,
+        teamNameResolver: (String) -> String? = { _ in nil }
+    ) -> MatchItem {
+        let resolvedHomeTeamName = homeTeamName
+            ?? previous.homeTeamName
+            ?? teamId.flatMap { teamNameResolver($0) }
+            ?? previous.teamId.flatMap { teamNameResolver($0) }
+
+        return MatchItem(
+            id: id,
+            title: title,
+            status: status,
+            statusLabel: statusLabel ?? previous.statusLabel,
+            preparationPhase: preparationPhase ?? previous.preparationPhase,
+            isPreparationLocked: isPreparationLocked,
+            isCompositionLocked: isCompositionLocked,
+            canPublish: canPublish,
+            publishBlockers: publishBlockers.isEmpty ? previous.publishBlockers : publishBlockers,
+            myAvailabilityStatus: myAvailabilityStatus ?? previous.myAvailabilityStatus,
+            availabilitySummary: availabilitySummary ?? previous.availabilitySummary,
+            capabilities: capabilities,
+            opponentTeam: opponentTeam ?? previous.opponentTeam,
+            location: location ?? previous.location,
+            homeTeamName: resolvedHomeTeamName,
+            teamId: teamId ?? previous.teamId,
+            date: date,
+            startTime: startTime ?? previous.startTime,
+            homeScore: homeScore ?? previous.homeScore,
+            awayScore: awayScore ?? previous.awayScore
+        )
+    }
+
+    func resolvingHomeTeamName(using resolver: (String) -> String?) -> MatchItem {
+        guard homeTeamName == nil,
+              let teamId,
+              let name = resolver(teamId) else {
+            return self
+        }
+
+        return MatchItem(
+            id: id,
+            title: title,
+            status: status,
+            statusLabel: statusLabel,
+            preparationPhase: preparationPhase,
+            isPreparationLocked: isPreparationLocked,
+            isCompositionLocked: isCompositionLocked,
+            canPublish: canPublish,
+            publishBlockers: publishBlockers,
+            myAvailabilityStatus: myAvailabilityStatus,
+            availabilitySummary: availabilitySummary,
+            capabilities: capabilities,
+            opponentTeam: opponentTeam,
+            location: location,
+            homeTeamName: name,
+            teamId: teamId,
+            date: date,
+            startTime: startTime,
+            homeScore: homeScore,
+            awayScore: awayScore
+        )
+    }
+
     init(
         id: String,
         title: String,
@@ -152,7 +216,12 @@ struct MatchItem: Identifiable, Decodable, Hashable {
         capabilities = try container.decodeIfPresent(MatchCapabilities.self, forKey: .capabilities) ?? .empty
         opponentTeam = try container.decodeIfPresent(String.self, forKey: .opponentTeam)
         location = try container.decodeIfPresent(String.self, forKey: .location)
-        homeTeamName = try container.decodeIfPresent(String.self, forKey: .homeTeamName)
+        homeTeamName = MatchSharedDecoding.resolveTeamName(
+            from: container,
+            homeTeamName: .homeTeamName,
+            homeTeam: .homeTeam,
+            team: .team
+        )
         teamId = MatchSharedDecoding.resolveTeamId(
             from: container,
             teamId: .teamId,

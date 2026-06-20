@@ -1169,6 +1169,7 @@
   "injuredPlayer": "Injured player",
   "associatedPlayer": "Associated player",
   "matchNotStartedYet": "The match has not started yet",
+  "matchStatsAvailableAfterMatch": "Statistics will be available after the match.",
   "matchIsFinished": "The match is finished",
   "useTopButtonsToManageMatch": "Use the buttons at the top of the page to manage the match",
   "starter": "Starter",

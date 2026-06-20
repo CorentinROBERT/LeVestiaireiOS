@@ -28,14 +28,27 @@ struct FormationFieldView: View {
     private var nameShadowRadius: CGFloat { compact ? 1.5 : 2 * markerScale }
     private var fieldCornerRadius: CGFloat { compact ? 12 : 16 }
     private var fieldAspectRatio: CGFloat { 0.68 }
+    static let compactFieldHeight: CGFloat = 272
     private var fieldInset: CGFloat { compact ? 6 : 8 }
-    private var compactMaxHeight: CGFloat { 272 }
 
     private var formation: FormationTemplate {
         FormationCatalog.template(for: formationKey) ?? FormationCatalog.all[0]
     }
 
     var body: some View {
+        Group {
+            if compact {
+                fieldContent
+                    .frame(height: Self.compactFieldHeight)
+            } else {
+                fieldContent
+                    .aspectRatio(fieldAspectRatio, contentMode: .fit)
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: fieldCornerRadius))
+    }
+
+    private var fieldContent: some View {
         GeometryReader { geometry in
             ZStack {
                 RoundedRectangle(cornerRadius: fieldCornerRadius)
@@ -69,9 +82,6 @@ struct FormationFieldView: View {
                 }
             }
         }
-        .aspectRatio(fieldAspectRatio, contentMode: .fit)
-        .frame(maxHeight: compact ? compactMaxHeight : nil)
-        .clipShape(RoundedRectangle(cornerRadius: fieldCornerRadius))
     }
 
     @ViewBuilder

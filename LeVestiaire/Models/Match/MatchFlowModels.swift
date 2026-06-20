@@ -41,14 +41,24 @@ enum MatchSharedDecoding {
     struct TeamReference: Decodable {
         let id: String?
         let mongoId: String?
+        let name: String?
 
         enum CodingKeys: String, CodingKey {
             case id
             case mongoId = "_id"
+            case name
         }
 
         var resolvedId: String? {
             mongoId ?? id
+        }
+
+        var resolvedName: String? {
+            guard let rawName = name?.trimmingCharacters(in: .whitespacesAndNewlines),
+                  !rawName.isEmpty else {
+                return nil
+            }
+            return rawName
         }
     }
 
@@ -69,6 +79,26 @@ enum MatchSharedDecoding {
         }
         if let team = try? container.decodeIfPresent(TeamReference.self, forKey: team) {
             return team.resolvedId
+        }
+        return nil
+    }
+
+    static func resolveTeamName<K: CodingKey>(
+        from container: KeyedDecodingContainer<K>,
+        homeTeamName: K,
+        homeTeam: K,
+        team: K
+    ) -> String? {
+        if let name = try? container.decodeIfPresent(String.self, forKey: homeTeamName)?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+           !name.isEmpty {
+            return name
+        }
+        if let homeTeamRef = try? container.decodeIfPresent(TeamReference.self, forKey: homeTeam) {
+            return homeTeamRef.resolvedName
+        }
+        if let teamRef = try? container.decodeIfPresent(TeamReference.self, forKey: team) {
+            return teamRef.resolvedName
         }
         return nil
     }
@@ -197,13 +227,100 @@ enum MatchEventType: String, Codable, CaseIterable, Hashable {
     case yellowCard
     case redCard
     case substitution
+    case matchStart
+    case matchEnd
+    case shotOnTarget
+    case save
+    case injury
+    case manOfTheMatch
+    case shlag
+    case other
+
+    static var userCreatableCases: [MatchEventType] {
+        [.goal, .ownGoal, .opponentGoal, .opponentOwnGoal, .assist, .yellowCard, .redCard, .substitution]
+    }
+
+    var isSystemGenerated: Bool {
+        switch self {
+        case .matchStart, .matchEnd:
+            return true
+        default:
+            return false
+        }
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let rawValue = try container.decode(String.self)
+        guard let resolved = Self.resolve(from: rawValue) else {
+            throw DecodingError.dataCorruptedError(
+                in: container,
+                debugDescription: "Unsupported match event type: \(rawValue)"
+            )
+        }
+        self = resolved
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(rawValue)
+    }
+
+    static func resolve(from rawValue: String) -> MatchEventType? {
+        let normalized = rawValue
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+            .replacingOccurrences(of: "-", with: "_")
+            .replacingOccurrences(of: " ", with: "_")
+
+        switch normalized {
+        case "goal", "event_type_goal", "eventtypegoal":
+            return .goal
+        case "own_goal", "owngoal", "own_goal_event", "event_type_own_goal", "eventtypeowngoal":
+            return .ownGoal
+        case "opponent_goal", "opponentgoal", "event_type_opponent_goal":
+            return .opponentGoal
+        case "opponent_own_goal", "opponentowngoal", "event_type_opponent_own_goal":
+            return .opponentOwnGoal
+        case "assist", "event_type_assist", "eventtypeassist":
+            return .assist
+        case "yellow_card", "yellowcard", "event_type_yellow_card", "eventtypeyellowcard":
+            return .yellowCard
+        case "red_card", "redcard", "event_type_red_card", "eventtyperedcard":
+            return .redCard
+        case "substitution", "sub", "event_type_substitution", "eventtypesubstitution":
+            return .substitution
+        case "match_start", "matchstart", "kick_off", "kickoff", "start", "match_started", "matchstarted":
+            return .matchStart
+        case "match_end", "matchend", "match_finished", "matchfinished", "finish", "end", "full_time", "fulltime":
+            return .matchEnd
+        case "shot_on_target", "shotontarget", "event_type_shot_on_target":
+            return .shotOnTarget
+        case "save", "goalkeeper_save", "goalkeepersave", "event_type_save":
+            return .save
+        case "injury", "event_type_injury":
+            return .injury
+        case "man_of_the_match", "manofthematch", "motm", "event_type_man_of_the_match":
+            return .manOfTheMatch
+        case "shlag", "event_type_shlag":
+            return .shlag
+        default:
+            if let match = MatchEventType(rawValue: rawValue) {
+                return match
+            }
+            if let match = MatchEventType(rawValue: normalized.snakeCaseToLowerCamel()) {
+                return match
+            }
+            return .other
+        }
+    }
 
     var displayName: String {
         switch self {
         case .goal:
             return L10n.text("goal")
         case .ownGoal:
-            return L10n.text("eventTypeOwnGoal")
+            return L10n.text("ownGoalEvent")
         case .opponentGoal:
             return L10n.text("opponentGoal")
         case .opponentOwnGoal:
@@ -211,17 +328,33 @@ enum MatchEventType: String, Codable, CaseIterable, Hashable {
         case .assist:
             return L10n.text("assist")
         case .yellowCard:
-            return L10n.text("eventTypeYellowCard")
+            return L10n.text("yellowCard")
         case .redCard:
-            return L10n.text("eventTypeRedCard")
+            return L10n.text("redCard")
         case .substitution:
-            return L10n.text("eventTypeSubstitution")
+            return L10n.text("substitution")
+        case .matchStart:
+            return L10n.text("matchStart")
+        case .matchEnd:
+            return L10n.text("matchEnd")
+        case .shotOnTarget:
+            return L10n.text("shotOnTarget")
+        case .save:
+            return L10n.text("goalkeeperSave")
+        case .injury:
+            return L10n.text("injury")
+        case .manOfTheMatch:
+            return L10n.text("manOfTheMatch")
+        case .shlag:
+            return L10n.text("eventTypeShlag")
+        case .other:
+            return L10n.text("other")
         }
     }
 
     var requiresPlayer: Bool {
         switch self {
-        case .opponentGoal, .opponentOwnGoal:
+        case .opponentGoal, .opponentOwnGoal, .matchStart, .matchEnd, .other:
             return false
         default:
             return true
@@ -476,7 +609,12 @@ struct MatchDetail: Decodable, Identifiable, Equatable {
         capabilities = try container.decodeIfPresent(MatchCapabilities.self, forKey: .capabilities) ?? .empty
         opponentTeam = try container.decodeIfPresent(String.self, forKey: .opponentTeam)
         location = try container.decodeIfPresent(String.self, forKey: .location)
-        homeTeamName = try container.decodeIfPresent(String.self, forKey: .homeTeamName)
+        homeTeamName = MatchSharedDecoding.resolveTeamName(
+            from: container,
+            homeTeamName: .homeTeamName,
+            homeTeam: .homeTeam,
+            team: .team
+        )
         teamId = MatchSharedDecoding.resolveTeamId(
             from: container,
             teamId: .teamId,
@@ -998,12 +1136,43 @@ struct MatchSelectablePlayer: Decodable, Identifiable, Hashable {
 
 // MARK: - Events
 
+struct MatchEventPlayer: Decodable, Hashable {
+    let id: String
+    let firstName: String?
+    let lastName: String?
+
+    var displayName: String {
+        [firstName, lastName]
+            .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decodeIfPresent(String.self, forKey: .mongoId)
+            ?? container.decodeIfPresent(String.self, forKey: .id)
+            ?? ""
+        firstName = try container.decodeIfPresent(String.self, forKey: .firstName)
+        lastName = try container.decodeIfPresent(String.self, forKey: .lastName)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case mongoId = "_id"
+        case id
+        case firstName
+        case lastName
+    }
+}
+
 struct MatchEvent: Decodable, Identifiable, Hashable {
     let id: String
     let type: MatchEventType
     let minute: Int?
-    let player: String?
+    let playerId: String?
+    let playerName: String?
     let comment: String?
+    let isActive: Bool
     let createdAt: Date?
 
     init(from decoder: Decoder) throws {
@@ -1011,12 +1180,17 @@ struct MatchEvent: Decodable, Identifiable, Hashable {
         id = try container.decodeIfPresent(String.self, forKey: .mongoId)
             ?? container.decodeIfPresent(String.self, forKey: .id)
             ?? ""
-        type = try container.decodeIfPresent(MatchEventType.self, forKey: .type) ?? .goal
+        type = MatchEvent.decodeType(from: container)
         minute = try container.decodeIfPresent(Int.self, forKey: .minute)
-        player = try container.decodeIfPresent(String.self, forKey: .player)
+        let player = MatchEvent.decodePlayer(from: container)
+        playerId = player.id
+        playerName = player.name
         comment = try container.decodeIfPresent(String.self, forKey: .comment)
+        isActive = try container.decodeIfPresent(Bool.self, forKey: .isActive) ?? true
         createdAt = MatchSharedDecoding.parseDateString(
-            (try? container.decodeIfPresent(String.self, forKey: .createdAt)) ?? ""
+            (try? container.decodeIfPresent(String.self, forKey: .createdAt))
+                ?? (try? container.decodeIfPresent(String.self, forKey: .timestamp))
+                ?? ""
         )
     }
 
@@ -1027,7 +1201,39 @@ struct MatchEvent: Decodable, Identifiable, Hashable {
         case minute
         case player
         case comment
+        case isActive
         case createdAt
+        case timestamp
+    }
+
+    private static func decodeType(from container: KeyedDecodingContainer<CodingKeys>) -> MatchEventType {
+        if let type = try? container.decode(MatchEventType.self, forKey: .type) {
+            return type
+        }
+        if let rawType = try? container.decode(String.self, forKey: .type),
+           let resolved = MatchEventType.resolve(from: rawType) {
+            return resolved
+        }
+        return .other
+    }
+
+    private static func decodePlayer(
+        from container: KeyedDecodingContainer<CodingKeys>
+    ) -> (id: String?, name: String?) {
+        if let player = try? container.decode(MatchEventPlayer.self, forKey: .player) {
+            let name = player.displayName
+            return (
+                player.id.isEmpty ? nil : player.id,
+                name.isEmpty ? nil : name
+            )
+        }
+
+        if let playerId = try? container.decode(String.self, forKey: .player),
+           !playerId.isEmpty {
+            return (playerId, nil)
+        }
+
+        return (nil, nil)
     }
 }
 
@@ -1330,23 +1536,25 @@ enum MatchDecoding {
     }
 
     static func decodeEvents(from data: Data) throws -> [MatchEvent] {
-        if let events = try? APIResponseDecoder.decodePayload([MatchEvent].self, from: data) {
-            return events
-        }
-        if let events = try? APIResponseDecoder.decode([MatchEvent].self, from: data) {
-            return events
+        let events: [MatchEvent]
+        if let decoded = try? APIResponseDecoder.decodePayload([MatchEvent].self, from: data) {
+            events = decoded
+        } else if let decoded = try? APIResponseDecoder.decode([MatchEvent].self, from: data) {
+            events = decoded
+        } else {
+            struct EventsPayload: Decodable {
+                let events: [MatchEvent]?
+                let items: [MatchEvent]?
+            }
+
+            if let payload = try? APIResponseDecoder.decodePayload(EventsPayload.self, from: data) {
+                events = payload.events ?? payload.items ?? []
+            } else {
+                events = []
+            }
         }
 
-        struct EventsPayload: Decodable {
-            let events: [MatchEvent]?
-            let items: [MatchEvent]?
-        }
-
-        if let payload = try? APIResponseDecoder.decodePayload(EventsPayload.self, from: data) {
-            return payload.events ?? payload.items ?? []
-        }
-
-        return []
+        return events.filter(\.isActive)
     }
 }
 
@@ -1362,5 +1570,17 @@ extension PublishBlocker {
         case .unknown(let code):
             return code
         }
+    }
+}
+
+private extension String {
+    func snakeCaseToLowerCamel() -> String {
+        let parts = split(separator: "_")
+        guard let first = parts.first else { return self }
+        let head = String(first)
+        let tail = parts.dropFirst().map { part in
+            part.prefix(1).uppercased() + part.dropFirst()
+        }.joined()
+        return head + tail
     }
 }

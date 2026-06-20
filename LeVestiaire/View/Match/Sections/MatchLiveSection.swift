@@ -37,36 +37,14 @@ struct MatchLiveSection: View {
 
             if !viewModel.sortedEvents.isEmpty {
                 UCard(title: L10n.text("matchEvents"), icon: "clock.fill") {
-                    VStack(alignment: .leading, spacing: 8) {
-                        ForEach(viewModel.sortedEvents) { event in
-                            HStack(alignment: .top, spacing: 8) {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(eventLabel(event))
-                                        .font(.caption.weight(.semibold))
-                                        .foregroundStyle(AppPalette.Neutral.textPrimary)
-
-                                    if let comment = event.comment, !comment.isEmpty {
-                                        Text(comment)
-                                            .font(.caption2)
-                                            .foregroundStyle(AppPalette.Neutral.textSecondary)
-                                    }
-                                }
-
-                                Spacer(minLength: 8)
-
-                                if match.capabilities.canManageEvents {
-                                    Button(role: .destructive) {
-                                        Task { await viewModel.deleteEvent(event.id) }
-                                    } label: {
-                                        Image(systemName: "trash")
-                                            .font(.caption)
-                                    }
-                                    .buttonStyle(.plain)
-                                    .disabled(viewModel.isSubmitting)
-                                }
-                            }
+                    MatchEventsTimelineView(
+                        events: viewModel.sortedEvents,
+                        canManageEvents: match.capabilities.canManageEvents,
+                        isSubmitting: viewModel.isSubmitting,
+                        onDelete: { eventId in
+                            Task { await viewModel.deleteEvent(eventId) }
                         }
-                    }
+                    )
                 }
             }
 
@@ -86,13 +64,6 @@ struct MatchLiveSection: View {
         .sheet(isPresented: $showsAddEventSheet) {
             AddMatchEventSheet(viewModel: viewModel)
         }
-    }
-
-    private func eventLabel(_ event: MatchEvent) -> String {
-        if let minute = event.minute {
-            return "\(event.type.displayName) · \(minute)'"
-        }
-        return event.type.displayName
     }
 }
 

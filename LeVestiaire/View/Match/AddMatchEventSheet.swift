@@ -34,6 +34,7 @@ struct AddMatchEventSheet: View {
                         text: $comment,
                         autocapitalization: .sentences
                     )
+                    .disabled(viewModel.isSubmitting)
 
                     if let errorMessage = viewModel.errorMessage {
                         Text(errorMessage)
@@ -41,16 +42,10 @@ struct AddMatchEventSheet: View {
                             .foregroundStyle(AppPalette.Semantic.error)
                     }
 
-                    UButton(
-                        text: L10n.text("addEventButton"),
-                        textColor: AppPalette.Primary.onMain,
-                        backgroundColor: AppPalette.Primary.main,
-                        cornerRadius: 12,
-                        isFullWidth: true,
-                        onPress: submitEvent
-                    )
-                    .opacity(canSubmit ? 1 : 0.5)
-                    .disabled(!canSubmit || viewModel.isSubmitting)
+                    Button(L10n.text("addEventButton"), action: submitEvent)
+                        .primarySheetButton(isLoading: viewModel.isSubmitting)
+                        .opacity(canSubmit ? 1 : 0.5)
+                        .disabled(!canSubmit || viewModel.isSubmitting)
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
@@ -109,12 +104,13 @@ struct AddMatchEventSheet: View {
                 .foregroundStyle(AppPalette.Neutral.textSecondary)
 
             Picker(L10n.text("eventTypeLabel"), selection: $eventType) {
-                ForEach(MatchEventType.allCases, id: \.self) { type in
+                ForEach(MatchEventType.userCreatableCases, id: \.self) { type in
                     Text(type.displayName).tag(type)
                 }
             }
             .pickerStyle(.menu)
             .tint(AppPalette.Primary.main)
+            .disabled(viewModel.isSubmitting)
             .onChange(of: eventType) { _, newValue in
                 if !newValue.requiresPlayer {
                     selectedPlayerId = nil
@@ -125,7 +121,7 @@ struct AddMatchEventSheet: View {
 
     private var minuteSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(L10n.eventMinuteLabel)
+            Text(L10n.text("minuteOptional"))
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(AppPalette.Neutral.textSecondary)
 
@@ -135,6 +131,7 @@ struct AddMatchEventSheet: View {
                 text: $minute,
                 keyboardType: .numberPad
             )
+            .disabled(viewModel.isSubmitting)
         }
     }
 
@@ -157,13 +154,13 @@ struct AddMatchEventSheet: View {
                 }
                 .pickerStyle(.menu)
                 .tint(AppPalette.Primary.main)
+                .disabled(viewModel.isSubmitting)
             }
         }
     }
 
     private var canSubmit: Bool {
-        guard let parsedMinute = Int(minute.trimmingCharacters(in: .whitespacesAndNewlines)),
-              parsedMinute >= 0 else {
+        if !isMinuteValid {
             return false
         }
 
@@ -174,10 +171,25 @@ struct AddMatchEventSheet: View {
         return true
     }
 
-    private func submitEvent() {
-        guard let parsedMinute = Int(minute.trimmingCharacters(in: .whitespacesAndNewlines)) else {
-            return
+    private var isMinuteValid: Bool {
+        let trimmed = minute.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            return true
         }
+        guard let parsedMinute = Int(trimmed) else {
+            return false
+        }
+        return parsedMinute >= 0
+    }
+
+    private var parsedMinute: Int? {
+        let trimmed = minute.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        return Int(trimmed)
+    }
+
+    private func submitEvent() {
+        guard isMinuteValid else { return }
 
         let trimmedComment = comment.trimmingCharacters(in: .whitespacesAndNewlines)
 

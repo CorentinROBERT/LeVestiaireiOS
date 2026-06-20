@@ -46,7 +46,10 @@ struct MatchCompositionPreviewView: View {
                 formationPanel(for: tab)
             } else if members.isEmpty {
                 ProgressView(L10n.loading)
-                    .frame(maxWidth: .infinity, minHeight: isCompact ? 190 : 200)
+                    .frame(
+                        maxWidth: .infinity,
+                        minHeight: isCompact ? FormationFieldView.compactFieldHeight : 200
+                    )
             }
         }
         .onAppear(perform: bootstrapSelection)
@@ -200,18 +203,21 @@ struct MatchCompositionPreviewView: View {
 
             if resolvedMembers.isEmpty, members.isEmpty {
                 ProgressView(L10n.loading)
-                    .frame(maxWidth: .infinity, minHeight: isCompact ? 230 : 220)
+                    .frame(maxWidth: .infinity, minHeight: isCompact ? FormationFieldView.compactFieldHeight : 220)
             } else {
-                FormationFieldView(
-                    formationKey: tab.formationKey,
-                    members: resolvedMembers,
-                    assignments: tab.starterAssignments,
-                    onPositionTapped: { _ in },
-                    interactive: false,
-                    compact: isCompact
-                )
+                VStack(alignment: .leading, spacing: isCompact ? 8 : 14) {
+                    FormationFieldView(
+                        formationKey: tab.formationKey,
+                        members: resolvedMembers,
+                        assignments: tab.starterAssignments,
+                        onPositionTapped: { _ in },
+                        interactive: false,
+                        compact: isCompact
+                    )
 
-                SubstitutesBenchMiniView(entries: substituteEntries)
+                    SubstitutesBenchMiniView(entries: substituteEntries)
+                }
+                .frame(minHeight: isCompact ? Self.compactPanelHeight : nil, alignment: .top)
             }
 
             if !isCompact,
@@ -220,6 +226,8 @@ struct MatchCompositionPreviewView: View {
             }
         }
     }
+
+    private static let compactPanelHeight: CGFloat = FormationFieldView.compactFieldHeight + 52
 
     private func compactSummaryRow(for tab: CompositionTabDraft) -> some View {
         HStack(spacing: 6) {

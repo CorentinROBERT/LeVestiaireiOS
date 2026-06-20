@@ -19,6 +19,14 @@ final class MatchDetailViewModel: ObservableObject {
     @Published private(set) var selectablePlayers: [MatchSelectablePlayer] = []
     @Published private(set) var teamTemplates: [TeamComposition] = []
     @Published private(set) var events: [MatchEvent] = []
+    @Published private(set) var matchStats: MatchStatsPayload?
+    @Published private(set) var matchQuizzes: [MatchQuizSummary] = []
+    @Published private(set) var isLoadingEvents = false
+    @Published private(set) var hasLoadedEvents = false
+    @Published private(set) var isLoadingMatchStats = false
+    @Published private(set) var hasLoadedMatchStats = false
+    @Published private(set) var isLoadingQuizzes = false
+    @Published private(set) var hasLoadedQuizzes = false
     @Published private(set) var isLoading = false
     @Published private(set) var isLoadingAvailability = false
     @Published private(set) var hasLoadedAvailability = false
@@ -41,9 +49,9 @@ final class MatchDetailViewModel: ObservableObject {
         match?.showsPrepareHub ?? false
     }
 
-    var showsLivePanel: Bool {
-        match?.capabilities.canManageEvents == true
-            || match?.capabilities.canFinishMatch == true
+    var tabConfiguration: MatchDetailTabConfiguration? {
+        guard let match else { return nil }
+        return MatchDetailTabConfiguration.forMatch(match, showsPrepareHub: showsPrepareHub)
     }
 
     var publishButtonEnabled: Bool {
@@ -63,7 +71,8 @@ final class MatchDetailViewModel: ObservableObject {
     }
 
     var sortedEvents: [MatchEvent] {
-        events.sorted { ($0.minute ?? 0) < ($1.minute ?? 0) }
+        let grouped = events.groupedForTimeline
+        return grouped.startEvents + grouped.middleEvents + grouped.endEvents
     }
 
     var editorMembers: [TeamMember] {
@@ -160,6 +169,7 @@ final class MatchDetailViewModel: ObservableObject {
     func load() async {
         isLoading = true
         errorMessage = nil
+        resetTabCaches()
         defer { isLoading = false }
 
         do {
@@ -219,6 +229,80 @@ final class MatchDetailViewModel: ObservableObject {
     func loadEventContext() async {
         guard match?.capabilities.canManageEvents == true else { return }
         await loadCompositionPlayerDirectory()
+    }
+
+    func loadTabContentIfNeeded(_ tab: MatchDetailTab) async {
+        switch tab {
+        case .composition:
+            await loadSelectablePlayers()
+        case .events:
+            await loadEventsIfNeeded()
+        case .statistics:
+            await loadMatchStatsIfNeeded()
+        case .quiz:
+            await loadQuizzesIfNeeded()
+        }
+    }
+
+    func loadEventsIfNeeded(force: Bool = false) async {
+        guard let match else { return }
+        guard match.status == .ongoing || match.status == .finished else { return }
+        guard force || !hasLoadedEvents else { return }
+
+        isLoadingEvents = true
+        defer { isLoadingEvents = false }
+
+        do {
+            events = try await matchService.fetchEvents(matchId: matchId)
+            hasLoadedEvents = true
+        } catch {
+            if isCancellationError(error) { return }
+            surfaceError(error)
+        }
+    }
+
+    func loadMatchStatsIfNeeded(force: Bool = false) async {
+        guard let match else { return }
+        guard match.status == .ongoing || match.status == .finished else { return }
+        guard force || !hasLoadedMatchStats else { return }
+
+        isLoadingMatchStats = true
+        defer { isLoadingMatchStats = false }
+
+        do {
+            matchStats = try await matchService.fetchMatchStats(matchId: matchId)
+            hasLoadedMatchStats = true
+        } catch {
+            if isCancellationError(error) { return }
+            matchStats = nil
+            surfaceError(error)
+        }
+    }
+
+    func loadQuizzesIfNeeded(force: Bool = false) async {
+        guard let match else { return }
+        guard match.status == .finished else { return }
+        guard force || !hasLoadedQuizzes else { return }
+
+        isLoadingQuizzes = true
+        defer { isLoadingQuizzes = false }
+
+        do {
+            matchQuizzes = try await matchService.fetchQuizzesForMatch(matchId: matchId)
+            hasLoadedQuizzes = true
+        } catch {
+            if isCancellationError(error) { return }
+            matchQuizzes = []
+            surfaceError(error)
+        }
+    }
+
+    private func resetTabCaches() {
+        hasLoadedEvents = false
+        hasLoadedMatchStats = false
+        hasLoadedQuizzes = false
+        matchStats = nil
+        matchQuizzes = []
     }
 
     func loadAvailability() async {
@@ -447,6 +531,7 @@ final class MatchDetailViewModel: ObservableObject {
 
     func deleteEvent(_ eventId: String) async -> Bool {
         guard match?.capabilities.canManageEvents == true else { return false }
+        guard let event = events.first(where: { $0.id == eventId }), event.isDeletable else { return false }
 
         isSubmitting = true
         errorMessage = nil
@@ -515,11 +600,7 @@ final class MatchDetailViewModel: ObservableObject {
         }
 
         if match.status == .ongoing || match.status == .finished {
-            do {
-                events = try await matchService.fetchEvents(matchId: matchId)
-            } catch {
-                surfaceError(error)
-            }
+            await loadEventsIfNeeded(force: true)
         }
     }
 

@@ -263,9 +263,30 @@ final class MatchService {
     }
 
     @MainActor
+    func fetchMatchStats(matchId: String) async throws -> MatchStatsPayload {
+        let (data, response) = try await authorizedRequest(
+            path: APIEndpoints.matchStats(matchId),
+            method: "GET"
+        )
+        try validate(response: response, data: data, fallback: L10n.matchesLoading)
+        return try MatchStatsDecoding.decode(from: data)
+    }
+
+    @MainActor
+    func fetchQuizzesForMatch(matchId: String) async throws -> [MatchQuizSummary] {
+        let (data, response) = try await authorizedRequest(
+            path: APIEndpoints.quizzesForMatch(matchId),
+            method: "GET"
+        )
+        try validate(response: response, data: data, fallback: L10n.matchesLoading)
+        return try MatchQuizDecoding.decodeList(from: data)
+    }
+
+    @MainActor
     func fetchEvents(matchId: String) async throws -> [MatchEvent] {
-        let (data, response) = try await client.request(
-            path: APIEndpoints.matchEvents(matchId)
+        let (data, response) = try await authorizedRequest(
+            path: APIEndpoints.matchEvents(matchId),
+            method: "GET"
         )
         try validate(response: response, data: data, fallback: L10n.matchesLoading)
         return try MatchDecoding.decodeEvents(from: data)
