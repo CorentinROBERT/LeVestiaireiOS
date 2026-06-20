@@ -148,6 +148,10 @@ final class MatchDetailViewModel: ObservableObject {
         return match.capabilities.canManageAvailability || canEditMatchInfo
     }
 
+    var canManageMatchEvents: Bool {
+        match?.allowsEventCorrections ?? false
+    }
+
     init(
         matchId: String,
         matchService: MatchService,
@@ -227,7 +231,7 @@ final class MatchDetailViewModel: ObservableObject {
     }
 
     func loadEventContext() async {
-        guard match?.capabilities.canManageEvents == true else { return }
+        guard canManageMatchEvents else { return }
         await loadCompositionPlayerDirectory()
     }
 
@@ -511,7 +515,7 @@ final class MatchDetailViewModel: ObservableObject {
     }
 
     func createEvent(_ request: CreateMatchEventRequest) async -> Bool {
-        guard match?.capabilities.canManageEvents == true else { return false }
+        guard canManageMatchEvents else { return false }
 
         isSubmitting = true
         errorMessage = nil
@@ -530,7 +534,7 @@ final class MatchDetailViewModel: ObservableObject {
     }
 
     func deleteEvent(_ eventId: String) async -> Bool {
-        guard match?.capabilities.canManageEvents == true else { return false }
+        guard canManageMatchEvents else { return false }
         guard let event = events.first(where: { $0.id == eventId }), event.isDeletable else { return false }
 
         isSubmitting = true

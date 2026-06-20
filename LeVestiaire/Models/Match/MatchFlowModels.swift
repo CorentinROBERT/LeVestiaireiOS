@@ -758,6 +758,18 @@ struct MatchDetail: Decodable, Identifiable, Equatable {
             || composition != nil
     }
 
+    /// Ajout / suppression d'événements pendant le match ou après coup (corrections staff).
+    var allowsEventCorrections: Bool {
+        guard status == .ongoing || status == .finished else { return false }
+        if capabilities.canManageEvents { return true }
+        if status == .finished {
+            return capabilities.canUpdateScore
+                || capabilities.canPublish
+                || capabilities.canManageAvailability
+        }
+        return false
+    }
+
     private enum CodingKeys: String, CodingKey {
         case mongoId = "_id"
         case id

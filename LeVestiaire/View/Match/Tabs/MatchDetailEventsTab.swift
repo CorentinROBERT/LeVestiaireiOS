@@ -12,7 +12,7 @@ struct MatchDetailEventsTab: View {
     @State private var showsAddEventSheet = false
 
     private var canManageEvents: Bool {
-        match.capabilities.canManageEvents
+        viewModel.canManageMatchEvents
     }
 
     private var canFinishMatch: Bool {
@@ -47,7 +47,7 @@ struct MatchDetailEventsTab: View {
                 )
             }
 
-            if canManageEvents, match.status == .ongoing {
+            if canManageEvents {
                 UButton(
                     text: L10n.text("addEvent"),
                     textColor: AppPalette.Primary.onMain,
