@@ -16,6 +16,14 @@ enum APIResponseDecoder {
         let success: Bool?
         let error: String?
         let message: String?
+        let code: String?
+    }
+
+    struct APIErrorEnvelope: Decodable {
+        let success: Bool?
+        let error: String?
+        let message: String?
+        let code: String?
     }
 
     static func decodeMeResponse(from data: Data) throws -> MeResponse {
@@ -148,10 +156,40 @@ enum APIResponseDecoder {
     }
 
     static func decodeErrorMessage(from data: Data) -> String? {
-        if let envelope = try? JSONDecoder().decode(MessageEnvelope.self, from: data) {
-            return envelope.error ?? envelope.message
+        resolveErrorMessage(from: data, fallback: nil)
+    }
+
+    /// Résout le message utilisateur depuis `{ success: false, error, code? }`.
+    /// Les clés i18n (`error.quiz.not_found`) sont traduites ; les messages FR de l'API sont affichés tels quels.
+    static func resolveErrorMessage(from data: Data, fallback: String?) -> String? {
+        guard let envelope = try? JSONDecoder().decode(APIErrorEnvelope.self, from: data) else {
+            return fallback
         }
-        return nil
+
+        if let error = trimmedNonEmpty(envelope.error) {
+            return displayMessage(for: error)
+        }
+
+        if let code = trimmedNonEmpty(envelope.code),
+           let message = APIErrorLocalizer.messageForAuthCode(code) {
+            return message
+        }
+
+        if let message = trimmedNonEmpty(envelope.message) {
+            return displayMessage(for: message)
+        }
+
+        return fallback
+    }
+
+    private static func trimmedNonEmpty(_ value: String?) -> String? {
+        guard let value else { return nil }
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
+    }
+
+    private static func displayMessage(for raw: String) -> String {
+        APIErrorLocalizer.localized(raw) ?? raw
     }
 
     static func decodeProfilePictureResponse(from data: Data, statusCode: Int) -> ProfilePictureResponse {

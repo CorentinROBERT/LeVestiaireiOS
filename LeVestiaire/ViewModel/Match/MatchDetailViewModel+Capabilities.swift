@@ -24,11 +24,11 @@ extension MatchDetailViewModel {
     }
 
     var publishButtonEnabled: Bool {
-        match?.capabilities.canPublish == true
+        match?.canPublishMatch ?? false
     }
 
     var publishBlockerMessages: [String] {
-        match?.publishBlockers.map(\.localizedMessage) ?? []
+        match?.effectivePublishBlockers.map(\.localizedMessage) ?? []
     }
 
     var eventPlayerOptions: [MatchEventPlayerOption] {
@@ -114,7 +114,10 @@ extension MatchDetailViewModel {
 
     var showsAvailabilityManagement: Bool {
         guard let match else { return false }
-        return match.capabilities.canManageAvailability || canEditMatchInfo
+        if match.capabilities.canManageAvailability || canEditMatchInfo {
+            return true
+        }
+        return canManageMatchTeam && match.status.isPreparationStatus
     }
 
     var canManageMatchEvents: Bool {

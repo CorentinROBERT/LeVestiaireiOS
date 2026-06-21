@@ -39,6 +39,18 @@ enum APIErrorLocalizer {
         return fallback
     }
 
+    /// Codes auth renvoyés avec le champ `code` (JWT expiré, invalide, etc.).
+    static func messageForAuthCode(_ code: String) -> String? {
+        switch code.uppercased() {
+        case "TOKEN_EXPIRED":
+            return localized("error.auth.token_expired")
+        case "TOKEN_INVALID":
+            return localized("error.auth.token_invalid")
+        default:
+            return nil
+        }
+    }
+
     private static func looksLikeApiKey(_ value: String) -> Bool {
         value.hasPrefix("error.") || value.hasPrefix("success.")
     }

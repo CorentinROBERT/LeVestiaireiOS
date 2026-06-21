@@ -31,6 +31,7 @@ final class MatchsViewModel: ObservableObject {
     private var currentPage = 1
     private var hasReachedMax = false
     private var loadGeneration = 0
+    let pullToRefreshTask = PullToRefreshTask()
 
     @Published private(set) var totalItems = 0
 
@@ -83,6 +84,16 @@ final class MatchsViewModel: ObservableObject {
     }
 
     func refresh() async {
+        await executeRefresh()
+    }
+
+    func refreshFromPullToRefresh() async {
+        await pullToRefreshTask.perform { [weak self] in
+            await self?.executeRefresh()
+        }
+    }
+
+    private func executeRefresh() async {
         await loadMatches(page: 1, append: false, isRefresh: true)
     }
 
@@ -92,7 +103,7 @@ final class MatchsViewModel: ObservableObject {
     }
 
     func loadNextPage() async {
-        guard !isLoading, !isLoadingMore, !hasReachedMax else { return }
+        guard !isLoading, !isLoadingMore, !isRefreshing, !hasReachedMax else { return }
         await loadMatches(page: currentPage + 1, append: true)
     }
 

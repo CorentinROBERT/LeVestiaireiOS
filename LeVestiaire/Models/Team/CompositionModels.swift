@@ -760,14 +760,8 @@ struct CompositionPositionSlotSaveRequest: Encodable {
 
         if CompositionMemberKey.isGuestKey(memberId) {
             let rawGuestId = CompositionMemberKey.rawGuestId(from: memberId)
-            let guestKey = CompositionMemberKey.forGuest(rawGuestId)
             return CompositionPositionSlotSaveRequest(
-                user: CompositionPlayerRefSaveRequest(
-                    id: guestKey,
-                    firstName: member?.firstName,
-                    lastName: member?.lastName,
-                    email: member?.email
-                ),
+                user: nil,
                 guest: CompositionGuestRefSaveRequest(
                     id: rawGuestId,
                     firstName: member?.firstName,

@@ -22,6 +22,16 @@ extension TeamViewModel {
     }
 
     func refresh(currentTab: TeamContentTab = .roster) async {
+        await executeRefresh(currentTab: currentTab)
+    }
+
+    func refreshFromPullToRefresh(currentTab: TeamContentTab = .roster) async {
+        await pullToRefreshTask.perform { [weak self] in
+            await self?.executeRefresh(currentTab: currentTab)
+        }
+    }
+
+    private func executeRefresh(currentTab: TeamContentTab) async {
         invalidateLazyTabLoads()
         await loadInitialData()
         await loadTabContentIfNeeded(currentTab, force: true)

@@ -84,12 +84,21 @@ enum L10n {
     static var publishMatchConfirmation: String { text("publishMatchConfirmation") }
     static var availabilityForcedByStaff: String { text("availabilityForcedByStaff") }
     static var matchPreparationHubTitle: String { text("matchPreparationHubTitle") }
+    static func matchPrepareStepLabel(_ step: Int) -> String {
+        format("matchPrepareStepLabel", step)
+    }
     static var matchCreatedDraftHint: String { text("matchCreatedDraftHint") }
     static var includeMatchTime: String { text("includeMatchTime") }
     static var createMatchNoManageableTeam: String { text("createMatchNoManageableTeam") }
     static var eventMinuteLabel: String { text("eventMinuteLabel") }
     static var selectPlayer: String { text("selectPlayer") }
     static var applyTeamTemplate: String { text("applyTeamTemplate") }
+    static func compositionTemplateAbsentTitle(_ count: Int) -> String {
+        format("compositionTemplateAbsentTitle", count)
+    }
+    static func compositionTemplateUnknownTitle(_ count: Int) -> String {
+        format("compositionTemplateUnknownTitle", count)
+    }
     static var editMatchComposition: String { text("editMatchComposition") }
     static var editMatchTitle: String { text("editMatchTitle") }
     static var editMatchInfo: String { text("editMatchInfo") }

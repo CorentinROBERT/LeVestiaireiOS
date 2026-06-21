@@ -49,6 +49,8 @@ final class TeamViewModel: ObservableObject {
     var rankingsLoadedForTeamId: String?
     var compositionsLoadedForTeamId: String?
 
+    let pullToRefreshTask = PullToRefreshTask()
+
     let teamService: TeamService
     let compositionService: CompositionService
     let statsService: StatsService
@@ -87,6 +89,10 @@ final class TeamViewModel: ObservableObject {
 
     var canManageTeam: Bool {
         currentUserRole?.canManageTeam == true
+    }
+
+    var canChangeMemberRoles: Bool {
+        currentUserRole?.canChangeMemberRoles == true
     }
 
     var statsKPIsUnavailable: Bool {

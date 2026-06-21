@@ -174,19 +174,17 @@ struct CreateMatchSheet: View {
             .labelsHidden()
             .datePickerStyle(.compact)
 
-            Toggle(L10n.includeMatchTime, isOn: $viewModel.includesTime)
-                .font(.subheadline)
-                .tint(AppPalette.Primary.main)
+            Text(L10n.text("matchTime"))
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(AppPalette.Neutral.textSecondary)
 
-            if viewModel.includesTime {
-                DatePicker(
-                    "",
-                    selection: $viewModel.matchTime,
-                    displayedComponents: .hourAndMinute
-                )
-                .labelsHidden()
-                .datePickerStyle(.compact)
-            }
+            DatePicker(
+                "",
+                selection: $viewModel.matchTime,
+                displayedComponents: .hourAndMinute
+            )
+            .labelsHidden()
+            .datePickerStyle(.compact)
         }
         .padding(14)
         .glassEffect(.regular, in: .rect(cornerRadius: 14))

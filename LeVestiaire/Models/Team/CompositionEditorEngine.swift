@@ -108,4 +108,113 @@ enum CompositionEditorEngine {
             }
         }
     }
+
+    static func availabilityStatus(
+        for member: TeamMember,
+        in availability: [MatchAvailabilityEntry]
+    ) -> MatchAvailabilityStatus? {
+        guard !member.isGuest else { return nil }
+        return availability.first(where: { $0.matchesMember(member) })?.status
+    }
+
+    static func templateAvailabilityReview(
+        tab: CompositionTabDraft,
+        members: [TeamMember],
+        availability: [MatchAvailabilityEntry]
+    ) -> CompositionTemplateAvailabilityReview {
+        templateAvailabilityReview(
+            tabs: [tab],
+            members: members,
+            availability: availability
+        )
+    }
+
+    static func templateAvailabilityReview(
+        tabs: [CompositionTabDraft],
+        members: [TeamMember],
+        availability: [MatchAvailabilityEntry]
+    ) -> CompositionTemplateAvailabilityReview {
+        guard !availability.isEmpty else {
+            return CompositionTemplateAvailabilityReview()
+        }
+
+        var absent: [TeamMember] = []
+        var unknown: [TeamMember] = []
+        var seenMemberIds = Set<String>()
+
+        let assignedKeys = Set(
+            tabs.flatMap { tab in
+                tab.starterAssignments.values + tab.substituteMemberIds.compactMap { $0 }
+            }
+        )
+
+        for memberKey in assignedKeys {
+            guard let member = members.first(where: { $0.matchesCompositionMemberKey(memberKey) }) else {
+                continue
+            }
+            guard !member.isGuest else { continue }
+            guard seenMemberIds.insert(member.id).inserted else { continue }
+
+            switch availabilityStatus(for: member, in: availability) ?? .unknown {
+            case .absent:
+                absent.append(member)
+            case .unknown:
+                unknown.append(member)
+            case .available:
+                break
+            }
+        }
+
+        let sort: (TeamMember, TeamMember) -> Bool = {
+            $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending
+        }
+
+        return CompositionTemplateAvailabilityReview(
+            absent: absent.sorted(by: sort),
+            unknown: unknown.sorted(by: sort)
+        )
+    }
+
+    static func removeAbsentMembers(
+        from tab: inout CompositionTabDraft,
+        members: [TeamMember],
+        availability: [MatchAvailabilityEntry]
+    ) {
+        let review = templateAvailabilityReview(tab: tab, members: members, availability: availability)
+        for member in review.absent {
+            clearMemberFromTab(member: member, in: &tab)
+        }
+    }
+
+    static func removeAbsentMembers(
+        from tabs: inout [CompositionTabDraft],
+        members: [TeamMember],
+        availability: [MatchAvailabilityEntry]
+    ) {
+        for index in tabs.indices {
+            removeAbsentMembers(from: &tabs[index], members: members, availability: availability)
+        }
+    }
+}
+
+struct CompositionTemplateAvailabilityReview: Equatable {
+    let absent: [TeamMember]
+    let unknown: [TeamMember]
+
+    init(absent: [TeamMember] = [], unknown: [TeamMember] = []) {
+        self.absent = absent
+        self.unknown = unknown
+    }
+
+    var hasConflicts: Bool {
+        !absent.isEmpty || !unknown.isEmpty
+    }
+
+    var absentNames: String {
+        absent.map(\.displayName).joined(separator: ", ")
+    }
+
+    var unknownNames: String {
+        unknown.map(\.displayName).joined(separator: ", ")
+    }
 }

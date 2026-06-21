@@ -51,8 +51,12 @@ enum PublishBlocker: Hashable {
     }
 
     var blocksPublication: Bool {
-        if case .missingMinimalInfo = self { return true }
-        return false
+        switch self {
+        case .missingMinimalInfo, .missingComposition:
+            return true
+        case .insufficientAvailabilityResponses, .unknown:
+            return false
+        }
     }
 }
 
@@ -459,11 +463,21 @@ struct MatchDetail: Decodable, Identifiable, Equatable {
     }
 
     var blockingPublishBlockers: [PublishBlocker] {
-        publishBlockers.filter(\.blocksPublication)
+        effectivePublishBlockers.filter(\.blocksPublication)
     }
 
     var warningPublishBlockers: [PublishBlocker] {
-        publishBlockers.filter { !$0.blocksPublication }
+        effectivePublishBlockers.filter { !$0.blocksPublication }
+    }
+
+    var effectivePublishBlockers: [PublishBlocker] {
+        guard composition == nil else { return publishBlockers }
+        guard !publishBlockers.contains(.missingComposition) else { return publishBlockers }
+        return publishBlockers + [.missingComposition]
+    }
+
+    var canPublishMatch: Bool {
+        capabilities.canPublish && blockingPublishBlockers.isEmpty
     }
 
     func toMatchItem() -> MatchItem {
@@ -651,6 +665,58 @@ struct MatchDetail: Decodable, Identifiable, Equatable {
         )
     }
 
+    func replacingMyAvailabilityStatus(_ availabilityStatus: MatchAvailabilityStatus?) -> MatchDetail {
+        MatchDetail(
+            id: id,
+            title: title,
+            status: status,
+            statusLabel: statusLabel,
+            preparationPhase: preparationPhase,
+            isPreparationLocked: isPreparationLocked,
+            isCompositionLocked: isCompositionLocked,
+            canPublish: canPublish,
+            publishBlockers: publishBlockers,
+            myAvailabilityStatus: availabilityStatus,
+            availabilitySummary: availabilitySummary,
+            capabilities: capabilities,
+            opponentTeam: opponentTeam,
+            location: location,
+            homeTeamName: homeTeamName,
+            teamId: teamId,
+            date: date,
+            startTime: startTime,
+            homeScore: homeScore,
+            awayScore: awayScore,
+            composition: composition
+        )
+    }
+
+    func replacingAvailabilitySummary(_ summary: AvailabilitySummary?) -> MatchDetail {
+        MatchDetail(
+            id: id,
+            title: title,
+            status: status,
+            statusLabel: statusLabel,
+            preparationPhase: preparationPhase,
+            isPreparationLocked: isPreparationLocked,
+            isCompositionLocked: isCompositionLocked,
+            canPublish: canPublish,
+            publishBlockers: publishBlockers,
+            myAvailabilityStatus: myAvailabilityStatus,
+            availabilitySummary: summary,
+            capabilities: capabilities,
+            opponentTeam: opponentTeam,
+            location: location,
+            homeTeamName: homeTeamName,
+            teamId: teamId,
+            date: date,
+            startTime: startTime,
+            homeScore: homeScore,
+            awayScore: awayScore,
+            composition: composition
+        )
+    }
+
     var showsPrepareHub: Bool {
         guard status.isPreparationStatus else { return false }
         return uxMode == .prepare
@@ -714,11 +780,16 @@ struct MatchAvailabilityEntry: Decodable, Identifiable, Hashable {
     let lastName: String?
     let status: MatchAvailabilityStatus
     let source: AvailabilitySource
+    let isGuest: Bool
 
     var id: String { playerId }
 
     var availabilityRequestId: String {
         userId ?? memberId ?? playerId
+    }
+
+    var canForceAvailability: Bool {
+        !isGuest
     }
 
     var displayName: String {
@@ -735,7 +806,8 @@ struct MatchAvailabilityEntry: Decodable, Identifiable, Hashable {
         firstName: String? = nil,
         lastName: String? = nil,
         status: MatchAvailabilityStatus = .unknown,
-        source: AvailabilitySource = .selfDeclared
+        source: AvailabilitySource = .selfDeclared,
+        isGuest: Bool = false
     ) {
         self.playerId = playerId
         self.userId = userId
@@ -744,6 +816,7 @@ struct MatchAvailabilityEntry: Decodable, Identifiable, Hashable {
         self.lastName = lastName
         self.status = status
         self.source = source
+        self.isGuest = isGuest
     }
 
     init(from decoder: Decoder) throws {
@@ -777,6 +850,18 @@ struct MatchAvailabilityEntry: Decodable, Identifiable, Hashable {
         }
 
         source = try container.decodeIfPresent(AvailabilitySource.self, forKey: .source) ?? .selfDeclared
+
+        let decodedGuestFlag: Bool?
+        if let type = try container.decodeIfPresent(String.self, forKey: .type) {
+            decodedGuestFlag = type.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == "guest"
+        } else {
+            decodedGuestFlag = try container.decodeIfPresent(Bool.self, forKey: .isGuest)
+        }
+
+        isGuest = decodedGuestFlag
+            ?? CompositionMemberKey.isGuestKey(playerId)
+            || CompositionMemberKey.isGuestKey(userId ?? "")
+            || CompositionMemberKey.isGuestKey(memberId ?? "")
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -794,6 +879,8 @@ struct MatchAvailabilityEntry: Decodable, Identifiable, Hashable {
         case user
         case member
         case player
+        case type
+        case isGuest
     }
 
     private struct AvailabilityUser: Decodable {
@@ -832,6 +919,37 @@ struct MatchAvailabilityEntry: Decodable, Identifiable, Hashable {
         return !ids.isDisjoint(with: otherIds)
     }
 
+    func matchesMember(_ member: TeamMember) -> Bool {
+        guard !member.isGuest else { return false }
+        return matchesPlayer(MatchAvailabilityEntry.from(member: member))
+    }
+
+    func merged(with update: MatchAvailabilityEntry) -> MatchAvailabilityEntry {
+        MatchAvailabilityEntry(
+            playerId: update.playerId.isEmpty ? playerId : update.playerId,
+            userId: update.userId ?? userId,
+            memberId: update.memberId ?? memberId,
+            firstName: update.firstName ?? firstName,
+            lastName: update.lastName ?? lastName,
+            status: update.status,
+            source: update.source,
+            isGuest: isGuest
+        )
+    }
+
+    func markingAsGuest(_ isGuest: Bool) -> MatchAvailabilityEntry {
+        MatchAvailabilityEntry(
+            playerId: playerId,
+            userId: userId,
+            memberId: memberId,
+            firstName: firstName,
+            lastName: lastName,
+            status: status,
+            source: source,
+            isGuest: isGuest
+        )
+    }
+
     static func sortedByName(_ entries: [MatchAvailabilityEntry]) -> [MatchAvailabilityEntry] {
         entries.sorted { lhs, rhs in
             lhs.displayName.localizedCaseInsensitiveCompare(rhs.displayName) == .orderedAscending
@@ -866,7 +984,22 @@ struct MatchAvailabilityRoster: Decodable, Equatable {
     }
 
     var resolvedEntries: [MatchAvailabilityEntry] {
-        let entries = !all.isEmpty ? all : members + guests
+        resolvedBoardEntries
+    }
+
+    var resolvedBoardEntries: [MatchAvailabilityEntry] {
+        let guestEntries = guests.map { $0.markingAsGuest(true) }
+
+        let entries: [MatchAvailabilityEntry]
+        if !all.isEmpty {
+            entries = all.map { entry in
+                let isGuest = guestEntries.contains { $0.matchesPlayer(entry) } || entry.isGuest
+                return entry.markingAsGuest(isGuest)
+            }
+        } else {
+            entries = members.map { $0.markingAsGuest(false) } + guestEntries
+        }
+
         return MatchAvailabilityEntry.sortedByName(
             entries.filter { !$0.playerId.isEmpty }
         )
@@ -887,7 +1020,8 @@ extension MatchAvailabilityEntry {
             userId: selectablePlayer.userId,
             memberId: selectablePlayer.id,
             firstName: selectablePlayer.firstName,
-            lastName: selectablePlayer.lastName
+            lastName: selectablePlayer.lastName,
+            isGuest: selectablePlayer.isGuest == true
         )
     }
 
@@ -897,12 +1031,13 @@ extension MatchAvailabilityEntry {
             userId: member.userId,
             memberId: member.id,
             firstName: member.firstName,
-            lastName: member.lastName
+            lastName: member.lastName,
+            isGuest: member.isGuest
         )
     }
 
-    func asSelectablePlayer(isGuest explicitGuest: Bool = false) -> MatchSelectablePlayer {
-        let guest = explicitGuest
+    func asSelectablePlayer(isGuest explicitGuest: Bool? = nil) -> MatchSelectablePlayer {
+        let guest = explicitGuest ?? isGuest
             || CompositionMemberKey.isGuestKey(playerId)
             || CompositionMemberKey.isGuestKey(userId ?? "")
         let rawId = CompositionMemberKey.rawGuestId(from: playerId.isEmpty ? (userId ?? memberId ?? "") : playerId)
@@ -932,7 +1067,8 @@ extension MatchAvailabilityEntry {
                 firstName: player.firstName ?? response.firstName,
                 lastName: player.lastName ?? response.lastName,
                 status: response.status,
-                source: response.source
+                source: response.source,
+                isGuest: player.isGuest
             )
         }
         .sorted { lhs, rhs in

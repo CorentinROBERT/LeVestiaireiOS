@@ -86,7 +86,7 @@ struct Team: View {
             }
         }
         .refreshable {
-            await viewModel.refresh(currentTab: selectedTab)
+            await viewModel.refreshFromPullToRefresh(currentTab: selectedTab)
         }
         .sheet(item: $viewModel.guestPendingMerge) { guest in
             MergeGuestSheet(viewModel: viewModel, guest: guest)

@@ -36,7 +36,7 @@ struct MatchDetailView: View {
             await viewModel.load()
         }
         .refreshable {
-            await viewModel.refresh()
+            await viewModel.refreshFromPullToRefresh()
         }
         .onDisappear {
             onLeave?(matchId)

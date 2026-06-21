@@ -26,8 +26,6 @@ struct MatchPrepareHubSection: View {
     @ViewBuilder
     private func prepareHubContent(for match: MatchDetail) -> some View {
         VStack(alignment: .leading, spacing: 16) {
-            phaseStepper(for: match)
-
             if viewModel.canEditMatchInfo {
                 matchInfoSection(for: match)
             }
@@ -50,42 +48,6 @@ struct MatchPrepareHubSection: View {
                 lifecycleSection
             }
         }
-        .confirmationDialog(
-            L10n.publishMatchAction,
-            isPresented: $showsPublishConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button(L10n.text("publish")) {
-                Task { await viewModel.publishMatch() }
-            }
-            Button(L10n.cancel, role: .cancel) {}
-        } message: {
-            Text(L10n.publishMatchConfirmation)
-        }
-        .confirmationDialog(
-            L10n.cancelMatch,
-            isPresented: $showsCancelConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button(L10n.cancelMatch, role: .destructive) {
-                Task { await viewModel.cancelMatch() }
-            }
-            Button(L10n.cancel, role: .cancel) {}
-        } message: {
-            Text(L10n.text("confirmCancelMatch"))
-        }
-        .confirmationDialog(
-            L10n.postponeMatch,
-            isPresented: $showsPostponeConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button(L10n.postponeMatch) {
-                Task { await viewModel.postponeMatch() }
-            }
-            Button(L10n.cancel, role: .cancel) {}
-        } message: {
-            Text(L10n.postponeMatchConfirmation)
-        }
         .sheet(isPresented: $showsCompositionEditor) {
             MatchCompositionEditorSheet(
                 viewModel: viewModel,
@@ -100,7 +62,26 @@ struct MatchPrepareHubSection: View {
     }
 
     private func matchInfoSection(for match: MatchDetail) -> some View {
-        UCard(title: L10n.text("matchInformation"), icon: "info.circle.fill") {
+        UCard(
+            title: L10n.text("matchInformation"),
+            icon: "info.circle.fill",
+            trailingHeader: {
+                Button {
+                    showsEditMatchSheet = true
+                } label: {
+                    Image(systemName: "square.and.pencil")
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(AppPalette.Primary.main)
+                        .frame(width: 32, height: 32)
+                        .background(
+                            Circle()
+                                .fill(AppPalette.Primary.soft.opacity(0.6))
+                        )
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(L10n.editMatchInfo)
+            }
+        ) {
             VStack(alignment: .leading, spacing: 12) {
                 if let opponentTeam = match.opponentTeam, !opponentTeam.isEmpty {
                     Label(opponentTeam, systemImage: "shield.fill")
@@ -123,24 +104,17 @@ struct MatchPrepareHubSection: View {
                         .font(.caption)
                         .foregroundStyle(AppPalette.Neutral.textSecondary)
                 }
-
-                UButton(
-                    text: L10n.editMatchInfo,
-                    textColor: AppPalette.Primary.main,
-                    backgroundColor: AppPalette.Primary.soft,
-                    cornerRadius: 12,
-                    isFullWidth: true,
-                    onPress: {
-                        showsEditMatchSheet = true
-                    }
-                )
             }
         }
     }
 
     private var lifecycleSection: some View {
-        UCard(title: L10n.text("matchActions"), icon: "ellipsis.circle.fill") {
-            VStack(spacing: 10) {
+        UCard(title: L10n.text("matchPrepareLifecycleTitle"), icon: "ellipsis.circle.fill") {
+            VStack(alignment: .leading, spacing: 10) {
+                Text(L10n.text("matchPrepareLifecycleHint"))
+                    .font(.caption)
+                    .foregroundStyle(AppPalette.Neutral.textSecondary)
+
                 UButton(
                     text: L10n.postponeMatch,
                     textColor: AppPalette.Primary.main,
@@ -151,6 +125,18 @@ struct MatchPrepareHubSection: View {
                         showsPostponeConfirmation = true
                     }
                 )
+                .confirmationDialog(
+                    L10n.postponeMatch,
+                    isPresented: $showsPostponeConfirmation,
+                    titleVisibility: .visible
+                ) {
+                    Button(L10n.postponeMatch) {
+                        Task { await viewModel.postponeMatch() }
+                    }
+                    Button(L10n.cancel, role: .cancel) {}
+                } message: {
+                    Text(L10n.postponeMatchConfirmation)
+                }
 
                 UButton(
                     text: L10n.cancelMatch,
@@ -162,39 +148,30 @@ struct MatchPrepareHubSection: View {
                         showsCancelConfirmation = true
                     }
                 )
-            }
-        }
-    }
-
-    private func phaseStepper(for match: MatchDetail) -> some View {
-        UCard(title: L10n.matchPreparationHubTitle, icon: "list.bullet.clipboard") {
-            HStack(spacing: 8) {
-                ForEach(MatchPreparationPhase.allCases, id: \.self) { phase in
-                    phaseChip(phase, match: match)
+                .confirmationDialog(
+                    L10n.cancelMatch,
+                    isPresented: $showsCancelConfirmation,
+                    titleVisibility: .visible
+                ) {
+                    Button(L10n.cancelMatch, role: .destructive) {
+                        Task { await viewModel.cancelMatch() }
+                    }
+                    Button(L10n.cancel, role: .cancel) {}
+                } message: {
+                    Text(L10n.text("confirmCancelMatch"))
                 }
             }
         }
     }
 
-    private func phaseChip(_ phase: MatchPreparationPhase, match: MatchDetail) -> some View {
-        let isCurrent = match.preparationPhase == phase
-
-        return Text(phase.displayName)
-            .font(.caption2.weight(.semibold))
-            .foregroundStyle(isCurrent ? AppPalette.Primary.onMain : AppPalette.Neutral.textSecondary)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 8)
-            .frame(maxWidth: .infinity)
-            .background(
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(isCurrent ? AppPalette.Primary.main : AppPalette.Neutral.surface)
-            )
-    }
-
     private func availabilityManagementSection(for match: MatchDetail) -> some View {
-        UCard(title: L10n.text("availabilityManagementTitle"), icon: "person.2.fill") {
+        UCard(
+            title: L10n.text("availabilityManagementTitle"),
+            icon: "person.2.fill",
+            stepNumber: 1
+        ) {
             VStack(alignment: .leading, spacing: 12) {
-                if let summary = viewModel.availabilityBoardSummary ?? match.availabilitySummary {
+                if let summary = availabilitySummary(for: match) {
                     Text(
                         L10n.availabilityResponsesSummary(
                             responded: summary.respondedCount,
@@ -219,7 +196,7 @@ struct MatchPrepareHubSection: View {
                         .foregroundStyle(AppPalette.Neutral.textSecondary)
                 }
 
-                if viewModel.isLoadingAvailability {
+                if viewModel.isLoadingAvailability, viewModel.availability.isEmpty {
                     ProgressView()
                         .frame(maxWidth: .infinity)
                 } else if viewModel.availability.isEmpty {
@@ -234,9 +211,13 @@ struct MatchPrepareHubSection: View {
                 }
             }
         }
-        .task {
-            await viewModel.loadAvailability()
+    }
+
+    private func availabilitySummary(for match: MatchDetail) -> AvailabilitySummary? {
+        if viewModel.isLoadingAvailability {
+            return match.availabilitySummary ?? viewModel.availabilityBoardSummary
         }
+        return viewModel.availabilityBoardSummary ?? match.availabilitySummary
     }
 
     private func availabilityRow(_ entry: MatchAvailabilityEntry) -> some View {
@@ -246,39 +227,59 @@ struct MatchPrepareHubSection: View {
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(AppPalette.Neutral.textPrimary)
 
+                if entry.isGuest {
+                    Text(L10n.text("guestLabel"))
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(AppPalette.Neutral.textSecondary)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule()
+                                .fill(AppPalette.Neutral.surface)
+                        )
+                }
+
                 Spacer(minLength: 8)
 
-                Text(entry.status.displayName)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(AppPalette.Primary.main)
+                if !entry.isGuest {
+                    Text(entry.status.displayName)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(AppPalette.Primary.main)
+                }
             }
 
-            if entry.source == .forcedByStaff {
-                Text(L10n.availabilityForcedByStaff)
+            if entry.isGuest {
+                Text(L10n.text("availabilityGuestCompositionHint"))
                     .font(.caption2)
                     .foregroundStyle(AppPalette.Neutral.textTertiary)
-            }
+            } else {
+                if entry.source == .forcedByStaff {
+                    Text(L10n.availabilityForcedByStaff)
+                        .font(.caption2)
+                        .foregroundStyle(AppPalette.Neutral.textTertiary)
+                }
 
-            HStack(spacing: 8) {
-                ForEach(MatchAvailabilityStatus.allCases, id: \.self) { status in
-                    Button(status.displayName) {
-                        Task {
-                            await viewModel.forcePlayerAvailability(
-                                playerId: entry.availabilityRequestId,
-                                status: status
-                            )
+                HStack(spacing: 8) {
+                    ForEach(MatchAvailabilityStatus.allCases, id: \.self) { status in
+                        Button(status.displayName) {
+                            Task {
+                                await viewModel.forcePlayerAvailability(
+                                    playerId: entry.availabilityRequestId,
+                                    status: status
+                                )
+                            }
                         }
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(entry.status == status ? AppPalette.Primary.onMain : AppPalette.Primary.main)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 6)
+                        .background(
+                            Capsule()
+                                .fill(entry.status == status ? AppPalette.Primary.main : AppPalette.Primary.soft)
+                        )
+                        .buttonStyle(.plain)
+                        .disabled(viewModel.isSubmitting)
                     }
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(entry.status == status ? AppPalette.Primary.onMain : AppPalette.Primary.main)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 6)
-                    .background(
-                        Capsule()
-                            .fill(entry.status == status ? AppPalette.Primary.main : AppPalette.Primary.soft)
-                    )
-                    .buttonStyle(.plain)
-                    .disabled(viewModel.isSubmitting)
                 }
             }
         }
@@ -286,7 +287,11 @@ struct MatchPrepareHubSection: View {
     }
 
     private func compositionSection(for match: MatchDetail) -> some View {
-        UCard(title: L10n.text("composition"), icon: "person.3.fill") {
+        UCard(
+            title: L10n.text("composition"),
+            icon: "person.3.fill",
+            stepNumber: 2
+        ) {
             VStack(alignment: .leading, spacing: 12) {
                 if let composition = match.composition {
                     MatchCompositionPreviewView(
@@ -350,7 +355,11 @@ struct MatchPrepareHubSection: View {
     }
 
     private var publishSection: some View {
-        UCard(title: L10n.publishMatchAction, icon: "checkmark.seal.fill") {
+        UCard(
+            title: L10n.publishMatchAction,
+            icon: "checkmark.seal.fill",
+            stepNumber: 3
+        ) {
             VStack(alignment: .leading, spacing: 12) {
                 ForEach(viewModel.publishBlockerMessages, id: \.self) { message in
                     Label(message, systemImage: "exclamationmark.triangle.fill")
@@ -370,6 +379,18 @@ struct MatchPrepareHubSection: View {
                 )
                 .opacity(viewModel.publishButtonEnabled ? 1 : 0.5)
                 .disabled(!viewModel.publishButtonEnabled || viewModel.isSubmitting)
+                .confirmationDialog(
+                    L10n.publishMatchAction,
+                    isPresented: $showsPublishConfirmation,
+                    titleVisibility: .visible
+                ) {
+                    Button(L10n.text("publish")) {
+                        Task { await viewModel.publishMatch() }
+                    }
+                    Button(L10n.cancel, role: .cancel) {}
+                } message: {
+                    Text(L10n.publishMatchConfirmation)
+                }
             }
         }
     }

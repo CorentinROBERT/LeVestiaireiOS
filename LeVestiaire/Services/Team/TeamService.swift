@@ -240,7 +240,7 @@ final class TeamService {
     }
 
     @MainActor
-    func updateMemberRole(teamId: String, memberId: String, role: TeamRole) async throws {
+    func updateMemberRole(teamId: String, memberId: String, role: TeamRole) async throws -> SquadTeam {
         let body = try JSONEncoder().encode(UpdateMemberRoleRequest(role: role.rawValue))
         let (data, response) = try await authorizedRequest(
             path: APIEndpoints.updateMemberRole(teamId: teamId, memberId: memberId),
@@ -248,6 +248,7 @@ final class TeamService {
             body: body
         )
         try validate(response: response, data: data, fallback: L10n.text("errorTeamUpdate"))
+        return try TeamDecoding.decodeTeam(from: data)
     }
 
     @MainActor

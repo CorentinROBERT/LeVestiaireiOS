@@ -11,9 +11,10 @@ struct MatchCompositionEditorSheet: View {
 
     let readOnly: Bool
 
-    @State private var tab: CompositionTabDraft
+    @State private var tabs: [CompositionTabDraft]
+    @State private var selectedTabId: String
     @State private var selectedTemplateId: String?
-    @State private var pickerContext: CompositionPickerContext?
+    @State private var pickerContext: MatchCompositionPickerContext?
     @FocusState private var focusedField: Int?
 
     private enum Field {
@@ -24,7 +25,11 @@ struct MatchCompositionEditorSheet: View {
     init(viewModel: MatchDetailViewModel, readOnly: Bool = false) {
         self.viewModel = viewModel
         self.readOnly = readOnly || !viewModel.canEditComposition
-        _tab = State(initialValue: viewModel.makeCompositionTabDraft())
+        let initialTabs = viewModel.makeCompositionTabDrafts()
+        _tabs = State(initialValue: initialTabs)
+        _selectedTabId = State(
+            initialValue: initialTabs.first(where: \.isMain)?.id ?? initialTabs.first?.id ?? ""
+        )
     }
 
     private var canEdit: Bool {
@@ -35,15 +40,44 @@ struct MatchCompositionEditorSheet: View {
         viewModel.editorMembers
     }
 
+    private var selectedTabIndex: Int {
+        tabs.firstIndex(where: { $0.id == selectedTabId }) ?? 0
+    }
+
+    private var showsTabSelector: Bool {
+        tabs.count > 1
+    }
+
+    private var templateAvailabilityReview: CompositionTemplateAvailabilityReview {
+        CompositionEditorEngine.templateAvailabilityReview(
+            tabs: tabs,
+            members: members,
+            availability: viewModel.availability
+        )
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 20) {
+                VStack(alignment: .leading, spacing: 20) {
                     if canEdit, !viewModel.teamTemplates.isEmpty {
                         templateSection
                     }
 
-                    compositionForm
+                    if templateAvailabilityReview.hasConflicts {
+                        CompositionTemplateAvailabilityBanner(
+                            review: templateAvailabilityReview,
+                            onRemoveAbsent: removeAbsentMembersFromComposition
+                        )
+                    }
+
+                    if showsTabSelector {
+                        tabSelector
+                    }
+
+                    if tabs.indices.contains(selectedTabIndex) {
+                        compositionForm(for: $tabs[selectedTabIndex])
+                    }
 
                     if canEdit {
                         saveButton
@@ -97,15 +131,18 @@ struct MatchCompositionEditorSheet: View {
         .task {
             async let playersTask: Void = viewModel.loadSelectablePlayers()
             async let templatesTask: Void = viewModel.loadTeamTemplates()
-            _ = await (playersTask, templatesTask)
+            async let availabilityTask: Void = viewModel.refreshAvailabilityBoard(force: true, silent: true)
+            _ = await (playersTask, templatesTask, availabilityTask)
 
-            let refreshedTab = viewModel.makeCompositionTabDraft()
+            let refreshedTabs = viewModel.makeCompositionTabDrafts()
             if readOnly {
-                if !refreshedTab.starterAssignments.isEmpty {
-                    tab = refreshedTab
+                if refreshedTabs.contains(where: { !$0.starterAssignments.isEmpty }) {
+                    tabs = refreshedTabs
+                    selectedTabId = refreshedTabs.first(where: \.isMain)?.id ?? refreshedTabs.first?.id ?? ""
                 }
             } else {
-                tab = refreshedTab
+                tabs = refreshedTabs
+                selectedTabId = refreshedTabs.first(where: \.isMain)?.id ?? refreshedTabs.first?.id ?? ""
             }
         }
     }
@@ -125,47 +162,73 @@ struct MatchCompositionEditorSheet: View {
             .pickerStyle(.menu)
             .tint(AppPalette.Primary.main)
             .onChange(of: selectedTemplateId) { _, newValue in
-                guard let newValue,
-                      let template = viewModel.teamTemplates.first(where: { $0.id == newValue }),
-                      let imported = CompositionTabDraft.from(composition: template).first(where: \.isMain) else {
-                    return
-                }
-                tab = imported
-                if tab.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    tab.name = viewModel.match?.title ?? template.name
-                }
+                applyTemplate(id: newValue)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
         .glassEffect(.regular, in: .rect(cornerRadius: 14))
     }
 
-    private var compositionForm: some View {
+    private var tabSelector: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(tabs) { tab in
+                    Button {
+                        selectedTabId = tab.id
+                    } label: {
+                        Text(tab.displayLabel)
+                            .font(.caption.weight(.semibold))
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 8)
+                            .background(
+                                Capsule()
+                                    .fill(
+                                        selectedTabId == tab.id
+                                            ? AppPalette.Primary.main
+                                            : AppPalette.Neutral.surface
+                                    )
+                            )
+                            .foregroundStyle(
+                                selectedTabId == tab.id
+                                    ? AppPalette.Primary.onMain
+                                    : AppPalette.Neutral.textPrimary
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    @ViewBuilder
+    private func compositionForm(for tab: Binding<CompositionTabDraft>) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             UGlassTextField(
                 placeholder: L10n.text("compositionNamePlaceholder"),
                 icon: "doc.text.fill",
-                text: $tab.name,
+                text: tab.name,
                 autocapitalization: .words,
                 focusTag: Field.name,
                 focusedTag: $focusedField,
                 usesSystemKeyboardToolbar: false
             )
-            .disabled(!canEdit)
+            .disabled(!canEdit || !tab.wrappedValue.isMain)
 
             VStack(alignment: .leading, spacing: 8) {
                 Text(L10n.text("formation"))
                     .font(.subheadline.weight(.semibold))
 
-                Picker(L10n.text("formation"), selection: $tab.formationKey) {
+                Picker(L10n.text("formation"), selection: tab.formationKey) {
                     ForEach(FormationCatalog.all) { formation in
                         Text(formation.displayName).tag(formation.id)
                     }
                 }
                 .pickerStyle(.menu)
                 .disabled(!canEdit)
-                .onChange(of: tab.formationKey) { _, _ in
-                    tab.starterAssignments = [:]
+                .onChange(of: tab.wrappedValue.formationKey) { _, _ in
+                    tab.wrappedValue.starterAssignments = [:]
                 }
             }
 
@@ -174,13 +237,14 @@ struct MatchCompositionEditorSheet: View {
                     .frame(maxWidth: .infinity)
             } else {
                 FormationFieldView(
-                    formationKey: tab.formationKey,
+                    formationKey: tab.wrappedValue.formationKey,
                     members: members,
-                    assignments: tab.starterAssignments,
+                    assignments: tab.wrappedValue.starterAssignments,
                     onPositionTapped: { positionId in
                         guard canEdit else { return }
                         focusedField = nil
-                        pickerContext = CompositionPickerContext(
+                        pickerContext = MatchCompositionPickerContext(
+                            tabId: tab.wrappedValue.id,
                             positionId: positionId,
                             substituteIndex: nil
                         )
@@ -189,11 +253,12 @@ struct MatchCompositionEditorSheet: View {
 
                 SubstitutesBenchView(
                     members: members,
-                    substituteMemberIds: tab.substituteMemberIds,
+                    substituteMemberIds: tab.wrappedValue.substituteMemberIds,
                     onBenchSlotTapped: { index in
                         guard canEdit else { return }
                         focusedField = nil
-                        pickerContext = CompositionPickerContext(
+                        pickerContext = MatchCompositionPickerContext(
+                            tabId: tab.wrappedValue.id,
                             positionId: nil,
                             substituteIndex: index
                         )
@@ -207,7 +272,7 @@ struct MatchCompositionEditorSheet: View {
 
                 TextField(
                     L10n.text("tacticalInstructionsPlaceholder"),
-                    text: $tab.tacticalNotes,
+                    text: tab.tacticalNotes,
                     axis: .vertical
                 )
                 .lineLimit(3...6)
@@ -224,7 +289,7 @@ struct MatchCompositionEditorSheet: View {
             focusedField = nil
             Task {
                 if await viewModel.saveMatchComposition(
-                    mainTab: tab,
+                    tabs: tabs,
                     templateCompositionId: selectedTemplateId
                 ) {
                     dismiss()
@@ -235,21 +300,80 @@ struct MatchCompositionEditorSheet: View {
         .disabled(viewModel.isSubmitting)
     }
 
-    private func assignedMemberIds(excluding context: CompositionPickerContext) -> Set<String> {
-        CompositionEditorEngine.assignedMemberIds(in: tab, excluding: context)
+    private func applyTemplate(id: String?) {
+        guard let id,
+              let template = viewModel.teamTemplates.first(where: { $0.id == id }) else {
+            return
+        }
+
+        let importedTabs = CompositionTabDraft.from(composition: template)
+        guard !importedTabs.isEmpty else { return }
+
+        tabs = importedTabs
+        if let mainIndex = tabs.firstIndex(where: \.isMain) {
+            let matchTitle = viewModel.match?.title ?? template.name
+            if tabs[mainIndex].name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                tabs[mainIndex].name = matchTitle
+            }
+        }
+        selectedTabId = tabs.first(where: \.isMain)?.id ?? tabs.first?.id ?? ""
     }
 
-    private func applySelection(member: TeamMember, context: CompositionPickerContext) {
-        CompositionEditorEngine.applySelection(member: member, context: context, to: &tab)
+    private func assignedMemberIds(excluding context: MatchCompositionPickerContext) -> Set<String> {
+        guard let tab = tabs.first(where: { $0.id == context.tabId }) else { return [] }
+        return CompositionEditorEngine.assignedMemberIds(
+            in: tab,
+            excluding: compositionContext(from: context)
+        )
     }
 
-    private func slotOccupant(for context: CompositionPickerContext) -> TeamMember? {
-        CompositionEditorEngine.slotOccupant(for: context, in: tab, members: members)
+    private func applySelection(member: TeamMember, context: MatchCompositionPickerContext) {
+        guard let index = tabs.firstIndex(where: { $0.id == context.tabId }) else { return }
+        CompositionEditorEngine.applySelection(
+            member: member,
+            context: compositionContext(from: context),
+            to: &tabs[index]
+        )
     }
 
-    private func clearSelection(context: CompositionPickerContext) {
-        CompositionEditorEngine.clearSelection(context: context, in: &tab)
+    private func slotOccupant(for context: MatchCompositionPickerContext) -> TeamMember? {
+        guard let tab = tabs.first(where: { $0.id == context.tabId }) else { return nil }
+        return CompositionEditorEngine.slotOccupant(
+            for: compositionContext(from: context),
+            in: tab,
+            members: members
+        )
     }
+
+    private func compositionContext(from context: MatchCompositionPickerContext) -> CompositionPickerContext {
+        CompositionPickerContext(
+            positionId: context.positionId,
+            substituteIndex: context.substituteIndex
+        )
+    }
+
+    private func clearSelection(context: MatchCompositionPickerContext) {
+        guard let index = tabs.firstIndex(where: { $0.id == context.tabId }) else { return }
+        CompositionEditorEngine.clearSelection(
+            context: compositionContext(from: context),
+            in: &tabs[index]
+        )
+    }
+
+    private func removeAbsentMembersFromComposition() {
+        CompositionEditorEngine.removeAbsentMembers(
+            from: &tabs,
+            members: members,
+            availability: viewModel.availability
+        )
+    }
+}
+
+private struct MatchCompositionPickerContext: Identifiable {
+    let id = UUID()
+    let tabId: String
+    let positionId: String?
+    let substituteIndex: Int?
 }
 
 #if DEBUG

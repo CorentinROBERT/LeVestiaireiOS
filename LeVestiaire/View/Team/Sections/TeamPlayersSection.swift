@@ -48,7 +48,7 @@ struct TeamPlayersSection: View {
                     }
                 }
 
-                if let role = member.role {
+                if member.role == .admin || member.role == .manager, let role = member.role {
                     TeamRoleBadge(role: role)
                 } else {
                     Text(L10n.text("player"))
@@ -65,11 +65,12 @@ struct TeamPlayersSection: View {
                         Button(L10n.text("mergeGuestWithPlayer")) {
                             viewModel.presentMergeGuest(member)
                         }
-                    } else {
-                        ForEach(TeamRole.allCases) { role in
+                    } else if viewModel.canChangeMemberRoles, member.role != .admin {
+                        ForEach(TeamRole.assignableMemberRoles) { role in
                             Button(role.localizedLabel) {
-                                Task { await viewModel.updateMemberRole(memberId: member.id, role: role) }
+                                Task { await viewModel.updateMemberRole(member: member, role: role) }
                             }
+                            .disabled(member.role == role)
                         }
                     }
                     Button(L10n.text("supprimerJoueur"), role: .destructive) {

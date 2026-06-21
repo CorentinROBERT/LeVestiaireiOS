@@ -112,7 +112,7 @@ struct Matchs: View {
             .padding(.bottom, 24)
         }
         .refreshable {
-            await viewModel.refresh()
+            await viewModel.refreshFromPullToRefresh()
         }
         .overlay(alignment: .bottom) {
             if let feedback = viewModel.availabilityFeedback {
@@ -369,7 +369,7 @@ struct Matchs: View {
                             backgroundColor: AppPalette.Primary.main,
                             cornerRadius: 12,
                             onPress: {
-                                Task { await viewModel.refresh() }
+                                Task { await viewModel.refreshFromPullToRefresh() }
                             }
                         )
                     }
@@ -379,7 +379,7 @@ struct Matchs: View {
             .padding(20)
         }
         .refreshable {
-            await viewModel.refresh()
+            await viewModel.refreshFromPullToRefresh()
         }
     }
 }

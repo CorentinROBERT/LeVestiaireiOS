@@ -28,6 +28,12 @@ enum TeamRole: String, Codable, CaseIterable, Identifiable {
         canManageTeam
     }
 
+    var canChangeMemberRoles: Bool {
+        self == .admin
+    }
+
+    static let assignableMemberRoles: [TeamRole] = [.manager, .player]
+
     var localizedLabel: String {
         switch self {
         case .admin:
@@ -68,12 +74,37 @@ struct SquadTeam: Identifiable, Decodable, Equatable {
     }
 
     var resolvedMembers: [TeamMember] {
-        let regularMembers = members ?? []
+        let regularMembers = (members ?? []).map(enrichedMember(_:))
         let embeddedGuestIds = Set(regularMembers.filter(\.isGuest).map(\.id))
         let additionalGuests = (guests ?? [])
             .filter { !embeddedGuestIds.contains($0.id) }
             .map { $0.asTeamMember(teamId: id) }
         return regularMembers + additionalGuests
+    }
+
+    func resolveRole(for member: TeamMember) -> TeamRole {
+        guard !member.isGuest else { return member.role ?? .player }
+
+        if let adminId, member.matchesUserId(adminId) {
+            return .admin
+        }
+
+        if let managerIds {
+            for managerId in managerIds where member.matchesUserId(managerId) {
+                return .manager
+            }
+        }
+
+        return member.role ?? .player
+    }
+
+    private func enrichedMember(_ member: TeamMember) -> TeamMember {
+        guard !member.isGuest else { return member }
+
+        let resolvedRole = resolveRole(for: member)
+        guard resolvedRole != member.role else { return member }
+
+        return member.withRole(resolvedRole)
     }
 
     func withGuests(_ guests: [TeamGuest]) -> SquadTeam {
@@ -256,6 +287,36 @@ struct TeamMember: Identifiable, Decodable, Equatable {
     /// Ex. « Lucas M » — prénom + initiale du nom, pour les terrains compacts.
     var fieldDisplayName: String {
         Self.fieldDisplayName(firstName: firstName, lastName: lastName, fallback: displayName)
+    }
+
+    /// Identifiant utilisateur attendu par `PUT .../members/:memberId/role`.
+    var roleUpdateUserId: String {
+        if let userId, !userId.isEmpty {
+            return userId
+        }
+        return id
+    }
+
+    func matchesUserId(_ targetId: String?) -> Bool {
+        guard let targetId, !targetId.isEmpty else { return false }
+        return roleUpdateUserId == targetId || id == targetId || userId == targetId
+    }
+
+    func withRole(_ role: TeamRole) -> TeamMember {
+        TeamMember(
+            id: id,
+            userId: userId,
+            teamId: teamId,
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+            role: role,
+            jerseyNumber: jerseyNumber,
+            position: position,
+            joinedAt: joinedAt,
+            isActive: isActive,
+            isGuest: isGuest
+        )
     }
 
     static func fieldDisplayName(firstName: String?, lastName: String?, fallback: String) -> String {

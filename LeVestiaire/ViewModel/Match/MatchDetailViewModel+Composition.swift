@@ -74,10 +74,11 @@ extension MatchDetailViewModel {
     }
 
     func saveMatchComposition(
-        mainTab: CompositionTabDraft,
+        tabs: [CompositionTabDraft],
         templateCompositionId: String? = nil
     ) async -> Bool {
         guard canEditComposition else { return false }
+        guard let mainTab = tabs.first(where: \.isMain) else { return false }
 
         let trimmedName = mainTab.name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else {
@@ -97,13 +98,13 @@ extension MatchDetailViewModel {
         errorMessage = nil
         defer { isSubmitting = false }
 
-        var tab = mainTab
-        tab.name = trimmedName
+        var resolvedMainTab = mainTab
+        resolvedMainTab.name = trimmedName
 
-        let request = tab.matchSaveRequest(
+        let request = resolvedMainTab.matchSaveRequest(
             templateCompositionId: templateCompositionId,
             members: editorMembers,
-            alternativeTabs: alternativeTabs(fromTemplateId: templateCompositionId)
+            alternativeTabs: tabs.filter { !$0.isMain }
         )
 
         do {

@@ -21,6 +21,14 @@ final class MatchDetailViewModel: ObservableObject {
     @Published var events: [MatchEvent] = []
     @Published var matchStats: MatchStatsPayload?
     @Published var matchQuizzes: [MatchQuizSummary] = []
+    @Published var activeQuizDetail: MatchQuizDetail?
+    @Published var quizUserSubmission: MatchQuizUserSubmission?
+    @Published var quizLeaderboard: [MatchQuizLeaderboardEntry] = []
+    @Published var quizLeaderboardCounts: MatchQuizLeaderboardCounts?
+    @Published var quizTeamMembers: [TeamMember] = []
+    @Published var isLoadingQuizDetail = false
+    @Published var quizSubmitFeedback: MatchQuizSubmitResult?
+    @Published var selectedQuizId: String?
     @Published var isLoadingEvents = false
     @Published var hasLoadedEvents = false
     @Published var isLoadingMatchStats = false
@@ -38,7 +46,10 @@ final class MatchDetailViewModel: ObservableObject {
     let matchService: MatchService
     let compositionService: CompositionService
     let teamService: TeamService
+    let quizService: QuizService
     let authService: AuthService
+
+    let pullToRefreshTask = PullToRefreshTask()
 
     var currentUserId: String? {
         authService.currentUser?.id
@@ -49,12 +60,14 @@ final class MatchDetailViewModel: ObservableObject {
         matchService: MatchService,
         compositionService: CompositionService,
         teamService: TeamService,
+        quizService: QuizService,
         authService: AuthService
     ) {
         self.matchId = matchId
         self.matchService = matchService
         self.compositionService = compositionService
         self.teamService = teamService
+        self.quizService = quizService
         self.authService = authService
     }
 
@@ -64,6 +77,7 @@ final class MatchDetailViewModel: ObservableObject {
             matchService: MatchService.shared,
             compositionService: CompositionService.shared,
             teamService: TeamService.shared,
+            quizService: QuizService.shared,
             authService: AuthService.shared
         )
     }
@@ -74,17 +88,52 @@ final class MatchDetailViewModel: ObservableObject {
         resetTabCaches()
         defer { isLoading = false }
 
-        do {
-            match = try await matchService.fetchMatch(id: matchId)
-            await resolveTeamManagementAccess()
-            await loadSupplementaryData()
-        } catch {
-            surfaceError(error)
+        await executeRefresh()
+    }
+
+    /// Pull-to-refresh : le travail réseau doit survivre à l'annulation du geste SwiftUI.
+    func refreshFromPullToRefresh() async {
+        await pullToRefreshTask.perform { [weak self] in
+            await self?.executeRefresh()
         }
     }
 
+    private func executeRefresh() async {
+        errorMessage = nil
+
+        do {
+            match = try await matchService.fetchMatch(id: matchId)
+            await resolveTeamManagementAccess()
+        } catch {
+            if isCancellationError(error) { return }
+            surfaceError(error)
+            return
+        }
+
+        if match?.showsPrepareHub == true {
+            availabilityBoardSummary = match?.availabilitySummary
+            await reloadPreparationContent(force: true)
+        } else {
+            await loadSupplementaryData()
+            if shouldRefreshAvailabilityRoster {
+                await refreshAvailabilityBoard(force: true)
+            }
+        }
+
+        if showsRespondSection {
+            await refreshMyAvailabilityStatus()
+        }
+
+        await reloadAllTabContent(force: true)
+    }
+
     func refresh() async {
-        await load()
+        await refreshFromPullToRefresh()
+    }
+
+    var shouldRefreshAvailabilityRoster: Bool {
+        guard let match, match.status.isPreparationStatus else { return false }
+        return showsAvailabilityManagement
     }
 
     func surfaceError(_ error: Error) {
@@ -92,6 +141,8 @@ final class MatchDetailViewModel: ObservableObject {
 
         if let matchError = error as? MatchServiceError {
             errorMessage = matchError.errorDescription
+        } else if let quizError = error as? QuizServiceError {
+            errorMessage = quizError.errorDescription
         } else {
             errorMessage = error.localizedDescription
         }

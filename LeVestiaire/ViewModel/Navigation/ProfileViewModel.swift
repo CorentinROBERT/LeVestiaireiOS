@@ -34,6 +34,7 @@ final class ProfileViewModel: ObservableObject {
     private let sportProfileService: SportProfileService
     private let statsService: StatsService
     private let accountService: AccountService
+    let pullToRefreshTask = PullToRefreshTask()
 
     init(
         authService: AuthService,
@@ -87,10 +88,18 @@ final class ProfileViewModel: ObservableObject {
 
     func loadProfile() async {
         guard !isLoading else { return }
-
         isLoading = true
         defer { isLoading = false }
+        await reloadProfileContent()
+    }
 
+    func refreshFromPullToRefresh() async {
+        await pullToRefreshTask.perform { [weak self] in
+            await self?.reloadProfileContent()
+        }
+    }
+
+    private func reloadProfileContent() async {
         if let fetchedUser = await authService.fetchCurrentUser() {
             user = fetchedUser
         } else {

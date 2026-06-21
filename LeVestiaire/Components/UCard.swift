@@ -10,6 +10,7 @@ import SwiftUI
 struct UCard<Content: View, TrailingHeader: View>: View {
     let title: String?
     let icon: String?
+    let stepNumber: Int?
     let iconTint: Color
     let cornerRadius: CGFloat
     let padding: CGFloat
@@ -19,6 +20,7 @@ struct UCard<Content: View, TrailingHeader: View>: View {
     init(
         title: String? = nil,
         icon: String? = nil,
+        stepNumber: Int? = nil,
         iconTint: Color = AppPalette.Primary.main,
         cornerRadius: CGFloat = 20,
         padding: CGFloat = 20,
@@ -27,6 +29,7 @@ struct UCard<Content: View, TrailingHeader: View>: View {
     ) {
         self.title = title
         self.icon = icon
+        self.stepNumber = stepNumber
         self.iconTint = iconTint
         self.cornerRadius = cornerRadius
         self.padding = padding
@@ -37,6 +40,7 @@ struct UCard<Content: View, TrailingHeader: View>: View {
     init(
         title: String? = nil,
         icon: String? = nil,
+        stepNumber: Int? = nil,
         iconTint: Color = AppPalette.Primary.main,
         cornerRadius: CGFloat = 20,
         padding: CGFloat = 20,
@@ -44,6 +48,7 @@ struct UCard<Content: View, TrailingHeader: View>: View {
     ) where TrailingHeader == EmptyView {
         self.title = title
         self.icon = icon
+        self.stepNumber = stepNumber
         self.iconTint = iconTint
         self.cornerRadius = cornerRadius
         self.padding = padding
@@ -55,6 +60,15 @@ struct UCard<Content: View, TrailingHeader: View>: View {
         VStack(alignment: .leading, spacing: title == nil ? 0 : 14) {
             if let title {
                 HStack(spacing: 10) {
+                    if let stepNumber {
+                        Text("\(stepNumber)")
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(AppPalette.Primary.onMain)
+                            .frame(width: 24, height: 24)
+                            .background(Circle().fill(AppPalette.Primary.main))
+                            .accessibilityLabel(L10n.matchPrepareStepLabel(stepNumber))
+                    }
+
                     if let icon {
                         Image(systemName: icon)
                             .foregroundStyle(iconTint)

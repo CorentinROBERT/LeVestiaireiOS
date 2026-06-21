@@ -111,32 +111,54 @@ extension TeamViewModel {
         }
     }
 
-    func updateMemberRole(memberId: String, role: TeamRole) async {
+    func updateMemberRole(member: TeamMember, role: TeamRole) async {
+        guard canChangeMemberRoles else { return }
+        guard role != .admin else { return }
         guard let teamId = selectedTeam?.id else { return }
 
         do {
-            try await teamService.updateMemberRole(teamId: teamId, memberId: memberId, role: role)
-            await refreshSelectedTeamContent()
+            let updatedTeam = try await teamService.updateMemberRole(
+                teamId: teamId,
+                memberId: member.roleUpdateUserId,
+                role: role
+            )
+            applyLocalTeamUpdate(updatedTeam)
             showSuccess(L10n.format("roleUpdatedTo", role.localizedLabel))
         } catch {
             showError(error.localizedDescription)
         }
     }
 
-    func transferAdministration(to memberId: String) async -> Bool {
+    func transferAdministration(to memberUserId: String) async -> Bool {
+        guard canChangeMemberRoles else { return false }
         guard let teamId = selectedTeam?.id else { return false }
+        guard !memberUserId.isEmpty else { return false }
 
         isSubmitting = true
         defer { isSubmitting = false }
 
         do {
-            try await teamService.updateMemberRole(teamId: teamId, memberId: memberId, role: .admin)
-            await refreshSelectedTeamContent()
+            let updatedTeam = try await teamService.updateMemberRole(
+                teamId: teamId,
+                memberId: memberUserId,
+                role: .admin
+            )
+            applyLocalTeamUpdate(updatedTeam)
             showSuccess(L10n.text("successTeamUpdated"))
             return true
         } catch {
             showError(error.localizedDescription)
             return false
+        }
+    }
+
+    func applyLocalTeamUpdate(_ team: SquadTeam) {
+        let guests = selectedTeam?.guests ?? team.guests ?? []
+        let mergedTeam = team.withGuests(guests)
+
+        selectedTeam = mergedTeam
+        if let index = teams.firstIndex(where: { $0.id == team.id }) {
+            teams[index] = mergedTeam
         }
     }
 }

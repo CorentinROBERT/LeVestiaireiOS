@@ -35,7 +35,7 @@ struct Profile: View {
             await viewModel.loadProfile()
         }
         .refreshable {
-            await viewModel.loadProfile()
+            await viewModel.refreshFromPullToRefresh()
         }
         .sheet(isPresented: $viewModel.showsSettings) {
             ProfileSettingsSheet()

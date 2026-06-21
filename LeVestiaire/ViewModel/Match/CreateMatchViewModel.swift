@@ -11,7 +11,6 @@ final class CreateMatchViewModel: ObservableObject {
     @Published var opponentTeam = ""
     @Published var location = ""
     @Published var matchDate = Date()
-    @Published var includesTime = true
     @Published var matchTime = Date()
     @Published var selectedTeamId: String?
     @Published var description = ""
@@ -112,7 +111,7 @@ final class CreateMatchViewModel: ObservableObject {
                     homeTeam: teamId,
                     title: defaultTitle(opponent: trimmedOpponent),
                     description: trimmedDescription.isEmpty ? nil : trimmedDescription,
-                    time: resolvedMatchTime
+                    time: MatchService.apiTimeString(from: matchTime)
                 )
             )
         } catch {
@@ -131,12 +130,5 @@ final class CreateMatchViewModel: ObservableObject {
 
     private func defaultTitle(opponent: String) -> String {
         "\(L10n.vs) \(opponent)"
-    }
-
-    private var resolvedMatchTime: String {
-        if includesTime {
-            return MatchService.apiTimeString(from: matchTime)
-        }
-        return MatchService.defaultMatchTime
     }
 }

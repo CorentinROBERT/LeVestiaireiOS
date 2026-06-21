@@ -172,12 +172,12 @@ private struct TransferAdminSheet: View {
         NavigationStack {
             List(candidates) { member in
                 Button {
-                    selectedMemberId = member.id
+                    selectedMemberId = member.roleUpdateUserId
                 } label: {
                     HStack {
                         Text(member.displayName)
                         Spacer()
-                        if selectedMemberId == member.id {
+                        if selectedMemberId == member.roleUpdateUserId {
                             Image(systemName: "checkmark.circle.fill")
                                 .foregroundStyle(AppPalette.Primary.main)
                         }

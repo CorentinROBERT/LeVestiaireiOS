@@ -21,7 +21,7 @@ extension MatchDetailViewModel {
     }
 
     func publishMatch() async -> Bool {
-        guard match?.capabilities.canPublish == true else { return false }
+        guard match?.canPublishMatch == true else { return false }
 
         isSubmitting = true
         errorMessage = nil

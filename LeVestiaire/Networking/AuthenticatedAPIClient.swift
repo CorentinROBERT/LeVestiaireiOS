@@ -15,8 +15,7 @@ enum HTTPResponseValidator {
     }
 
     static func localizedErrorMessage(from data: Data, fallback: String) -> String {
-        let rawMessage = APIResponseDecoder.decodeErrorMessage(from: data)
-        return L10n.apiMessage(rawMessage) ?? rawMessage ?? fallback
+        APIResponseDecoder.resolveErrorMessage(from: data, fallback: fallback) ?? fallback
     }
 }
 
