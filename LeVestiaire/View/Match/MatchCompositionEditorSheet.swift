@@ -20,6 +20,7 @@ struct MatchCompositionEditorSheet: View {
     @State private var sheetErrorMessage: String?
     @State private var showsTemplateImportConfirmation = false
     @State private var showsSaveAvailabilityConfirmation = false
+    @State private var showsDeleteAlternativeConfirmation = false
     @FocusState private var focusedField: Int?
 
     private enum Field {
@@ -49,8 +50,16 @@ struct MatchCompositionEditorSheet: View {
         tabs.firstIndex(where: { $0.id == selectedTabId }) ?? 0
     }
 
+    private var selectedTab: CompositionTabDraft? {
+        tabs.first { $0.id == selectedTabId }
+    }
+
+    private var canDeleteSelectedTab: Bool {
+        canEdit && selectedTab?.isMain == false
+    }
+
     private var showsTabSelector: Bool {
-        tabs.count > 1
+        canEdit || tabs.count > 1
     }
 
     private var templateAvailabilityReview: CompositionTemplateAvailabilityReview {
@@ -106,6 +115,38 @@ struct MatchCompositionEditorSheet: View {
                 ToolbarItem(placement: .topBarLeading) {
                     Button(L10n.close) { dismiss() }
                 }
+                if canEdit {
+                    ToolbarItemGroup(placement: .topBarTrailing) {
+                        if canDeleteSelectedTab {
+                            Button(role: .destructive) {
+                                showsDeleteAlternativeConfirmation = true
+                            } label: {
+                                Image(systemName: "minus")
+                            }
+                        }
+
+                        Button {
+                            addAlternativeTab()
+                        } label: {
+                            Image(systemName: "plus")
+                        }
+                    }
+                }
+            }
+        }
+        .alert(L10n.deleteAlternativeFormation, isPresented: $showsDeleteAlternativeConfirmation) {
+            Button(L10n.cancel, role: .cancel) {}
+            Button(L10n.text("delete"), role: .destructive) {
+                removeSelectedAlternativeTab()
+            }
+        } message: {
+            if let selectedTab {
+                Text(
+                    L10n.format(
+                        "deleteAlternativeFormationConfirm",
+                        selectedTab.displayLabel
+                    )
+                )
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 12) {
@@ -243,7 +284,7 @@ struct MatchCompositionEditorSheet: View {
                 focusedTag: $focusedField,
                 usesSystemKeyboardToolbar: false
             )
-            .disabled(!canEdit || !tab.wrappedValue.isMain)
+            .disabled(!canEdit)
 
             VStack(alignment: .leading, spacing: 8) {
                 Text(L10n.text("formation"))
@@ -389,6 +430,25 @@ struct MatchCompositionEditorSheet: View {
                 tabs[mainIndex].name = matchTitle
             }
         }
+        selectedTabId = tabs.first(where: \.isMain)?.id ?? tabs.first?.id ?? ""
+        markTabsEdited()
+    }
+
+    private func addAlternativeTab() {
+        let tab = CompositionTabDraft(
+            name: L10n.format("compositionNumber", tabs.count),
+            isMain: false
+        )
+        tabs.append(tab)
+        selectedTabId = tab.id
+        markTabsEdited()
+    }
+
+    private func removeSelectedAlternativeTab() {
+        guard let index = tabs.firstIndex(where: { $0.id == selectedTabId }),
+              !tabs[index].isMain else { return }
+
+        tabs.remove(at: index)
         selectedTabId = tabs.first(where: \.isMain)?.id ?? tabs.first?.id ?? ""
         markTabsEdited()
     }

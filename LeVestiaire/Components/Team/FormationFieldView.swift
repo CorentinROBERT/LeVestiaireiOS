@@ -30,6 +30,8 @@ struct FormationFieldView: View {
     private var fieldAspectRatio: CGFloat { 0.68 }
     static let compactFieldHeight: CGFloat = 272
     private var fieldInset: CGFloat { compact ? 6 : 8 }
+    /// Le terrain garde un fond vert + cercles blancs : la couleur du label ne doit pas suivre le dark mode app.
+    private static let emptySlotLabelColor = Color(red: 0.10, green: 0.22, blue: 0.48)
 
     private var formation: FormationTemplate {
         FormationCatalog.template(for: formationKey) ?? FormationCatalog.all[0]
@@ -93,7 +95,7 @@ struct FormationFieldView: View {
                     .frame(width: circleSize, height: circleSize)
                 Text(member?.initials ?? position.localizedMarkerLabel)
                     .font(.system(size: resolvedInitialsFontSize, weight: .bold))
-                    .foregroundStyle(member == nil ? AppPalette.Primary.dark : .white)
+                    .foregroundStyle(member == nil ? Self.emptySlotLabelColor : .white)
                     .lineLimit(1)
                     .minimumScaleFactor(0.65)
             }
