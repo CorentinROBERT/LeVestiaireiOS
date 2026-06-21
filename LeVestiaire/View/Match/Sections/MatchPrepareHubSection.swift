@@ -374,3 +374,11 @@ struct MatchPrepareHubSection: View {
         }
     }
 }
+
+#if DEBUG
+#Preview {
+    MatchPrepareHubSection(viewModel: .preview(status: .draft))
+        .padding()
+        .teamPreviewEnvironment()
+}
+#endif

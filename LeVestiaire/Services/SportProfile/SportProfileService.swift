@@ -37,7 +37,7 @@ final class SportProfileService {
             let (data, httpResponse) = try await client.request(
                 path: APIEndpoints.sportProfile,
                 method: "GET",
-                headers: authorizationHeader(accessToken: accessToken)
+                headers: AuthenticatedAPIClient.bearerHeader(accessToken: accessToken)
             )
 
             if httpResponse.statusCode == 404 {
@@ -64,12 +64,22 @@ final class SportProfileService {
 
         do {
             let body = try JSONEncoder().encode(request)
-            let (data, _) = try await client.request(
+            let (data, response) = try await client.request(
                 path: APIEndpoints.sportProfile,
                 method: "POST",
                 body: body,
-                headers: authorizationHeader(accessToken: accessToken)
+                headers: AuthenticatedAPIClient.bearerHeader(accessToken: accessToken)
             )
+
+            guard HTTPResponseValidator.isSuccess(response) else {
+                return SportProfileResponse(
+                    success: false,
+                    message: HTTPResponseValidator.localizedErrorMessage(
+                        from: data,
+                        fallback: L10n.text("saveSportProfileError")
+                    )
+                )
+            }
 
             return APIResponseDecoder.decodeSportProfileResponse(from: data)
         } catch {
@@ -103,7 +113,7 @@ final class SportProfileService {
                 fileName: "profile.jpg",
                 mimeType: "image/jpeg",
                 fileData: imageData,
-                headers: authorizationHeader(accessToken: accessToken)
+                headers: AuthenticatedAPIClient.bearerHeader(accessToken: accessToken)
             )
 
             return APIResponseDecoder.decodeProfilePictureResponse(
@@ -116,9 +126,5 @@ final class SportProfileService {
                 message: L10n.uploadPhotoErrorWithDetail(error.localizedDescription)
             )
         }
-    }
-
-    private func authorizationHeader(accessToken: String) -> [String: String] {
-        ["Authorization": "Bearer \(accessToken)"]
     }
 }

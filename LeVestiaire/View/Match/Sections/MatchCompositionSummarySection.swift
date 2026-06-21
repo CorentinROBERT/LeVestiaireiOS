@@ -25,3 +25,14 @@ struct MatchCompositionSummarySection: View {
         }
     }
 }
+
+#if DEBUG
+#Preview {
+    MatchCompositionSummarySection(
+        viewModel: .preview(),
+        match: MatchPreviewData.detail()
+    )
+    .padding()
+    .teamPreviewEnvironment()
+}
+#endif

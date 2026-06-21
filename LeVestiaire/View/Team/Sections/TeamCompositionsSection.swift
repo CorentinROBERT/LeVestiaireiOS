@@ -90,3 +90,11 @@ struct TeamCompositionsSection: View {
         }
     }
 }
+
+#if DEBUG
+#Preview {
+    TeamCompositionsSection(viewModel: .preview())
+        .padding()
+        .teamPreviewEnvironment()
+}
+#endif

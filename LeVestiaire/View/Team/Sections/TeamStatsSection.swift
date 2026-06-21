@@ -95,3 +95,10 @@ struct TeamStatsSection: View {
         .padding(.vertical, 4)
     }
 }
+
+#if DEBUG
+#Preview {
+    TeamStatsSection(viewModel: .preview())
+        .teamPreviewEnvironment()
+}
+#endif

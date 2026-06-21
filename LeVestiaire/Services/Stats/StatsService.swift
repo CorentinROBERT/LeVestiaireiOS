@@ -45,7 +45,7 @@ final class StatsService {
             let (data, httpResponse) = try await client.request(
                 path: APIEndpoints.availableSeasons,
                 method: "GET",
-                headers: authorizationHeader(accessToken: accessToken)
+                headers: AuthenticatedAPIClient.bearerHeader(accessToken: accessToken)
             )
 
             guard (200...299).contains(httpResponse.statusCode) else {
@@ -78,7 +78,7 @@ final class StatsService {
             let (data, httpResponse) = try await client.request(
                 path: APIEndpoints.userSeasonStats(userId: userId, season: season),
                 method: "GET",
-                headers: authorizationHeader(accessToken: accessToken)
+                headers: AuthenticatedAPIClient.bearerHeader(accessToken: accessToken)
             )
 
             guard (200...299).contains(httpResponse.statusCode) else {
@@ -100,12 +100,15 @@ final class StatsService {
         let (data, httpResponse) = try await client.request(
             path: APIEndpoints.teamSeasonStats(teamId: teamId, season: season),
             method: "GET",
-            headers: authorizationHeader(accessToken: accessToken)
+            headers: AuthenticatedAPIClient.bearerHeader(accessToken: accessToken)
         )
 
-        guard (200...299).contains(httpResponse.statusCode) else {
+        guard HTTPResponseValidator.isSuccess(httpResponse) else {
             throw StatsServiceError.requestFailed(
-                resolveErrorMessage(from: data, fallback: L10n.noStatisticsAvailable)
+                HTTPResponseValidator.localizedErrorMessage(
+                    from: data,
+                    fallback: L10n.noStatisticsAvailable
+                )
             )
         }
 
@@ -121,25 +124,19 @@ final class StatsService {
         let (data, httpResponse) = try await client.request(
             path: APIEndpoints.teamSeasonRankings(teamId: teamId, season: season),
             method: "GET",
-            headers: authorizationHeader(accessToken: accessToken)
+            headers: AuthenticatedAPIClient.bearerHeader(accessToken: accessToken)
         )
 
-        guard (200...299).contains(httpResponse.statusCode) else {
+        guard HTTPResponseValidator.isSuccess(httpResponse) else {
             throw StatsServiceError.requestFailed(
-                resolveErrorMessage(from: data, fallback: L10n.noStatisticsAvailable)
+                HTTPResponseValidator.localizedErrorMessage(
+                    from: data,
+                    fallback: L10n.noStatisticsAvailable
+                )
             )
         }
 
         let payload = try APIResponseDecoder.decodePayload(TeamSeasonRankingsPayload.self, from: data)
         return payload.rankings
-    }
-
-    private func resolveErrorMessage(from data: Data, fallback: String) -> String {
-        let rawMessage = APIResponseDecoder.decodeErrorMessage(from: data)
-        return L10n.apiMessage(rawMessage) ?? rawMessage ?? fallback
-    }
-
-    private func authorizationHeader(accessToken: String) -> [String: String] {
-        ["Authorization": "Bearer \(accessToken)"]
     }
 }

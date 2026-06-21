@@ -169,6 +169,15 @@ struct TeamHeroSection: View {
                 Image(systemName: "person.3.fill")
                     .font(.title2)
                     .foregroundStyle(AppPalette.Primary.main)
+                    .accessibilityHidden(true)
             }
     }
 }
+
+#if DEBUG
+#Preview {
+    TeamHeroSection(viewModel: .preview())
+        .padding()
+        .teamPreviewEnvironment()
+}
+#endif

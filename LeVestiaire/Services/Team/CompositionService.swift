@@ -80,23 +80,27 @@ final class CompositionService {
         method: String,
         body: Data? = nil
     ) async throws -> (Data, HTTPURLResponse) {
-        guard let accessToken = authService.authToken, !accessToken.isEmpty else {
+        do {
+            return try await AuthenticatedAPIClient.performRequest(
+                client: client,
+                authService: authService,
+                path: path,
+                method: method,
+                body: body
+            )
+        } catch ServiceAuthError.unauthorized {
             throw TeamServiceError.unauthorized
         }
-
-        return try await client.request(
-            path: path,
-            method: method,
-            body: body,
-            headers: ["Authorization": "Bearer \(accessToken)"]
-        )
     }
 
     private func validate(response: HTTPURLResponse, data: Data) throws {
-        guard (200...299).contains(response.statusCode) else {
-            let rawMessage = APIResponseDecoder.decodeErrorMessage(from: data)
-            let message = L10n.apiMessage(rawMessage) ?? rawMessage ?? L10n.text("errorCompositionValidation")
-            throw TeamServiceError.requestFailed(message)
+        guard HTTPResponseValidator.isSuccess(response) else {
+            throw TeamServiceError.requestFailed(
+                HTTPResponseValidator.localizedErrorMessage(
+                    from: data,
+                    fallback: L10n.text("errorCompositionValidation")
+                )
+            )
         }
     }
 }

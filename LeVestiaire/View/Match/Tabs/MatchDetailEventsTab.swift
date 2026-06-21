@@ -76,12 +76,27 @@ struct MatchDetailEventsTab: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .task {
             await viewModel.loadEventsIfNeeded()
-            if canManageEvents {
+            if viewModel.canManageMatchEvents {
                 await viewModel.loadEventContext()
             }
+        }
+        .onChange(of: viewModel.canManageMatchEvents) { _, canManage in
+            guard canManage else { return }
+            Task { await viewModel.loadEventContext() }
         }
         .sheet(isPresented: $showsAddEventSheet) {
             AddMatchEventSheet(viewModel: viewModel)
         }
     }
 }
+
+#if DEBUG
+#Preview {
+    MatchDetailEventsTab(
+        viewModel: .preview(status: .finished),
+        match: MatchPreviewData.detail(status: .finished)
+    )
+    .padding()
+    .teamPreviewEnvironment()
+}
+#endif

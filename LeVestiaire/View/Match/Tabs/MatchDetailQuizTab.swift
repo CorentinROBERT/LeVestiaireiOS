@@ -59,3 +59,14 @@ struct MatchDetailQuizTab: View {
         }
     }
 }
+
+#if DEBUG
+#Preview {
+    MatchDetailQuizTab(
+        viewModel: .preview(status: .finished),
+        match: MatchPreviewData.detail(status: .finished)
+    )
+    .padding()
+    .teamPreviewEnvironment()
+}
+#endif

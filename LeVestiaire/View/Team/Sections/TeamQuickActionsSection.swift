@@ -30,3 +30,11 @@ struct TeamQuickActionsSection: View {
         }
     }
 }
+
+#if DEBUG
+#Preview {
+    TeamQuickActionsSection(viewModel: .preview())
+        .padding()
+        .teamPreviewEnvironment()
+}
+#endif

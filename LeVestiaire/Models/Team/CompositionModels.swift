@@ -338,7 +338,6 @@ struct CompositionPlayerUser: Decodable, Equatable {
         status = try container.decodeIfPresent(String.self, forKey: .status)
         isGuest = try container.decodeIfPresent(Bool.self, forKey: .isGuest)
             ?? (status?.lowercased() == "guest")
-            ?? CompositionMemberKey.isGuestKey(id)
     }
 }
 
@@ -952,19 +951,59 @@ struct CompositionTabDraft: Identifiable, Equatable {
     }
 
     func toSaveRequest(teamId: String, compositionId: String?) -> CompositionSaveRequest {
-        CompositionSaveRequest(
+        teamSaveRequest(teamId: teamId, alternativeTabs: [])
+    }
+
+    var starterSlotRequests: [CompositionSlotRequest] {
+        starterAssignments.map {
+            CompositionSlotRequest(position: $0.key, memberId: $0.value)
+        }
+    }
+
+    var substituteSlotRequests: [CompositionSlotRequest] {
+        substituteMemberIds.compactMap { memberId in
+            guard let memberId else { return nil }
+            return CompositionSlotRequest(position: "SUB", memberId: memberId)
+        }
+    }
+
+    func alternativeCompositionRequest() -> AlternativeCompositionRequest {
+        AlternativeCompositionRequest(
+            id: serverAlternativeId,
+            name: name,
+            formation: formationKey,
+            tacticalNotes: tacticalNotes.nilIfEmpty,
+            starters: starterSlotRequests,
+            substitutes: substituteSlotRequests
+        )
+    }
+
+    func teamSaveRequest(
+        teamId: String,
+        alternativeTabs: [CompositionTabDraft]
+    ) -> CompositionSaveRequest {
+        let alternatives = alternativeTabs.map { $0.alternativeCompositionRequest() }
+        return CompositionSaveRequest(
             teamId: teamId,
             name: name,
             formation: formationKey,
             tacticalNotes: tacticalNotes.nilIfEmpty,
-            starters: starterAssignments.map {
-                CompositionSlotRequest(position: $0.key, memberId: $0.value)
-            },
-            substitutes: substituteMemberIds.compactMap { memberId in
-                guard let memberId else { return nil }
-                return CompositionSlotRequest(position: "SUB", memberId: memberId)
-            },
-            alternatives: nil
+            starters: starterSlotRequests,
+            substitutes: substituteSlotRequests,
+            alternatives: alternatives.isEmpty ? nil : alternatives
+        )
+    }
+
+    func matchSaveRequest(
+        templateCompositionId: String?,
+        members: [TeamMember],
+        alternativeTabs: [CompositionTabDraft]
+    ) -> MatchCompositionSaveRequest {
+        MatchCompositionSaveRequest.from(
+            tab: self,
+            templateCompositionId: templateCompositionId,
+            members: members,
+            alternativeTabs: alternativeTabs
         )
     }
 

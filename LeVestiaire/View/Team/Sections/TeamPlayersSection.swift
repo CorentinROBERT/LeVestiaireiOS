@@ -87,5 +87,16 @@ struct TeamPlayersSection: View {
             RoundedRectangle(cornerRadius: 14)
                 .stroke(TeamRoleStyle.color(for: member.role).opacity(0.18), lineWidth: 1)
         }
+        .accessibilityElement(children: .combine)
     }
 }
+
+#if DEBUG
+#Preview {
+    ScrollView {
+        TeamPlayersSection(viewModel: .preview())
+            .padding()
+    }
+    .teamPreviewEnvironment()
+}
+#endif

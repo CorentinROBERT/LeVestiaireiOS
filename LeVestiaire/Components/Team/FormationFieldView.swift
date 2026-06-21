@@ -133,6 +133,8 @@ struct FormationFieldView: View {
                 marker
             }
             .buttonStyle(.plain)
+            .accessibilityLabel(positionAccessibilityLabel(position: position, member: member))
+            .accessibilityHint(L10n.text("select"))
         } else {
             marker
         }
@@ -141,6 +143,13 @@ struct FormationFieldView: View {
     private func member(for positionId: String) -> TeamMember? {
         guard let memberId = assignments[positionId] else { return nil }
         return members.first { $0.matchesCompositionMemberKey(memberId) }
+    }
+
+    private func positionAccessibilityLabel(position: FormationPosition, member: TeamMember?) -> String {
+        if let member {
+            return "\(position.localizedMarkerLabel), \(member.displayName)"
+        }
+        return position.localizedMarkerLabel
     }
 }
 

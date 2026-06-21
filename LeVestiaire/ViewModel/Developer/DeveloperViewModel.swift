@@ -15,6 +15,7 @@ enum APITestState: Equatable {
     case failure(message: String)
 }
 
+@MainActor
 final class DeveloperViewModel: ObservableObject {
     @Published var selectedEnvironment: APIEnvironment
     @Published var customBaseURL: String

@@ -13,6 +13,7 @@ enum SessionGateFailure: Equatable {
     case biometricFailed
 }
 
+@MainActor
 final class AuthService: ObservableObject {
     static let shared = AuthService(
         client: APIClient.shared,
@@ -120,11 +121,21 @@ final class AuthService: ObservableObject {
     func login(email: String, password: String) async -> LoginResponse {
         do {
             let body = try JSONEncoder().encode(LoginRequest(email: email, password: password))
-            let (data, _) = try await client.request(
+            let (data, response) = try await client.request(
                 path: APIEndpoints.login,
                 method: "POST",
                 body: body
             )
+
+            guard HTTPResponseValidator.isSuccess(response) else {
+                return LoginResponse(
+                    success: false,
+                    message: HTTPResponseValidator.localizedErrorMessage(
+                        from: data,
+                        fallback: L10n.text("loginError")
+                    )
+                )
+            }
 
             let loginResponse = APIResponseDecoder.decodeLoginResponse(from: data)
             if shouldEstablishSession(from: loginResponse) {
@@ -158,11 +169,21 @@ final class AuthService: ObservableObject {
                 language: language
             )
             let body = try JSONEncoder().encode(payload)
-            let (data, _) = try await client.request(
+            let (data, response) = try await client.request(
                 path: APIEndpoints.register,
                 method: "POST",
                 body: body
             )
+
+            guard HTTPResponseValidator.isSuccess(response) else {
+                return LoginResponse(
+                    success: false,
+                    message: HTTPResponseValidator.localizedErrorMessage(
+                        from: data,
+                        fallback: L10n.text("registerError")
+                    )
+                )
+            }
 
             let loginResponse = APIResponseDecoder.decodeLoginResponse(from: data)
             if shouldEstablishSession(from: loginResponse) {
@@ -393,21 +414,6 @@ final class AuthService: ObservableObject {
         if let user = response.user, !user.emailVerified { return false }
 
         return true
-    }
-
-    @MainActor
-    private func persistSessionIfNeeded(from loginResponse: LoginResponse) {
-        guard loginResponse.success,
-              loginResponse.hasValidData,
-              let accessToken = loginResponse.accessToken,
-              let refreshToken = loginResponse.refreshToken else {
-            return
-        }
-
-        applyRefreshedTokens(accessToken: accessToken, refreshToken: refreshToken)
-        isAuthenticated = true
-        requiresPasswordReauthentication = false
-        currentUser = loginResponse.user
     }
 
     @MainActor

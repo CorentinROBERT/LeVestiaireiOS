@@ -15,8 +15,18 @@ struct TeamTabPicker: View {
             }
         }
         .pickerStyle(.segmented)
-        .onChange(of: selection) { _, _ in
+        .accessibilityValue(selection.title)
+        .onChange(of: selection) { _, newValue in
             TeamHaptics.lightImpact()
+            _ = newValue
         }
     }
 }
+
+#if DEBUG
+#Preview {
+    TeamTabPicker(selection: .constant(.roster))
+        .padding()
+        .teamPreviewEnvironment()
+}
+#endif

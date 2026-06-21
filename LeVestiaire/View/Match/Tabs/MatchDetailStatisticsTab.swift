@@ -107,3 +107,14 @@ struct MatchDetailStatisticsTab: View {
         )
     }
 }
+
+#if DEBUG
+#Preview {
+    MatchDetailStatisticsTab(
+        viewModel: .preview(status: .finished),
+        match: MatchPreviewData.detail(status: .finished)
+    )
+    .padding()
+    .teamPreviewEnvironment()
+}
+#endif

@@ -72,7 +72,7 @@ final class MatchService {
     func fetchMatch(id: String, authenticated: Bool = true) async throws -> MatchDetail {
         let headers: [String: String]
         if authenticated, let accessToken = authService.authToken, !accessToken.isEmpty {
-            headers = authorizationHeader(accessToken: accessToken)
+            headers = AuthenticatedAPIClient.bearerHeader(accessToken: accessToken)
         } else {
             headers = [:]
         }
@@ -376,17 +376,18 @@ final class MatchService {
         body: Data? = nil,
         queryItems: [URLQueryItem] = []
     ) async throws -> (Data, HTTPURLResponse) {
-        guard let accessToken = authService.authToken, !accessToken.isEmpty else {
+        do {
+            return try await AuthenticatedAPIClient.performRequest(
+                client: client,
+                authService: authService,
+                path: path,
+                method: method,
+                body: body,
+                queryItems: queryItems
+            )
+        } catch ServiceAuthError.unauthorized {
             throw MatchServiceError.unauthorized
         }
-
-        return try await client.request(
-            path: path,
-            method: method,
-            body: body,
-            headers: authorizationHeader(accessToken: accessToken),
-            queryItems: queryItems
-        )
     }
 
     private func queryItems(for criteria: MatchFetchCriteria) -> [URLQueryItem] {
@@ -424,26 +425,23 @@ final class MatchService {
         return items
     }
 
-    private func authorizationHeader(accessToken: String) -> [String: String] {
-        ["Authorization": "Bearer \(accessToken)"]
-    }
-
     private func validate(response: HTTPURLResponse, data: Data, fallback: String) throws {
-        guard (200...299).contains(response.statusCode) else {
-            let rawMessage = APIResponseDecoder.decodeErrorMessage(from: data)
-            let message = L10n.apiMessage(rawMessage) ?? rawMessage ?? fallback
-            throw MatchServiceError.requestFailed(message)
+        guard HTTPResponseValidator.isSuccess(response) else {
+            throw MatchServiceError.requestFailed(
+                HTTPResponseValidator.localizedErrorMessage(from: data, fallback: fallback)
+            )
         }
     }
 
     private func validateAvailability(response: HTTPURLResponse, data: Data, fallback: String) throws {
-        guard (200...299).contains(response.statusCode) else {
+        guard HTTPResponseValidator.isSuccess(response) else {
             let rawMessage = APIResponseDecoder.decodeErrorMessage(from: data)
             if rawMessage == MatchAPIErrorCode.availabilityClosed.rawValue {
                 throw MatchServiceError.availabilityClosed
             }
-            let message = L10n.apiMessage(rawMessage) ?? rawMessage ?? fallback
-            throw MatchServiceError.requestFailed(message)
+            throw MatchServiceError.requestFailed(
+                HTTPResponseValidator.localizedErrorMessage(from: data, fallback: fallback)
+            )
         }
     }
 }

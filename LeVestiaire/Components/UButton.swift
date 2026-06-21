@@ -2,26 +2,22 @@
 //  UButton.swift
 //  LeVestaire
 //
-//  Created by Corentin Robert on 09/06/2026.
-//
 
 import SwiftUI
 
 struct UButton: View {
-    
     var text: String = ""
-    var textColor: Color = .blue
-    var backgroundColor: Color = .white
-    var cornerRadius: CGFloat = 0.0
+    var textColor: Color = AppPalette.Primary.onMain
+    var backgroundColor: Color = AppPalette.Primary.main
+    var cornerRadius: CGFloat = 12
     var isFullWidth: Bool = false
-    var leadingIcon: String? = nil
-    var trailingIcon: String? = nil
+    var leadingIcon: String?
+    var trailingIcon: String?
+    var accessibilityLabel: String?
     var onPress: () -> Void = {}
-    
+
     var body: some View {
-        Button {
-            onPress()
-        } label: {
+        Button(action: onPress) {
             HStack(spacing: 8) {
                 if let leadingIcon {
                     Image(systemName: leadingIcon)
@@ -46,16 +42,16 @@ struct UButton: View {
                     .fill(backgroundColor)
             )
         }
+        .buttonStyle(.plain)
+        .accessibilityLabel(accessibilityLabel ?? text)
     }
 }
 
 #Preview {
     UButton(
         text: "Button",
-        textColor: .blue,
-        backgroundColor: .black,
-        cornerRadius: 25,
         leadingIcon: "plus",
         trailingIcon: "chevron.right"
     )
+    .padding()
 }

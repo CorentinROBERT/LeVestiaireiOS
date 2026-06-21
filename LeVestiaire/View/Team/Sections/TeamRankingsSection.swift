@@ -80,5 +80,14 @@ struct TeamRankingsSection: View {
                 .foregroundStyle(AppPalette.Primary.dark)
         }
         .padding(.vertical, 4)
+        .accessibilityElement(children: .combine)
     }
 }
+
+#if DEBUG
+#Preview {
+    TeamRankingsSection(viewModel: .preview())
+        .padding()
+        .teamPreviewEnvironment()
+}
+#endif

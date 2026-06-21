@@ -43,3 +43,14 @@ struct MatchDetailCompositionTab: View {
         }
     }
 }
+
+#if DEBUG
+#Preview("Composition") {
+    MatchDetailCompositionTab(
+        viewModel: .preview(),
+        match: MatchPreviewData.detail()
+    )
+    .padding()
+    .teamPreviewEnvironment()
+}
+#endif

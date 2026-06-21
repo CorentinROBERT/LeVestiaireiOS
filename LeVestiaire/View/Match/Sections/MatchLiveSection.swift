@@ -85,3 +85,14 @@ struct MatchUpcomingActionsSection: View {
         }
     }
 }
+
+#if DEBUG
+#Preview {
+    MatchLiveSection(
+        viewModel: .preview(status: .ongoing),
+        match: MatchPreviewData.detail(status: .ongoing)
+    )
+    .padding()
+    .teamPreviewEnvironment()
+}
+#endif

@@ -150,5 +150,14 @@ struct TeamInvitationsSection: View {
         }
         .padding(12)
         .glassEffect(.regular, in: .rect(cornerRadius: 14))
+        .accessibilityElement(children: .combine)
     }
 }
+
+#if DEBUG
+#Preview {
+    TeamInvitationsSection(viewModel: .preview())
+        .padding()
+        .teamPreviewEnvironment()
+}
+#endif

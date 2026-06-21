@@ -265,16 +265,17 @@ final class TeamService {
         method: String,
         body: Data? = nil
     ) async throws -> (Data, HTTPURLResponse) {
-        guard let accessToken = authService.authToken, !accessToken.isEmpty else {
+        do {
+            return try await AuthenticatedAPIClient.performRequest(
+                client: client,
+                authService: authService,
+                path: path,
+                method: method,
+                body: body
+            )
+        } catch ServiceAuthError.unauthorized {
             throw TeamServiceError.unauthorized
         }
-
-        return try await client.request(
-            path: path,
-            method: method,
-            body: body,
-            headers: authorizationHeader(accessToken: accessToken)
-        )
     }
 
     @MainActor
@@ -285,31 +286,28 @@ final class TeamService {
         fileName: String,
         fileData: Data
     ) async throws -> (Data, HTTPURLResponse) {
-        guard let accessToken = authService.authToken, !accessToken.isEmpty else {
+        do {
+            return try await AuthenticatedAPIClient.performMultipartRequest(
+                client: client,
+                authService: authService,
+                path: path,
+                method: method,
+                fieldName: Self.teamLogoFieldName,
+                fileName: fileName,
+                mimeType: "image/jpeg",
+                fileData: fileData,
+                additionalFields: fields
+            )
+        } catch ServiceAuthError.unauthorized {
             throw TeamServiceError.unauthorized
         }
-
-        return try await client.uploadMultipart(
-            path: path,
-            method: method,
-            fieldName: Self.teamLogoFieldName,
-            fileName: fileName,
-            mimeType: "image/jpeg",
-            fileData: fileData,
-            headers: authorizationHeader(accessToken: accessToken),
-            additionalFields: fields
-        )
-    }
-
-    private func authorizationHeader(accessToken: String) -> [String: String] {
-        ["Authorization": "Bearer \(accessToken)"]
     }
 
     private func validate(response: HTTPURLResponse, data: Data, fallback: String) throws {
-        guard (200...299).contains(response.statusCode) else {
-            let rawMessage = APIResponseDecoder.decodeErrorMessage(from: data)
-            let message = L10n.apiMessage(rawMessage) ?? rawMessage ?? fallback
-            throw TeamServiceError.requestFailed(message)
+        guard HTTPResponseValidator.isSuccess(response) else {
+            throw TeamServiceError.requestFailed(
+                HTTPResponseValidator.localizedErrorMessage(from: data, fallback: fallback)
+            )
         }
     }
 }

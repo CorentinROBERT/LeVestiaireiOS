@@ -14,6 +14,7 @@ struct TeamLoadErrorBanner: View {
             HStack(alignment: .top, spacing: 10) {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .foregroundStyle(AppPalette.Semantic.warning)
+                    .accessibilityHidden(true)
 
                 Text(message)
                     .font(.subheadline)
@@ -28,5 +29,14 @@ struct TeamLoadErrorBanner: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
         .background(AppPalette.Semantic.warning.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
+        .accessibilityElement(children: .combine)
     }
 }
+
+#if DEBUG
+#Preview {
+    TeamLoadErrorBanner(message: L10n.retry) {}
+        .padding()
+        .teamPreviewEnvironment()
+}
+#endif

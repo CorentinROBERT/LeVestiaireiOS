@@ -46,3 +46,11 @@ struct TeamKPISection: View {
         }
     }
 }
+
+#if DEBUG
+#Preview {
+    TeamKPISection(viewModel: .preview())
+        .padding()
+        .teamPreviewEnvironment()
+}
+#endif

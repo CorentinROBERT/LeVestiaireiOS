@@ -13,7 +13,7 @@ struct MatchCompositionEditorSheet: View {
 
     @State private var tab: CompositionTabDraft
     @State private var selectedTemplateId: String?
-    @State private var pickerContext: MatchCompositionPickerContext?
+    @State private var pickerContext: CompositionPickerContext?
     @FocusState private var focusedField: Int?
 
     private enum Field {
@@ -180,7 +180,7 @@ struct MatchCompositionEditorSheet: View {
                     onPositionTapped: { positionId in
                         guard canEdit else { return }
                         focusedField = nil
-                        pickerContext = MatchCompositionPickerContext(
+                        pickerContext = CompositionPickerContext(
                             positionId: positionId,
                             substituteIndex: nil
                         )
@@ -193,7 +193,7 @@ struct MatchCompositionEditorSheet: View {
                     onBenchSlotTapped: { index in
                         guard canEdit else { return }
                         focusedField = nil
-                        pickerContext = MatchCompositionPickerContext(
+                        pickerContext = CompositionPickerContext(
                             positionId: nil,
                             substituteIndex: index
                         )
@@ -235,96 +235,21 @@ struct MatchCompositionEditorSheet: View {
         .disabled(viewModel.isSubmitting)
     }
 
-    private func assignedMemberIds(excluding context: MatchCompositionPickerContext) -> Set<String> {
-        var ids = Set<String>()
-        ids.formUnion(tab.starterAssignments.values)
-        ids.formUnion(tab.substituteMemberIds.compactMap { $0 })
-
-        if let positionId = context.positionId,
-           let current = tab.starterAssignments[positionId] {
-            ids.remove(current)
-        }
-
-        if let substituteIndex = context.substituteIndex,
-           let current = tab.substituteMemberIds[substituteIndex] {
-            ids.remove(current)
-        }
-
-        return ids
+    private func assignedMemberIds(excluding context: CompositionPickerContext) -> Set<String> {
+        CompositionEditorEngine.assignedMemberIds(in: tab, excluding: context)
     }
 
-    private func applySelection(member: TeamMember, context: MatchCompositionPickerContext) {
-        let memberKey = member.compositionMemberKey
-
-        clearMemberFromTab(
-            member: member,
-            excludingPositionId: context.positionId,
-            excludingSubstituteIndex: context.substituteIndex
-        )
-
-        if let positionId = context.positionId {
-            tab.starterAssignments[positionId] = memberKey
-        } else if let substituteIndex = context.substituteIndex {
-            tab.substituteMemberIds[substituteIndex] = memberKey
-        }
-
-        if let jerseyNumber = member.jerseyNumber {
-            tab.memberJerseyNumbers[memberKey] = jerseyNumber
-        }
+    private func applySelection(member: TeamMember, context: CompositionPickerContext) {
+        CompositionEditorEngine.applySelection(member: member, context: context, to: &tab)
     }
 
-    private func clearMemberFromTab(
-        member: TeamMember,
-        excludingPositionId: String? = nil,
-        excludingSubstituteIndex: Int? = nil
-    ) {
-        for (positionId, assignedKey) in tab.starterAssignments {
-            guard positionId != excludingPositionId else { continue }
-            if memberMatchesAssignment(assignedKey, member: member) {
-                tab.starterAssignments.removeValue(forKey: positionId)
-            }
-        }
-
-        for substituteIndex in tab.substituteMemberIds.indices {
-            guard substituteIndex != excludingSubstituteIndex else { continue }
-            guard let assignedKey = tab.substituteMemberIds[substituteIndex] else { continue }
-            if memberMatchesAssignment(assignedKey, member: member) {
-                tab.substituteMemberIds[substituteIndex] = nil
-            }
-        }
+    private func slotOccupant(for context: CompositionPickerContext) -> TeamMember? {
+        CompositionEditorEngine.slotOccupant(for: context, in: tab, members: members)
     }
 
-    private func memberMatchesAssignment(_ assignedKey: String, member: TeamMember) -> Bool {
-        member.matchesCompositionMemberKey(assignedKey)
+    private func clearSelection(context: CompositionPickerContext) {
+        CompositionEditorEngine.clearSelection(context: context, in: &tab)
     }
-
-    private func slotOccupant(for context: MatchCompositionPickerContext) -> TeamMember? {
-        let memberKey: String?
-        if let positionId = context.positionId {
-            memberKey = tab.starterAssignments[positionId]
-        } else if let substituteIndex = context.substituteIndex {
-            memberKey = tab.substituteMemberIds[substituteIndex]
-        } else {
-            memberKey = nil
-        }
-
-        guard let memberKey else { return nil }
-        return members.first { $0.matchesCompositionMemberKey(memberKey) }
-    }
-
-    private func clearSelection(context: MatchCompositionPickerContext) {
-        if let positionId = context.positionId {
-            tab.starterAssignments.removeValue(forKey: positionId)
-        } else if let substituteIndex = context.substituteIndex {
-            tab.substituteMemberIds[substituteIndex] = nil
-        }
-    }
-}
-
-private struct MatchCompositionPickerContext: Identifiable {
-    let id = UUID()
-    let positionId: String?
-    let substituteIndex: Int?
 }
 
 #if DEBUG

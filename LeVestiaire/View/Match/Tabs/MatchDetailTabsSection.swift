@@ -76,3 +76,17 @@ struct MatchDetailTabsSection: View {
         }
     }
 }
+
+#if DEBUG
+#Preview {
+    let match = MatchPreviewData.detail(status: .finished)
+    let configuration = MatchDetailTabConfiguration.forMatch(match, showsPrepareHub: false)!
+    MatchDetailTabsSection(
+        viewModel: .preview(status: .finished),
+        match: match,
+        configuration: configuration
+    )
+    .padding()
+    .teamPreviewEnvironment()
+}
+#endif

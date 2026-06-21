@@ -208,3 +208,15 @@ struct MatchEventsTimelineView: View {
         }
     }
 }
+
+#if DEBUG
+#Preview {
+    MatchEventsTimelineView(
+        events: [],
+        canManageEvents: false,
+        isSubmitting: false,
+        onDelete: { _ in }
+    )
+    .padding()
+}
+#endif

@@ -43,9 +43,21 @@ struct MatchDetailTabPicker: View {
                         )
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel(tab.title)
                     .accessibilityAddTraits(selection == tab ? .isSelected : [])
                 }
             }
         }
     }
 }
+
+#if DEBUG
+#Preview {
+    MatchDetailTabPicker(
+        tabs: [.composition, .events, .statistics, .quiz],
+        selection: .constant(.composition)
+    )
+    .padding()
+    .teamPreviewEnvironment()
+}
+#endif
