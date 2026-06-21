@@ -18,7 +18,6 @@ final class PullToRefreshTask {
     func perform(_ operation: @MainActor @escaping () async -> Void) async {
         if let inFlight {
             await waitForRefreshTask(inFlight)
-            return
         }
 
         var task: Task<Void, Never>!

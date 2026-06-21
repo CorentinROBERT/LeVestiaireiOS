@@ -94,9 +94,9 @@ extension MatchDetailViewModel {
             return false
         }
 
-        isSubmitting = true
+        isSavingComposition = true
         errorMessage = nil
-        defer { isSubmitting = false }
+        defer { isSavingComposition = false }
 
         var resolvedMainTab = mainTab
         resolvedMainTab.name = trimmedName
@@ -126,9 +126,9 @@ extension MatchDetailViewModel {
     func lockComposition() async -> Bool {
         guard match?.capabilities.canManageComposition == true else { return false }
 
-        isSubmitting = true
+        isLockingComposition = true
         errorMessage = nil
-        defer { isSubmitting = false }
+        defer { isLockingComposition = false }
 
         do {
             let previous = match

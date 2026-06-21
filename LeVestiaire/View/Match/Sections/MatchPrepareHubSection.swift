@@ -10,10 +10,12 @@ struct MatchPrepareHubSection: View {
 
     @State private var showsPublishConfirmation = false
     @State private var showsCompositionEditor = false
+    @State private var showsCompositionViewer = false
     @State private var compositionEditorReadOnly = false
     @State private var showsEditMatchSheet = false
     @State private var showsCancelConfirmation = false
     @State private var showsPostponeConfirmation = false
+    @State private var showsLockCompositionConfirmation = false
 
     private var match: MatchDetail? { viewModel.match }
 
@@ -53,6 +55,9 @@ struct MatchPrepareHubSection: View {
                 viewModel: viewModel,
                 readOnly: compositionEditorReadOnly
             )
+        }
+        .sheet(isPresented: $showsCompositionViewer) {
+            MatchCompositionViewerSheet(viewModel: viewModel)
         }
         .sheet(isPresented: $showsEditMatchSheet) {
             EditMatchSheet(match: match) { updatedMatch in
@@ -278,7 +283,7 @@ struct MatchPrepareHubSection: View {
                                 .fill(entry.status == status ? AppPalette.Primary.main : AppPalette.Primary.soft)
                         )
                         .buttonStyle(.plain)
-                        .disabled(viewModel.isSubmitting)
+                        .disabled(viewModel.isUpdatingAvailability)
                     }
                 }
             }
@@ -321,7 +326,31 @@ struct MatchPrepareHubSection: View {
                             cornerRadius: 12,
                             isFullWidth: true,
                             onPress: {
+                                showsLockCompositionConfirmation = true
+                            }
+                        )
+                        .disabled(viewModel.isLockingComposition)
+                        .confirmationDialog(
+                            L10n.text("lockComposition"),
+                            isPresented: $showsLockCompositionConfirmation,
+                            titleVisibility: .visible
+                        ) {
+                            Button(L10n.text("lockComposition")) {
                                 Task { await viewModel.lockComposition() }
+                            }
+                            Button(L10n.cancel, role: .cancel) {}
+                        } message: {
+                            Text(L10n.text("lockCompositionConfirm"))
+                        }
+                    } else if match.isCompositionLocked {
+                        UButton(
+                            text: L10n.viewMatchComposition,
+                            textColor: AppPalette.Primary.main,
+                            backgroundColor: AppPalette.Primary.soft,
+                            cornerRadius: 12,
+                            isFullWidth: true,
+                            onPress: {
+                                showsCompositionViewer = true
                             }
                         )
                     }
@@ -347,10 +376,6 @@ struct MatchPrepareHubSection: View {
                     )
                 }
             }
-        }
-        .task {
-            await viewModel.loadSelectablePlayers()
-            await viewModel.loadTeamTemplates()
         }
     }
 
@@ -378,7 +403,7 @@ struct MatchPrepareHubSection: View {
                     }
                 )
                 .opacity(viewModel.publishButtonEnabled ? 1 : 0.5)
-                .disabled(!viewModel.publishButtonEnabled || viewModel.isSubmitting)
+                .disabled(!viewModel.publishButtonEnabled || viewModel.isSubmittingLifecycle)
                 .confirmationDialog(
                     L10n.publishMatchAction,
                     isPresented: $showsPublishConfirmation,

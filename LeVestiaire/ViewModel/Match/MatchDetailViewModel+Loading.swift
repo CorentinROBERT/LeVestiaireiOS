@@ -52,8 +52,11 @@ extension MatchDetailViewModel {
             await loadCompositionPlayerDirectory()
         }
 
-        if match.composition != nil {
+        if match.capabilities.canManageComposition {
             await loadTeamTemplates()
+        }
+
+        if match.composition != nil {
             enrichCompositionFromTeamTemplatesIfNeeded()
         }
     }
@@ -89,8 +92,11 @@ extension MatchDetailViewModel {
             await loadCompositionPlayerDirectory()
         }
 
-        if match.composition != nil {
+        if match.capabilities.canManageComposition {
             await loadTeamTemplates()
+        }
+
+        if match.composition != nil {
             enrichCompositionFromTeamTemplatesIfNeeded()
         }
     }

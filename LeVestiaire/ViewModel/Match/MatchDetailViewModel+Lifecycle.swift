@@ -23,9 +23,9 @@ extension MatchDetailViewModel {
     func publishMatch() async -> Bool {
         guard match?.canPublishMatch == true else { return false }
 
-        isSubmitting = true
+        isSubmittingLifecycle = true
         errorMessage = nil
-        defer { isSubmitting = false }
+        defer { isSubmittingLifecycle = false }
 
         do {
             match = try await matchService.publishMatch(id: matchId)
@@ -68,9 +68,9 @@ extension MatchDetailViewModel {
     }
 
     func updateStatus(_ status: MatchStatus) async -> Bool {
-        isSubmitting = true
+        isSubmittingLifecycle = true
         errorMessage = nil
-        defer { isSubmitting = false }
+        defer { isSubmittingLifecycle = false }
 
         do {
             match = try await matchService.updateMatchStatus(id: matchId, status: status)

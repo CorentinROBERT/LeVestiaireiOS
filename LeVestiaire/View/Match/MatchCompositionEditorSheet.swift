@@ -14,7 +14,12 @@ struct MatchCompositionEditorSheet: View {
     @State private var tabs: [CompositionTabDraft]
     @State private var selectedTabId: String
     @State private var selectedTemplateId: String?
+    @State private var pendingTemplateId: String?
     @State private var pickerContext: MatchCompositionPickerContext?
+    @State private var hasUserEditedTabs = false
+    @State private var sheetErrorMessage: String?
+    @State private var showsTemplateImportConfirmation = false
+    @State private var showsSaveAvailabilityConfirmation = false
     @FocusState private var focusedField: Int?
 
     private enum Field {
@@ -60,6 +65,10 @@ struct MatchCompositionEditorSheet: View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
+                    if let sheetErrorMessage {
+                        compositionErrorBanner(message: sheetErrorMessage)
+                    }
+
                     if canEdit, !viewModel.teamTemplates.isEmpty {
                         templateSection
                     }
@@ -135,6 +144,8 @@ struct MatchCompositionEditorSheet: View {
             _ = await (playersTask, templatesTask, availabilityTask)
 
             let refreshedTabs = viewModel.makeCompositionTabDrafts()
+            guard !hasUserEditedTabs else { return }
+
             if readOnly {
                 if refreshedTabs.contains(where: { !$0.starterAssignments.isEmpty }) {
                     tabs = refreshedTabs
@@ -162,12 +173,30 @@ struct MatchCompositionEditorSheet: View {
             .pickerStyle(.menu)
             .tint(AppPalette.Primary.main)
             .onChange(of: selectedTemplateId) { _, newValue in
-                applyTemplate(id: newValue)
+                guard let newValue else { return }
+                pendingTemplateId = newValue
+                showsTemplateImportConfirmation = true
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
         .glassEffect(.regular, in: .rect(cornerRadius: 14))
+        .confirmationDialog(
+            L10n.text("compositionImportTemplateTitle"),
+            isPresented: $showsTemplateImportConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button(L10n.text("compositionImportTemplateAction")) {
+                applyTemplate(id: pendingTemplateId)
+                pendingTemplateId = nil
+            }
+            Button(L10n.cancel, role: .cancel) {
+                selectedTemplateId = nil
+                pendingTemplateId = nil
+            }
+        } message: {
+            Text(L10n.text("compositionImportTemplateConfirm"))
+        }
     }
 
     private var tabSelector: some View {
@@ -229,6 +258,7 @@ struct MatchCompositionEditorSheet: View {
                 .disabled(!canEdit)
                 .onChange(of: tab.wrappedValue.formationKey) { _, _ in
                     tab.wrappedValue.starterAssignments = [:]
+                    markTabsEdited()
                 }
             }
 
@@ -286,18 +316,61 @@ struct MatchCompositionEditorSheet: View {
 
     private var saveButton: some View {
         Button(L10n.text("save")) {
-            focusedField = nil
-            Task {
-                if await viewModel.saveMatchComposition(
-                    tabs: tabs,
-                    templateCompositionId: selectedTemplateId
-                ) {
-                    dismiss()
-                }
-            }
+            requestSave()
         }
-        .primarySheetButton(isLoading: viewModel.isSubmitting)
-        .disabled(viewModel.isSubmitting)
+        .primarySheetButton(isLoading: viewModel.isSavingComposition)
+        .disabled(viewModel.isSavingComposition)
+        .confirmationDialog(
+            L10n.text("save"),
+            isPresented: $showsSaveAvailabilityConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button(L10n.text("save")) {
+                Task { await performSave() }
+            }
+            Button(L10n.cancel, role: .cancel) {}
+        } message: {
+            Text(L10n.text("compositionSaveAvailabilityConflictConfirm"))
+        }
+    }
+
+    private func compositionErrorBanner(message: String) -> some View {
+        Label(message, systemImage: "exclamationmark.triangle.fill")
+            .font(.caption)
+            .foregroundStyle(AppPalette.Semantic.error)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(AppPalette.Semantic.error.opacity(0.12))
+            )
+    }
+
+    private func requestSave() {
+        focusedField = nil
+        sheetErrorMessage = nil
+
+        if templateAvailabilityReview.hasConflicts {
+            showsSaveAvailabilityConfirmation = true
+        } else {
+            Task { await performSave() }
+        }
+    }
+
+    private func performSave() async {
+        if await viewModel.saveMatchComposition(
+            tabs: tabs,
+            templateCompositionId: selectedTemplateId
+        ) {
+            dismiss()
+        } else {
+            sheetErrorMessage = viewModel.errorMessage
+        }
+    }
+
+    private func markTabsEdited() {
+        hasUserEditedTabs = true
+        sheetErrorMessage = nil
     }
 
     private func applyTemplate(id: String?) {
@@ -317,6 +390,7 @@ struct MatchCompositionEditorSheet: View {
             }
         }
         selectedTabId = tabs.first(where: \.isMain)?.id ?? tabs.first?.id ?? ""
+        markTabsEdited()
     }
 
     private func assignedMemberIds(excluding context: MatchCompositionPickerContext) -> Set<String> {
@@ -334,6 +408,7 @@ struct MatchCompositionEditorSheet: View {
             context: compositionContext(from: context),
             to: &tabs[index]
         )
+        markTabsEdited()
     }
 
     private func slotOccupant(for context: MatchCompositionPickerContext) -> TeamMember? {
@@ -358,6 +433,7 @@ struct MatchCompositionEditorSheet: View {
             context: compositionContext(from: context),
             in: &tabs[index]
         )
+        markTabsEdited()
     }
 
     private func removeAbsentMembersFromComposition() {
@@ -366,6 +442,7 @@ struct MatchCompositionEditorSheet: View {
             members: members,
             availability: viewModel.availability
         )
+        markTabsEdited()
     }
 }
 

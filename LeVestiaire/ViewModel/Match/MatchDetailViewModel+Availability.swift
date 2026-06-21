@@ -33,9 +33,9 @@ extension MatchDetailViewModel {
             return false
         }
 
-        isSubmitting = true
+        isUpdatingAvailability = true
         errorMessage = nil
-        defer { isSubmitting = false }
+        defer { isUpdatingAvailability = false }
 
         do {
             let updatedEntry = try await matchService.forcePlayerAvailability(

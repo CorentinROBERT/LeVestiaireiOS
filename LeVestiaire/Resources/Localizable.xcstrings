@@ -1158,86 +1158,6 @@
         }
       }
     },
-    "compositionTemplateAbsentHint" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "These players are marked absent for this match."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ces joueurs sont marqués absents pour ce match."
-          }
-        }
-      }
-    },
-    "compositionTemplateAbsentTitle" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld absent player(s) on the lineup"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld joueur(s) absent(s) dans la feuille"
-          }
-        }
-      }
-    },
-    "compositionTemplateRemoveAbsent" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Remove absent players from the lineup"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Retirer les absents de la feuille"
-          }
-        }
-      }
-    },
-    "compositionTemplateUnknownHint" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "These players have not confirmed their availability yet."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ces joueurs n'ont pas encore confirmé leur présence."
-          }
-        }
-      }
-    },
-    "compositionTemplateUnknownTitle" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld pending response(s)"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld réponse(s) en attente"
-          }
-        }
-      }
-    },
     "appName" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2864,6 +2784,54 @@
         }
       }
     },
+    "compositionImportTemplateAction" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importer"
+          }
+        }
+      }
+    },
+    "compositionImportTemplateConfirm" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This will replace all formations currently being edited with the selected template."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toutes les formations en cours d'édition seront remplacées par le modèle sélectionné."
+          }
+        }
+      }
+    },
+    "compositionImportTemplateTitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import team template"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importer un modèle d'équipe"
+          }
+        }
+      }
+    },
     "compositionInformation" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3044,6 +3012,22 @@
         }
       }
     },
+    "compositionSaveAvailabilityConflictConfirm" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Some assigned players are absent or have not confirmed their availability. Save anyway?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Des joueurs assignés sont absents ou n'ont pas encore confirmé leur présence. Enregistrer quand même ?"
+          }
+        }
+      }
+    },
     "compositionsDescription" : {
       "localizations" : {
         "en" : {
@@ -3120,6 +3104,86 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld remplaçants"
+          }
+        }
+      }
+    },
+    "compositionTemplateAbsentHint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "These players are marked absent for this match."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ces joueurs sont marqués absents pour ce match."
+          }
+        }
+      }
+    },
+    "compositionTemplateAbsentTitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld absent player(s) on the lineup"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld joueur(s) absent(s) dans la feuille"
+          }
+        }
+      }
+    },
+    "compositionTemplateRemoveAbsent" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove absent players from the lineup"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retirer les absents de la feuille"
+          }
+        }
+      }
+    },
+    "compositionTemplateUnknownHint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "These players have not confirmed their availability yet."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ces joueurs n'ont pas encore confirmé leur présence."
+          }
+        }
+      }
+    },
+    "compositionTemplateUnknownTitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld pending response(s)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld réponse(s) en attente"
           }
         }
       }
@@ -13224,7 +13288,6 @@
       }
     },
     "lockCompositionConfirm" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

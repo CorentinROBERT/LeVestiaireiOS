@@ -39,6 +39,10 @@ final class MatchDetailViewModel: ObservableObject {
     @Published var isLoadingAvailability = false
     @Published var hasLoadedAvailability = false
     @Published var isSubmitting = false
+    @Published var isSavingComposition = false
+    @Published var isLockingComposition = false
+    @Published var isUpdatingAvailability = false
+    @Published var isSubmittingLifecycle = false
     @Published var errorMessage: String?
     @Published var canManageMatchTeam = false
 
@@ -149,15 +153,7 @@ final class MatchDetailViewModel: ObservableObject {
     }
 
     func isCancellationError(_ error: Error) -> Bool {
-        if error is CancellationError {
-            return true
-        }
-
-        if let urlError = error as? URLError, urlError.code == .cancelled {
-            return true
-        }
-
-        return false
+        TaskCancellation.isError(error)
     }
 
 #if DEBUG

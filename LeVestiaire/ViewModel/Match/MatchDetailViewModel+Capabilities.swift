@@ -114,7 +114,7 @@ extension MatchDetailViewModel {
 
     var showsAvailabilityManagement: Bool {
         guard let match else { return false }
-        if match.capabilities.canManageAvailability || canEditMatchInfo {
+        if match.capabilities.canManageAvailability {
             return true
         }
         return canManageMatchTeam && match.status.isPreparationStatus
