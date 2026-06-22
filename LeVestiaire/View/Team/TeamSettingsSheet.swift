@@ -27,7 +27,7 @@ struct TeamSettingsSheet: View {
                         Button(L10n.text("invitePlayer")) {
                             dismiss()
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                                viewModel.presentInvitePlayerSheet()
+                                viewModel.invitationsViewModel.presentInvitePlayerSheet()
                             }
                         }
                     }
@@ -192,7 +192,7 @@ private struct TransferAdminSheet: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(L10n.confirm) {
                         Task {
-                            if await viewModel.transferAdministration(to: selectedMemberId) {
+                            if await viewModel.rosterViewModel.transferAdministration(to: selectedMemberId) {
                                 dismiss()
                             }
                         }

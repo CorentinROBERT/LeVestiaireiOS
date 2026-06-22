@@ -59,24 +59,25 @@ actor ImageCacheService {
             return try await existingTask.value
         }
 
-        let task = Task<UIImage, Error> {
-            let request = URLRequest(url: url, cachePolicy: .returnCacheDataElseLoad)
-            let (data, _) = try await session.data(for: request)
-
-            guard let image = UIImage(data: data) else {
-                throw ImageCacheError.invalidImageData
-            }
-
-            memoryCache.setObject(image, forKey: cacheKey, cost: data.count)
-            saveToDisk(data: data, url: url)
-            return image
-        }
-
+        let task = Task { try await self.loadRemoteImage(url: url, cacheKey: cacheKey) }
         inFlightTasks[url] = task
 
         defer { inFlightTasks[url] = nil }
 
         return try await task.value
+    }
+
+    private func loadRemoteImage(url: URL, cacheKey: NSURL) async throws -> UIImage {
+        let request = URLRequest(url: url, cachePolicy: .returnCacheDataElseLoad)
+        let (data, _) = try await session.data(for: request)
+
+        guard let image = UIImage(data: data) else {
+            throw ImageCacheError.invalidImageData
+        }
+
+        memoryCache.setObject(image, forKey: cacheKey, cost: data.count)
+        saveToDisk(data: data, url: url)
+        return image
     }
 
     private func diskCacheURL(for url: URL) -> URL {

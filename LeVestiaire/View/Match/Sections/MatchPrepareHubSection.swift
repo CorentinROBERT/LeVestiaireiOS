@@ -7,6 +7,8 @@ import SwiftUI
 
 struct MatchPrepareHubSection: View {
     @ObservedObject var viewModel: MatchDetailViewModel
+    @ObservedObject var availabilityViewModel: MatchDetailAvailabilityViewModel
+    @ObservedObject var compositionViewModel: MatchDetailCompositionViewModel
 
     @State private var showsPublishConfirmation = false
     @State private var showsCompositionEditor = false
@@ -15,6 +17,12 @@ struct MatchPrepareHubSection: View {
     @State private var showsCancelConfirmation = false
     @State private var showsPostponeConfirmation = false
     @State private var showsLockCompositionConfirmation = false
+
+    init(viewModel: MatchDetailViewModel) {
+        self.viewModel = viewModel
+        self.availabilityViewModel = viewModel.availabilityViewModel
+        self.compositionViewModel = viewModel.compositionViewModel
+    }
 
     private var match: MatchDetail? { viewModel.match }
 
@@ -138,22 +146,22 @@ struct MatchPrepareHubSection: View {
                     .font(.caption2)
                     .foregroundStyle(AppPalette.Neutral.textTertiary)
 
-                if !viewModel.isLoadingAvailability, !viewModel.availability.isEmpty {
-                    Text(L10n.selectablePlayersCount(viewModel.availability.count))
+                if !availabilityViewModel.isLoadingAvailability, !availabilityViewModel.availability.isEmpty {
+                    Text(L10n.selectablePlayersCount(availabilityViewModel.availability.count))
                         .font(.caption.weight(.medium))
                         .foregroundStyle(AppPalette.Neutral.textSecondary)
                 }
 
-                if viewModel.isLoadingAvailability, viewModel.availability.isEmpty {
+                if availabilityViewModel.isLoadingAvailability, availabilityViewModel.availability.isEmpty {
                     ProgressView()
                         .frame(maxWidth: .infinity)
-                } else if viewModel.availability.isEmpty {
+                } else if availabilityViewModel.availability.isEmpty {
                     Text(L10n.text("noPlayersAvailable"))
                         .font(.caption)
                         .foregroundStyle(AppPalette.Neutral.textSecondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 } else {
-                    ForEach(viewModel.availability) { entry in
+                    ForEach(availabilityViewModel.availability) { entry in
                         availabilityRow(entry)
                     }
                 }
@@ -162,10 +170,10 @@ struct MatchPrepareHubSection: View {
     }
 
     private func availabilitySummary(for match: MatchDetail) -> AvailabilitySummary? {
-        if viewModel.isLoadingAvailability {
-            return match.availabilitySummary ?? viewModel.availabilityBoardSummary
+        if availabilityViewModel.isLoadingAvailability {
+            return match.availabilitySummary ?? availabilityViewModel.availabilityBoardSummary
         }
-        return viewModel.availabilityBoardSummary ?? match.availabilitySummary
+        return availabilityViewModel.availabilityBoardSummary ?? match.availabilitySummary
     }
 
     private func availabilityRow(_ entry: MatchAvailabilityEntry) -> some View {
@@ -211,7 +219,7 @@ struct MatchPrepareHubSection: View {
                     ForEach(MatchAvailabilityStatus.allCases, id: \.self) { status in
                         Button(status.displayName) {
                             Task {
-                                await viewModel.forcePlayerAvailability(
+                                await availabilityViewModel.forcePlayerAvailability(
                                     playerId: entry.availabilityRequestId,
                                     status: status
                                 )
@@ -226,7 +234,7 @@ struct MatchPrepareHubSection: View {
                                 .fill(entry.status == status ? AppPalette.Primary.main : AppPalette.Primary.soft)
                         )
                         .buttonStyle(.plain)
-                        .disabled(viewModel.isUpdatingAvailability)
+                        .disabled(availabilityViewModel.isUpdatingAvailability)
                     }
                 }
             }
@@ -272,14 +280,14 @@ struct MatchPrepareHubSection: View {
                                 showsLockCompositionConfirmation = true
                             }
                         )
-                        .disabled(viewModel.isLockingComposition)
+                        .disabled(compositionViewModel.isLockingComposition)
                         .confirmationDialog(
                             L10n.text("lockComposition"),
                             isPresented: $showsLockCompositionConfirmation,
                             titleVisibility: .visible
                         ) {
                             Button(L10n.text("lockComposition")) {
-                                Task { await viewModel.lockComposition() }
+                                Task { await compositionViewModel.lock() }
                             }
                             Button(L10n.cancel, role: .cancel) {}
                         } message: {
@@ -302,7 +310,7 @@ struct MatchPrepareHubSection: View {
                         .font(.caption)
                         .foregroundStyle(AppPalette.Neutral.textSecondary)
 
-                    Text(L10n.selectablePlayersCount(viewModel.selectablePlayers.count))
+                    Text(L10n.selectablePlayersCount(compositionViewModel.selectablePlayers.count))
                         .font(.caption.weight(.medium))
                         .foregroundStyle(AppPalette.Primary.main)
 

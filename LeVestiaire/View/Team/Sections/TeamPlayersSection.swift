@@ -7,6 +7,12 @@ import SwiftUI
 
 struct TeamPlayersSection: View {
     @ObservedObject var viewModel: TeamViewModel
+    @ObservedObject var rosterViewModel: TeamRosterViewModel
+
+    init(viewModel: TeamViewModel) {
+        self.viewModel = viewModel
+        self.rosterViewModel = viewModel.rosterViewModel
+    }
 
     var body: some View {
         UCard(title: L10n.text("players"), icon: "person.2.fill") {
@@ -63,18 +69,18 @@ struct TeamPlayersSection: View {
                 Menu {
                     if member.isGuest {
                         Button(L10n.text("mergeGuestWithPlayer")) {
-                            viewModel.presentMergeGuest(member)
+                            rosterViewModel.presentMergeGuest(member)
                         }
                     } else if viewModel.canChangeMemberRoles, member.role != .admin {
                         ForEach(TeamRole.assignableMemberRoles) { role in
                             Button(role.localizedLabel) {
-                                Task { await viewModel.updateMemberRole(member: member, role: role) }
+                                Task { await rosterViewModel.updateMemberRole(member: member, role: role) }
                             }
                             .disabled(member.role == role)
                         }
                     }
                     Button(L10n.text("supprimerJoueur"), role: .destructive) {
-                        viewModel.confirmRemoveMember(member)
+                        rosterViewModel.confirmRemoveMember(member)
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")

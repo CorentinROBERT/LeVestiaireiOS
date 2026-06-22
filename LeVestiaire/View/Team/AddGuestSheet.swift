@@ -7,7 +7,7 @@ import SwiftUI
 
 struct AddGuestSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @ObservedObject var viewModel: TeamViewModel
+    @ObservedObject var rosterViewModel: TeamRosterViewModel
 
     @State private var firstName = ""
     @State private var lastName = ""
@@ -21,6 +21,10 @@ struct AddGuestSheet: View {
 
     private var optionalJerseyPlaceholder: String {
         "\(L10n.text("jerseyNumber")) (\(L10n.text("optional")))"
+    }
+
+    init(viewModel: TeamViewModel) {
+        self.rosterViewModel = viewModel.rosterViewModel
     }
 
     var body: some View {
@@ -66,7 +70,7 @@ struct AddGuestSheet: View {
                 Button(L10n.text("addGuest")) {
                     Task {
                         let parsedJersey = Int(jerseyNumber.trimmingCharacters(in: .whitespacesAndNewlines))
-                        let success = await viewModel.addGuest(
+                        let success = await rosterViewModel.addGuest(
                             firstName: firstName,
                             lastName: lastName,
                             email: email,
@@ -75,8 +79,8 @@ struct AddGuestSheet: View {
                         if success { dismiss() }
                     }
                 }
-                .primarySheetButton(isLoading: viewModel.isSubmitting)
-                .disabled(viewModel.isSubmitting)
+                .primarySheetButton(isLoading: rosterViewModel.isSubmitting)
+                .disabled(rosterViewModel.isSubmitting)
             }
         }
         .padding(.horizontal, 20)

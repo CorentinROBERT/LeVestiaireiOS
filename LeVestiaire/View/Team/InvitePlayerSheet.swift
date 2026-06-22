@@ -8,11 +8,17 @@ import SwiftUI
 struct InvitePlayerSheet: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var viewModel: TeamViewModel
+    @ObservedObject var invitationsViewModel: TeamInvitationsViewModel
 
     @State private var firstName = ""
     @State private var lastName = ""
     @State private var email = ""
     @State private var sheetHeight: CGFloat = 460
+
+    init(viewModel: TeamViewModel) {
+        self.viewModel = viewModel
+        self.invitationsViewModel = viewModel.invitationsViewModel
+    }
 
     var body: some View {
         VStack(spacing: 20) {
@@ -49,7 +55,7 @@ struct InvitePlayerSheet: View {
 
                 Button(L10n.text("invite")) {
                     Task {
-                        let success = await viewModel.invitePlayer(
+                        let success = await invitationsViewModel.invitePlayer(
                             email: email,
                             firstName: firstName,
                             lastName: lastName
@@ -57,8 +63,8 @@ struct InvitePlayerSheet: View {
                         if success { dismiss() }
                     }
                 }
-                .primarySheetButton(isLoading: viewModel.isSubmitting)
-                .disabled(viewModel.isSubmitting)
+                .primarySheetButton(isLoading: invitationsViewModel.isSubmitting)
+                .disabled(invitationsViewModel.isSubmitting)
             }
         }
         .padding(.horizontal, 20)

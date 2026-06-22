@@ -88,12 +88,15 @@ struct Team: View {
         .refreshable {
             await viewModel.refreshFromPullToRefresh(currentTab: selectedTab)
         }
-        .sheet(item: $viewModel.guestPendingMerge) { guest in
+        .sheet(item: Binding(
+            get: { viewModel.rosterViewModel.guestPendingMerge },
+            set: { viewModel.rosterViewModel.guestPendingMerge = $0 }
+        )) { guest in
             MergeGuestSheet(viewModel: viewModel, guest: guest)
                 .presentationDetents([.medium, .large])
         }
         .sheet(item: $viewModel.activeSheet, onDismiss: {
-            viewModel.editingComposition = nil
+            viewModel.compositionsViewModel.editingComposition = nil
         }) { sheet in
             switch sheet {
             case .createTeam:
@@ -126,16 +129,16 @@ struct Team: View {
         .confirmationDialog(
             L10n.text("cancelInvitation"),
             isPresented: Binding(
-                get: { viewModel.invitationPendingCancellation != nil },
-                set: { if !$0 { viewModel.invitationPendingCancellation = nil } }
+                get: { viewModel.invitationsViewModel.invitationPendingCancellation != nil },
+                set: { if !$0 { viewModel.invitationsViewModel.invitationPendingCancellation = nil } }
             ),
             titleVisibility: .visible
         ) {
             Button(L10n.text("cancelInvitation"), role: .destructive) {
-                Task { await viewModel.cancelInvitation() }
+                Task { await viewModel.invitationsViewModel.cancelInvitation() }
             }
             Button(L10n.cancel, role: .cancel) {
-                viewModel.invitationPendingCancellation = nil
+                viewModel.invitationsViewModel.invitationPendingCancellation = nil
             }
         } message: {
             Text(L10n.text("cancelInvitationConfirm"))
@@ -143,38 +146,38 @@ struct Team: View {
         .confirmationDialog(
             L10n.text("supprimerJoueur"),
             isPresented: Binding(
-                get: { viewModel.memberPendingRemoval != nil },
-                set: { if !$0 { viewModel.memberPendingRemoval = nil } }
+                get: { viewModel.rosterViewModel.memberPendingRemoval != nil },
+                set: { if !$0 { viewModel.rosterViewModel.memberPendingRemoval = nil } }
             ),
             titleVisibility: .visible
         ) {
             Button(L10n.text("supprimerJoueur"), role: .destructive) {
-                Task { await viewModel.removeMember() }
+                Task { await viewModel.rosterViewModel.removeMember() }
             }
             Button(L10n.cancel, role: .cancel) {
-                viewModel.memberPendingRemoval = nil
+                viewModel.rosterViewModel.memberPendingRemoval = nil
             }
         } message: {
-            if let member = viewModel.memberPendingRemoval {
+            if let member = viewModel.rosterViewModel.memberPendingRemoval {
                 Text(L10n.format("confirmRemovePlayer", member.displayName))
             }
         }
         .confirmationDialog(
             L10n.deleteComposition,
             isPresented: Binding(
-                get: { viewModel.compositionPendingDeletion != nil },
-                set: { if !$0 { viewModel.compositionPendingDeletion = nil } }
+                get: { viewModel.compositionsViewModel.compositionPendingDeletion != nil },
+                set: { if !$0 { viewModel.compositionsViewModel.compositionPendingDeletion = nil } }
             ),
             titleVisibility: .visible
         ) {
             Button(L10n.deleteComposition, role: .destructive) {
-                Task { await viewModel.deletePendingComposition() }
+                Task { await viewModel.compositionsViewModel.deletePendingComposition() }
             }
             Button(L10n.cancel, role: .cancel) {
-                viewModel.compositionPendingDeletion = nil
+                viewModel.compositionsViewModel.compositionPendingDeletion = nil
             }
         } message: {
-            if let composition = viewModel.compositionPendingDeletion {
+            if let composition = viewModel.compositionsViewModel.compositionPendingDeletion {
                 Text(L10n.format("confirmDeleteComposition", composition.name))
             }
         }

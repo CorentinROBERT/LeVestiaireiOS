@@ -7,7 +7,14 @@ import SwiftUI
 
 struct MatchDetailCompositionTab: View {
     @ObservedObject var viewModel: MatchDetailViewModel
+    @ObservedObject var compositionViewModel: MatchDetailCompositionViewModel
     let match: MatchDetail
+
+    init(viewModel: MatchDetailViewModel, match: MatchDetail) {
+        self.viewModel = viewModel
+        self.compositionViewModel = viewModel.compositionViewModel
+        self.match = match
+    }
 
     var body: some View {
         Group {
@@ -28,7 +35,7 @@ struct MatchDetailCompositionTab: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .task {
-            await viewModel.loadSelectablePlayers()
+            await compositionViewModel.loadSelectablePlayers()
         }
     }
 

@@ -1,39 +1,51 @@
 //
-//  MatchDetailViewModel+Composition.swift
+//  MatchDetailCompositionViewModel.swift
 //  LeVestaire
 //
 
+import Combine
 import Foundation
 
-extension MatchDetailViewModel {
+@MainActor
+final class MatchDetailCompositionViewModel: ObservableObject {
+    @Published var selectablePlayers: [MatchSelectablePlayer] = []
+    @Published var teamTemplates: [TeamComposition] = []
+    @Published var isSavingComposition = false
+    @Published var isLockingComposition = false
+
+    private weak var host: MatchDetailViewModel?
+    private let matchService: MatchService
+    private let compositionService: CompositionService
+
+    init(matchService: MatchService, compositionService: CompositionService) {
+        self.matchService = matchService
+        self.compositionService = compositionService
+    }
+
+    func attach(to host: MatchDetailViewModel) {
+        self.host = host
+    }
+
+    var canEdit: Bool {
+        host?.match?.capabilities.canManageComposition == true
+            && host?.match?.isCompositionLocked == false
+    }
+
+    func resetCache() {
+        selectablePlayers = []
+        teamTemplates = []
+    }
+
     func loadSelectablePlayers() async {
-        await loadCompositionPlayerDirectory()
+        await loadPlayerDirectory()
     }
 
     func loadSelectablePlayersIfNeeded() async throws {
-        await loadCompositionPlayerDirectory()
-    }
-
-    func resolveSelectablePlayersFallback() async -> [MatchSelectablePlayer] {
-        if !availability.isEmpty {
-            return availability.map { $0.asSelectablePlayer() }
-        }
-
-        if showsAvailabilityManagement || match?.composition != nil {
-            if let roster = try? await matchService.fetchAvailabilityRoster(matchId: matchId) {
-                let memberPlayers = roster.members.map { $0.asSelectablePlayer(isGuest: false) }
-                let guestPlayers = roster.guests.map { $0.asSelectablePlayer(isGuest: true) }
-                return (memberPlayers + guestPlayers).sorted {
-                    $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending
-                }
-            }
-        }
-
-        return []
+        await loadPlayerDirectory()
     }
 
     func loadTeamTemplates() async {
-        guard let teamId = match?.teamId else { return }
+        guard let teamId = host?.match?.teamId else { return }
 
         do {
             teamTemplates = try await compositionService.fetchTeamCompositions(teamId: teamId)
@@ -42,19 +54,37 @@ extension MatchDetailViewModel {
         }
     }
 
+    func loadPlayerDirectory() async {
+        guard let matchId = host?.matchId else { return }
+
+        do {
+            let players = try await matchService.fetchSelectablePlayers(matchId: matchId)
+            if !players.isEmpty {
+                selectablePlayers = players
+                return
+            }
+        } catch {
+            if host?.match?.capabilities.canManageComposition == true {
+                surfaceError(error)
+            }
+        }
+
+        selectablePlayers = await resolveSelectablePlayersFallback()
+    }
+
     func makeCompositionTabDraft() -> CompositionTabDraft {
         makeCompositionTabDrafts().first(where: \.isMain)
             ?? CompositionTabDraft(
-                name: match?.title ?? L10n.text("composition"),
+                name: host?.match?.title ?? L10n.text("composition"),
                 isMain: true
             )
     }
 
     func makeCompositionTabDrafts() -> [CompositionTabDraft] {
-        guard let composition = match?.composition else {
+        guard let composition = host?.match?.composition else {
             return [
                 CompositionTabDraft(
-                    name: match?.title ?? L10n.text("composition"),
+                    name: host?.match?.title ?? L10n.text("composition"),
                     isMain: true
                 )
             ]
@@ -73,21 +103,22 @@ extension MatchDetailViewModel {
         return tabs
     }
 
-    func saveMatchComposition(
+    func save(
         tabs: [CompositionTabDraft],
         templateCompositionId: String? = nil
     ) async -> Bool {
-        guard canEditComposition else { return false }
-        guard let mainTab = tabs.first(where: \.isMain) else { return false }
+        guard canEdit,
+              let matchId = host?.matchId,
+              let mainTab = tabs.first(where: \.isMain) else { return false }
 
         let trimmedName = mainTab.name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else {
-            errorMessage = L10n.text("compositionNameRequired")
+            host?.errorMessage = L10n.text("compositionNameRequired")
             return false
         }
 
         guard mainTab.starterAssignments.count == 7 else {
-            errorMessage = L10n.format(
+            host?.errorMessage = L10n.format(
                 "compositionMustHave7StartersCurrently",
                 mainTab.starterAssignments.count
             )
@@ -95,7 +126,6 @@ extension MatchDetailViewModel {
         }
 
         isSavingComposition = true
-        errorMessage = nil
         defer { isSavingComposition = false }
 
         var resolvedMainTab = mainTab
@@ -103,19 +133,19 @@ extension MatchDetailViewModel {
 
         let request = resolvedMainTab.matchSaveRequest(
             templateCompositionId: templateCompositionId,
-            members: editorMembers,
+            members: host?.editorMembers ?? [],
             alternativeTabs: tabs.filter { !$0.isMain }
         )
 
         do {
             let updated: MatchDetail
-            if match?.composition != nil {
+            if host?.match?.composition != nil {
                 updated = try await matchService.updateMatchComposition(matchId: matchId, request: request)
             } else {
                 updated = try await matchService.createMatchComposition(matchId: matchId, request: request)
             }
             applyMatchUpdate(updated, templateCompositionId: templateCompositionId)
-            await loadSupplementaryData()
+            await host?.loadSupplementaryData()
             return true
         } catch {
             surfaceError(error)
@@ -123,15 +153,15 @@ extension MatchDetailViewModel {
         }
     }
 
-    func lockComposition() async -> Bool {
-        guard match?.capabilities.canManageComposition == true else { return false }
+    func lock() async -> Bool {
+        guard host?.match?.capabilities.canManageComposition == true,
+              let matchId = host?.matchId else { return false }
 
         isLockingComposition = true
-        errorMessage = nil
         defer { isLockingComposition = false }
 
         do {
-            let previous = match
+            let previous = host?.match
             var updated = try await matchService.lockMatchComposition(matchId: matchId)
             if let refreshed = try? await matchService.fetchMatch(id: matchId) {
                 updated = refreshed
@@ -139,8 +169,8 @@ extension MatchDetailViewModel {
             if let previous {
                 updated = updated.preservingPresentationContext(from: previous)
             }
-            match = updated
-            await loadSupplementaryData()
+            host?.match = updated
+            await host?.loadSupplementaryData()
             return true
         } catch {
             surfaceError(error)
@@ -150,7 +180,7 @@ extension MatchDetailViewModel {
 
     func applyMatchUpdate(_ updated: MatchDetail, templateCompositionId: String? = nil) {
         var resolved = updated
-        if let previous = match {
+        if let previous = host?.match {
             resolved = updated.preservingPresentationContext(from: previous)
         }
         if let templateCompositionId,
@@ -158,7 +188,7 @@ extension MatchDetailViewModel {
            let composition = resolved.composition {
             resolved = resolved.replacingComposition(composition.enrichedWithTemplate(template))
         }
-        match = resolved
+        host?.match = resolved
     }
 
     func alternativeTabs(fromTemplateId templateId: String?) -> [CompositionTabDraft] {
@@ -169,8 +199,8 @@ extension MatchDetailViewModel {
         return CompositionTabDraft.from(composition: template).filter { !$0.isMain }
     }
 
-    func enrichCompositionFromTeamTemplatesIfNeeded() {
-        guard let composition = match?.composition,
+    func enrichFromTeamTemplatesIfNeeded() {
+        guard let composition = host?.match?.composition,
               composition.alternatives.isEmpty,
               !teamTemplates.isEmpty else { return }
 
@@ -181,23 +211,30 @@ extension MatchDetailViewModel {
         }
 
         if let template {
-            match = match?.replacingComposition(composition.enrichedWithTemplate(template))
+            host?.match = host?.match?.replacingComposition(composition.enrichedWithTemplate(template))
         }
     }
 
-    func loadCompositionPlayerDirectory() async {
-        do {
-            let players = try await matchService.fetchSelectablePlayers(matchId: matchId)
-            if !players.isEmpty {
-                selectablePlayers = players
-                return
-            }
-        } catch {
-            if match?.capabilities.canManageComposition == true {
-                surfaceError(error)
+    private func resolveSelectablePlayersFallback() async -> [MatchSelectablePlayer] {
+        let availability = host?.availabilityViewModel.availability ?? []
+        if !availability.isEmpty {
+            return availability.map { $0.asSelectablePlayer() }
+        }
+
+        if host?.showsAvailabilityManagement == true || host?.match?.composition != nil,
+           let matchId = host?.matchId,
+           let roster = try? await matchService.fetchAvailabilityRoster(matchId: matchId) {
+            let memberPlayers = roster.members.map { $0.asSelectablePlayer(isGuest: false) }
+            let guestPlayers = roster.guests.map { $0.asSelectablePlayer(isGuest: true) }
+            return (memberPlayers + guestPlayers).sorted {
+                $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending
             }
         }
 
-        selectablePlayers = await resolveSelectablePlayersFallback()
+        return []
+    }
+
+    private func surfaceError(_ error: Error) {
+        host?.surfaceError(error)
     }
 }

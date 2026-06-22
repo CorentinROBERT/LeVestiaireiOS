@@ -14,34 +14,8 @@ struct MatchEventPlayerOption: Identifiable, Hashable {
 @MainActor
 final class MatchDetailViewModel: ObservableObject {
     @Published var match: MatchDetail?
-    @Published var availability: [MatchAvailabilityEntry] = []
-    @Published var availabilityBoardSummary: AvailabilitySummary?
-    @Published var selectablePlayers: [MatchSelectablePlayer] = []
-    @Published var teamTemplates: [TeamComposition] = []
-    @Published var events: [MatchEvent] = []
-    @Published var matchStats: MatchStatsPayload?
-    @Published var matchQuizzes: [MatchQuizSummary] = []
-    @Published var activeQuizDetail: MatchQuizDetail?
-    @Published var quizUserSubmission: MatchQuizUserSubmission?
-    @Published var quizLeaderboard: [MatchQuizLeaderboardEntry] = []
-    @Published var quizLeaderboardCounts: MatchQuizLeaderboardCounts?
-    @Published var quizTeamMembers: [TeamMember] = []
-    @Published var isLoadingQuizDetail = false
-    @Published var quizSubmitFeedback: MatchQuizSubmitResult?
-    @Published var selectedQuizId: String?
-    @Published var isLoadingEvents = false
-    @Published var hasLoadedEvents = false
-    @Published var isLoadingMatchStats = false
-    @Published var hasLoadedMatchStats = false
-    @Published var isLoadingQuizzes = false
-    @Published var hasLoadedQuizzes = false
     @Published var isLoading = false
-    @Published var isLoadingAvailability = false
-    @Published var hasLoadedAvailability = false
     @Published var isSubmitting = false
-    @Published var isSavingComposition = false
-    @Published var isLockingComposition = false
-    @Published var isUpdatingAvailability = false
     @Published var isSubmittingLifecycle = false
     @Published var errorMessage: String?
     @Published var canManageMatchTeam = false
@@ -50,8 +24,12 @@ final class MatchDetailViewModel: ObservableObject {
     let matchService: MatchService
     let compositionService: CompositionService
     let teamService: TeamService
-    let quizService: QuizService
     let authService: AuthService
+    let availabilityViewModel: MatchDetailAvailabilityViewModel
+    let compositionViewModel: MatchDetailCompositionViewModel
+    let quizViewModel: MatchDetailQuizViewModel
+    let eventsViewModel: MatchDetailEventsViewModel
+    let statisticsViewModel: MatchDetailStatisticsViewModel
 
     let pullToRefreshTask = PullToRefreshTask()
 
@@ -64,15 +42,40 @@ final class MatchDetailViewModel: ObservableObject {
         matchService: MatchService,
         compositionService: CompositionService,
         teamService: TeamService,
-        quizService: QuizService,
-        authService: AuthService
+        authService: AuthService,
+        availabilityViewModel: MatchDetailAvailabilityViewModel? = nil,
+        compositionViewModel: MatchDetailCompositionViewModel? = nil,
+        quizViewModel: MatchDetailQuizViewModel? = nil,
+        eventsViewModel: MatchDetailEventsViewModel? = nil,
+        statisticsViewModel: MatchDetailStatisticsViewModel? = nil
     ) {
         self.matchId = matchId
         self.matchService = matchService
         self.compositionService = compositionService
         self.teamService = teamService
-        self.quizService = quizService
         self.authService = authService
+        self.availabilityViewModel = availabilityViewModel ?? MatchDetailAvailabilityViewModel(
+            matchService: matchService
+        )
+        self.compositionViewModel = compositionViewModel ?? MatchDetailCompositionViewModel(
+            matchService: matchService,
+            compositionService: compositionService
+        )
+        self.quizViewModel = quizViewModel ?? MatchDetailQuizViewModel(
+            quizService: QuizService.shared,
+            teamService: teamService
+        )
+        self.eventsViewModel = eventsViewModel ?? MatchDetailEventsViewModel(
+            matchService: matchService
+        )
+        self.statisticsViewModel = statisticsViewModel ?? MatchDetailStatisticsViewModel(
+            matchService: matchService
+        )
+        self.availabilityViewModel.attach(to: self)
+        self.compositionViewModel.attach(to: self)
+        self.quizViewModel.attach(to: self)
+        self.eventsViewModel.attach(to: self)
+        self.statisticsViewModel.attach(to: self)
     }
 
     convenience init(matchId: String) {
@@ -81,7 +84,6 @@ final class MatchDetailViewModel: ObservableObject {
             matchService: MatchService.shared,
             compositionService: CompositionService.shared,
             teamService: TeamService.shared,
-            quizService: QuizService.shared,
             authService: AuthService.shared
         )
     }
@@ -115,17 +117,17 @@ final class MatchDetailViewModel: ObservableObject {
         }
 
         if match?.showsPrepareHub == true {
-            availabilityBoardSummary = match?.availabilitySummary
+            availabilityViewModel.availabilityBoardSummary = match?.availabilitySummary
             await reloadPreparationContent(force: true)
         } else {
             await loadSupplementaryData()
             if shouldRefreshAvailabilityRoster {
-                await refreshAvailabilityBoard(force: true)
+                await availabilityViewModel.refreshBoard(force: true)
             }
         }
 
         if showsRespondSection {
-            await refreshMyAvailabilityStatus()
+            await availabilityViewModel.refreshMyAvailabilityStatus()
         }
 
         await reloadAllTabContent(force: true)

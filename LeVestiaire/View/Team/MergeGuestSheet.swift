@@ -7,9 +7,14 @@ import SwiftUI
 
 struct MergeGuestSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @ObservedObject var viewModel: TeamViewModel
+    @ObservedObject var rosterViewModel: TeamRosterViewModel
 
     let guest: TeamMember
+
+    init(viewModel: TeamViewModel, guest: TeamMember) {
+        self.rosterViewModel = viewModel.rosterViewModel
+        self.guest = guest
+    }
 
     var body: some View {
         NavigationStack {
@@ -36,14 +41,14 @@ struct MergeGuestSheet: View {
                 }
 
                 Section {
-                    if viewModel.mergeableTeamMembers.isEmpty {
+                    if rosterViewModel.mergeableTeamMembers.isEmpty {
                         Text(L10n.text("emptyPlayersMessage"))
                             .foregroundStyle(AppPalette.Neutral.textSecondary)
                     } else {
-                        ForEach(viewModel.mergeableTeamMembers) { member in
+                        ForEach(rosterViewModel.mergeableTeamMembers) { member in
                             Button {
                                 Task {
-                                    if await viewModel.mergeGuest(with: member) {
+                                    if await rosterViewModel.mergeGuest(with: member) {
                                         dismiss()
                                     }
                                 }
@@ -67,12 +72,12 @@ struct MergeGuestSheet: View {
 
                                     Spacer()
 
-                                    if viewModel.isSubmitting {
+                                    if rosterViewModel.isSubmitting {
                                         ProgressView()
                                     }
                                 }
                             }
-                            .disabled(viewModel.isSubmitting)
+                            .disabled(rosterViewModel.isSubmitting)
                         }
                     }
                 } header: {
@@ -87,7 +92,7 @@ struct MergeGuestSheet: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button(L10n.cancel) {
-                        viewModel.guestPendingMerge = nil
+                        rosterViewModel.guestPendingMerge = nil
                         dismiss()
                     }
                 }

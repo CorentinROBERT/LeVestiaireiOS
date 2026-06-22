@@ -8,6 +8,7 @@ import SwiftUI
 struct CompositionEditorSheet: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var viewModel: TeamViewModel
+    @ObservedObject var compositionsViewModel: TeamCompositionsViewModel
     let composition: TeamComposition?
 
     @State private var tabs: [CompositionTabDraft] = []
@@ -21,6 +22,12 @@ struct CompositionEditorSheet: View {
     private enum Field {
         static let name = 1
         static let notes = 2
+    }
+
+    init(viewModel: TeamViewModel, composition: TeamComposition?) {
+        self.viewModel = viewModel
+        self.compositionsViewModel = viewModel.compositionsViewModel
+        self.composition = composition
     }
 
     private var members: [TeamMember] {
@@ -258,7 +265,7 @@ struct CompositionEditorSheet: View {
         Button(L10n.text("save")) {
             focusedField = nil
             Task {
-                if await viewModel.saveComposition(
+                if await compositionsViewModel.save(
                     tabs: tabs,
                     deletedAlternativeIds: deletedAlternativeIds
                 ) {
@@ -266,8 +273,8 @@ struct CompositionEditorSheet: View {
                 }
             }
         }
-        .primarySheetButton(isLoading: viewModel.isSubmitting)
-        .disabled(viewModel.isSubmitting)
+        .primarySheetButton(isLoading: compositionsViewModel.isSubmitting)
+        .disabled(compositionsViewModel.isSubmitting)
     }
 
     private var deleteCompositionButton: some View {
@@ -281,14 +288,14 @@ struct CompositionEditorSheet: View {
         .padding(.vertical, 14)
         .glassEffect(.regular, in: .rect(cornerRadius: 18))
         .buttonStyle(.plain)
-        .disabled(viewModel.isSubmitting)
+        .disabled(compositionsViewModel.isSubmitting)
     }
 
     private func deleteComposition() {
         guard let composition else { return }
 
         Task {
-            if await viewModel.deleteComposition(composition) {
+            if await compositionsViewModel.delete(composition) {
                 dismiss()
             }
         }

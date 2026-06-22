@@ -1,13 +1,30 @@
 //
-//  TeamViewModel+Roster.swift
+//  TeamRosterViewModel.swift
 //  LeVestaire
 //
 
+import Combine
 import Foundation
 
-extension TeamViewModel {
+@MainActor
+final class TeamRosterViewModel: ObservableObject {
+    @Published var memberPendingRemoval: TeamMember?
+    @Published var guestPendingMerge: TeamMember?
+    @Published var isSubmitting = false
+
+    private weak var host: TeamViewModel?
+    private let teamService: TeamService
+
+    init(teamService: TeamService) {
+        self.teamService = teamService
+    }
+
+    func attach(to host: TeamViewModel) {
+        self.host = host
+    }
+
     var mergeableTeamMembers: [TeamMember] {
-        selectedTeam?.resolvedMembers.filter { member in
+        host?.selectedTeam?.resolvedMembers.filter { member in
             !member.isGuest && !(member.userId ?? member.id).isEmpty
         } ?? []
     }
@@ -18,16 +35,16 @@ extension TeamViewModel {
         email: String?,
         jerseyNumber: Int?
     ) async -> Bool {
-        guard let teamId = selectedTeam?.id else { return false }
+        guard let teamId = host?.selectedTeam?.id else { return false }
 
         let trimmedFirstName = firstName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedFirstName.isEmpty else {
-            showError(L10n.text("firstNameRequired"))
+            host?.showError(L10n.text("firstNameRequired"))
             return false
         }
 
         if let jerseyNumber, !(1...99).contains(jerseyNumber) {
-            showError(L10n.text("jerseyNumberRange"))
+            host?.showError(L10n.text("jerseyNumberRange"))
             return false
         }
 
@@ -45,11 +62,11 @@ extension TeamViewModel {
                     notes: nil
                 )
             )
-            await refreshSelectedTeamContent()
-            showSuccess(L10n.text("guestAdded"))
+            await host?.refreshSelectedTeamContent()
+            host?.showSuccess(L10n.text("guestAdded"))
             return true
         } catch {
-            showError(error.localizedDescription)
+            host?.showError(error.localizedDescription)
             return false
         }
     }
@@ -63,7 +80,7 @@ extension TeamViewModel {
 
         let userId = member.userId ?? member.id
         guard !userId.isEmpty else {
-            showError(L10n.text("pleaseSelectAssociatedPlayer"))
+            host?.showError(L10n.text("pleaseSelectAssociatedPlayer"))
             return false
         }
 
@@ -73,11 +90,11 @@ extension TeamViewModel {
         do {
             try await teamService.mergeGuest(guestId: guest.id, userId: userId)
             guestPendingMerge = nil
-            await refreshSelectedTeamContent()
-            showSuccess(L10n.text("guestMerged"))
+            await host?.refreshSelectedTeamContent()
+            host?.showSuccess(L10n.text("guestMerged"))
             return true
         } catch {
-            showError(error.localizedDescription)
+            host?.showError(error.localizedDescription)
             return false
         }
     }
@@ -93,10 +110,10 @@ extension TeamViewModel {
     }
 
     func removeMember(memberId: String, isGuest: Bool = false) async {
-        guard let teamId = selectedTeam?.id else { return }
+        guard let teamId = host?.selectedTeam?.id else { return }
 
         let memberIsGuest = isGuest
-            || selectedTeam?.resolvedMembers.first(where: { $0.id == memberId })?.isGuest == true
+            || host?.selectedTeam?.resolvedMembers.first(where: { $0.id == memberId })?.isGuest == true
 
         do {
             if memberIsGuest {
@@ -104,17 +121,17 @@ extension TeamViewModel {
             } else {
                 try await teamService.removeMember(teamId: teamId, memberId: memberId)
             }
-            await refreshSelectedTeamContent()
-            showSuccess(L10n.text("successPlayerRemoved"))
+            await host?.refreshSelectedTeamContent()
+            host?.showSuccess(L10n.text("successPlayerRemoved"))
         } catch {
-            showError(error.localizedDescription)
+            host?.showError(error.localizedDescription)
         }
     }
 
     func updateMemberRole(member: TeamMember, role: TeamRole) async {
-        guard canChangeMemberRoles else { return }
+        guard host?.canChangeMemberRoles == true else { return }
         guard role != .admin else { return }
-        guard let teamId = selectedTeam?.id else { return }
+        guard let teamId = host?.selectedTeam?.id else { return }
 
         do {
             let updatedTeam = try await teamService.updateMemberRole(
@@ -122,16 +139,16 @@ extension TeamViewModel {
                 memberId: member.roleUpdateUserId,
                 role: role
             )
-            applyLocalTeamUpdate(updatedTeam)
-            showSuccess(L10n.format("roleUpdatedTo", role.localizedLabel))
+            host?.applyLocalTeamUpdate(updatedTeam)
+            host?.showSuccess(L10n.format("roleUpdatedTo", role.localizedLabel))
         } catch {
-            showError(error.localizedDescription)
+            host?.showError(error.localizedDescription)
         }
     }
 
     func transferAdministration(to memberUserId: String) async -> Bool {
-        guard canChangeMemberRoles else { return false }
-        guard let teamId = selectedTeam?.id else { return false }
+        guard host?.canChangeMemberRoles == true else { return false }
+        guard let teamId = host?.selectedTeam?.id else { return false }
         guard !memberUserId.isEmpty else { return false }
 
         isSubmitting = true
@@ -143,22 +160,12 @@ extension TeamViewModel {
                 memberId: memberUserId,
                 role: .admin
             )
-            applyLocalTeamUpdate(updatedTeam)
-            showSuccess(L10n.text("successTeamUpdated"))
+            host?.applyLocalTeamUpdate(updatedTeam)
+            host?.showSuccess(L10n.text("successTeamUpdated"))
             return true
         } catch {
-            showError(error.localizedDescription)
+            host?.showError(error.localizedDescription)
             return false
-        }
-    }
-
-    func applyLocalTeamUpdate(_ team: SquadTeam) {
-        let guests = selectedTeam?.guests ?? team.guests ?? []
-        let mergedTeam = team.withGuests(guests)
-
-        selectedTeam = mergedTeam
-        if let index = teams.firstIndex(where: { $0.id == team.id }) {
-            teams[index] = mergedTeam
         }
     }
 }

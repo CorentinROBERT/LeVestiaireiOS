@@ -7,9 +7,16 @@ import SwiftUI
 
 struct MatchLiveSection: View {
     @ObservedObject var viewModel: MatchDetailViewModel
+    @ObservedObject var eventsViewModel: MatchDetailEventsViewModel
     let match: MatchDetail
 
     @State private var showsAddEventSheet = false
+
+    init(viewModel: MatchDetailViewModel, match: MatchDetail) {
+        self.viewModel = viewModel
+        self.eventsViewModel = viewModel.eventsViewModel
+        self.match = match
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -35,14 +42,14 @@ struct MatchLiveSection: View {
                 )
             }
 
-            if !viewModel.sortedEvents.isEmpty {
+            if !eventsViewModel.sortedEvents.isEmpty {
                 UCard(title: L10n.text("matchEvents"), icon: "clock.fill") {
                     MatchEventsTimelineView(
-                        events: viewModel.sortedEvents,
+                        events: eventsViewModel.sortedEvents,
                         canManageEvents: match.capabilities.canManageEvents,
-                        isSubmitting: viewModel.isSubmitting,
+                        isSubmitting: eventsViewModel.isSubmitting,
                         onDelete: { eventId in
-                            Task { await viewModel.deleteEvent(eventId) }
+                            Task { await eventsViewModel.delete(eventId) }
                         }
                     )
                 }
@@ -62,7 +69,10 @@ struct MatchLiveSection: View {
             }
         }
         .sheet(isPresented: $showsAddEventSheet) {
-            AddMatchEventSheet(viewModel: viewModel)
+            AddMatchEventSheet(
+                viewModel: viewModel,
+                eventsViewModel: viewModel.eventsViewModel
+            )
         }
     }
 }

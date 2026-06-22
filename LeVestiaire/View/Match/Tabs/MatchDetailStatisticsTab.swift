@@ -6,8 +6,13 @@
 import SwiftUI
 
 struct MatchDetailStatisticsTab: View {
-    @ObservedObject var viewModel: MatchDetailViewModel
+    @ObservedObject var statisticsViewModel: MatchDetailStatisticsViewModel
     let match: MatchDetail
+
+    init(viewModel: MatchDetailViewModel, match: MatchDetail) {
+        self.statisticsViewModel = viewModel.statisticsViewModel
+        self.match = match
+    }
 
     var body: some View {
         Group {
@@ -17,10 +22,10 @@ struct MatchDetailStatisticsTab: View {
                     title: L10n.text("statistics"),
                     message: L10n.text("matchStatsAvailableAfterMatch")
                 )
-            } else if viewModel.isLoadingMatchStats, viewModel.matchStats == nil {
+            } else if statisticsViewModel.isLoadingMatchStats, statisticsViewModel.matchStats == nil {
                 ProgressView(L10n.loading)
                     .frame(maxWidth: .infinity, minHeight: 120)
-            } else if let stats = viewModel.matchStats, stats.hasContent {
+            } else if let stats = statisticsViewModel.matchStats, stats.hasContent {
                 statsContent(stats)
             } else {
                 TeamEmptyState(
@@ -32,7 +37,7 @@ struct MatchDetailStatisticsTab: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .task {
-            await viewModel.loadMatchStatsIfNeeded()
+            await statisticsViewModel.loadIfNeeded()
         }
     }
 

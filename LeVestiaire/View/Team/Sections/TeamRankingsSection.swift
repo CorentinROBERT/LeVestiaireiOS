@@ -6,34 +6,38 @@
 import SwiftUI
 
 struct TeamRankingsSection: View {
-    @ObservedObject var viewModel: TeamViewModel
+    @ObservedObject var statsViewModel: TeamStatsViewModel
+
+    init(viewModel: TeamViewModel) {
+        self.statsViewModel = viewModel.statsViewModel
+    }
 
     var body: some View {
         UCard(title: L10n.text("leaderboard"), icon: "list.number") {
             VStack(alignment: .leading, spacing: 16) {
                 TeamSeasonPicker(
-                    availableSeasons: viewModel.availableSeasons,
-                    selection: $viewModel.selectedRankingSeason,
+                    availableSeasons: statsViewModel.availableSeasons,
+                    selection: $statsViewModel.selectedRankingSeason,
                     onChange: {
-                        Task { await viewModel.onRankingSeasonChanged() }
+                        Task { await statsViewModel.onRankingSeasonChanged() }
                     }
                 )
 
-                Picker(L10n.text("leaderboard"), selection: $viewModel.selectedRankingKind) {
+                Picker(L10n.text("leaderboard"), selection: $statsViewModel.selectedRankingKind) {
                     ForEach(TeamRankingKind.allCases) { kind in
                         Text(kind.title).tag(kind)
                     }
                 }
                 .pickerStyle(.segmented)
 
-                if viewModel.isLoadingRankings, viewModel.teamRankings == nil {
+                if statsViewModel.isLoadingRankings, statsViewModel.teamRankings == nil {
                     TeamLoadingPlaceholder()
-                } else if let error = viewModel.rankingsLoadError {
+                } else if let error = statsViewModel.rankingsLoadError {
                     TeamSectionErrorView(message: error) {
-                        Task { await viewModel.retryRankings() }
+                        Task { await statsViewModel.retryRankings() }
                     }
                 } else {
-                    let entries = viewModel.rankingEntries(for: viewModel.selectedRankingKind)
+                    let entries = statsViewModel.rankingEntries(for: statsViewModel.selectedRankingKind)
                     if entries.isEmpty {
                         TeamEmptyState(
                             icon: "trophy",

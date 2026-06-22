@@ -8,6 +8,8 @@ import SwiftUI
 struct MatchCompositionEditorSheet: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var viewModel: MatchDetailViewModel
+    @ObservedObject var compositionViewModel: MatchDetailCompositionViewModel
+    @ObservedObject var availabilityViewModel: MatchDetailAvailabilityViewModel
 
     let readOnly: Bool
 
@@ -30,8 +32,10 @@ struct MatchCompositionEditorSheet: View {
 
     init(viewModel: MatchDetailViewModel, readOnly: Bool = false) {
         self.viewModel = viewModel
+        self.compositionViewModel = viewModel.compositionViewModel
+        self.availabilityViewModel = viewModel.availabilityViewModel
         self.readOnly = readOnly || !viewModel.canEditComposition
-        let initialTabs = viewModel.makeCompositionTabDrafts()
+        let initialTabs = viewModel.compositionViewModel.makeCompositionTabDrafts()
         _tabs = State(initialValue: initialTabs)
         _selectedTabId = State(
             initialValue: initialTabs.first(where: \.isMain)?.id ?? initialTabs.first?.id ?? ""
@@ -66,7 +70,7 @@ struct MatchCompositionEditorSheet: View {
         CompositionEditorEngine.templateAvailabilityReview(
             tabs: tabs,
             members: members,
-            availability: viewModel.availability
+            availability: availabilityViewModel.availability
         )
     }
 
@@ -78,7 +82,7 @@ struct MatchCompositionEditorSheet: View {
                         compositionErrorBanner(message: sheetErrorMessage)
                     }
 
-                    if canEdit, !viewModel.teamTemplates.isEmpty {
+                    if canEdit, !compositionViewModel.teamTemplates.isEmpty {
                         templateSection
                     }
 
@@ -179,12 +183,12 @@ struct MatchCompositionEditorSheet: View {
             )
         }
         .task {
-            async let playersTask: Void = viewModel.loadSelectablePlayers()
-            async let templatesTask: Void = viewModel.loadTeamTemplates()
-            async let availabilityTask: Void = viewModel.refreshAvailabilityBoard(force: true, silent: true)
+            async let playersTask: Void = compositionViewModel.loadSelectablePlayers()
+            async let templatesTask: Void = compositionViewModel.loadTeamTemplates()
+            async let availabilityTask: Void = availabilityViewModel.refreshBoard(force: true, silent: true)
             _ = await (playersTask, templatesTask, availabilityTask)
 
-            let refreshedTabs = viewModel.makeCompositionTabDrafts()
+            let refreshedTabs = compositionViewModel.makeCompositionTabDrafts()
             guard !hasUserEditedTabs else { return }
 
             if readOnly {
@@ -207,7 +211,7 @@ struct MatchCompositionEditorSheet: View {
 
             Picker(L10n.applyTeamTemplate, selection: $selectedTemplateId) {
                 Text(L10n.select).tag(Optional<String>.none)
-                ForEach(viewModel.teamTemplates) { template in
+                ForEach(compositionViewModel.teamTemplates) { template in
                     Text(template.name).tag(Optional(template.id))
                 }
             }
@@ -359,8 +363,8 @@ struct MatchCompositionEditorSheet: View {
         Button(L10n.text("save")) {
             requestSave()
         }
-        .primarySheetButton(isLoading: viewModel.isSavingComposition)
-        .disabled(viewModel.isSavingComposition)
+        .primarySheetButton(isLoading: compositionViewModel.isSavingComposition)
+        .disabled(compositionViewModel.isSavingComposition)
         .confirmationDialog(
             L10n.text("save"),
             isPresented: $showsSaveAvailabilityConfirmation,
@@ -399,7 +403,7 @@ struct MatchCompositionEditorSheet: View {
     }
 
     private func performSave() async {
-        if await viewModel.saveMatchComposition(
+        if await compositionViewModel.save(
             tabs: tabs,
             templateCompositionId: selectedTemplateId
         ) {
@@ -416,7 +420,7 @@ struct MatchCompositionEditorSheet: View {
 
     private func applyTemplate(id: String?) {
         guard let id,
-              let template = viewModel.teamTemplates.first(where: { $0.id == id }) else {
+              let template = compositionViewModel.teamTemplates.first(where: { $0.id == id }) else {
             return
         }
 
@@ -500,7 +504,7 @@ struct MatchCompositionEditorSheet: View {
         CompositionEditorEngine.removeAbsentMembers(
             from: &tabs,
             members: members,
-            availability: viewModel.availability
+            availability: availabilityViewModel.availability
         )
         markTabsEdited()
     }

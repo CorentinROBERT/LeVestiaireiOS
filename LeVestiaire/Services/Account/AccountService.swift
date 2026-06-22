@@ -7,6 +7,20 @@
 
 import Foundation
 
+enum AccountServiceError: LocalizedError {
+    case unauthorized
+    case requestFailed(String)
+
+    var errorDescription: String? {
+        switch self {
+        case .unauthorized:
+            return L10n.sessionRequired
+        case .requestFailed(let message):
+            return message
+        }
+    }
+}
+
 final class AccountService {
     static let shared = AccountService(
         client: APIClient.shared,
@@ -33,35 +47,52 @@ final class AccountService {
 
     @MainActor
     private func performAccountAction(path: String) async -> AccountActionResponse {
-        guard let accessToken = authService.authToken, !accessToken.isEmpty else {
-            return AccountActionResponse(
-                success: false,
-                message: L10n.sessionRequired
-            )
-        }
-
         do {
-            let (data, _) = try await client.request(
+            let (data, response) = try await AuthenticatedAPIClient.performRequest(
+                client: client,
+                authService: authService,
                 path: path,
-                method: "POST",
-                headers: ["Authorization": "Bearer \(accessToken)"]
+                method: "POST"
             )
 
-            if let response = try? APIResponseDecoder.decode(AccountActionResponse.self, from: data) {
-                if let user = response.data {
+            try validate(response: response, data: data)
+
+            if let decoded = try? APIResponseDecoder.decode(AccountActionResponse.self, from: data) {
+                if let user = decoded.data {
                     authService.updateCurrentUser(user)
                 }
-                return response
+                return decoded
             }
 
             return AccountActionResponse(
                 success: false,
                 message: L10n.invalidApiResponse
             )
+        } catch let error as AccountServiceError {
+            return AccountActionResponse(
+                success: false,
+                message: error.localizedDescription
+            )
+        } catch ServiceAuthError.unauthorized {
+            return AccountActionResponse(
+                success: false,
+                message: L10n.sessionRequired
+            )
         } catch {
             return AccountActionResponse(
                 success: false,
                 message: error.localizedDescription
+            )
+        }
+    }
+
+    private func validate(response: HTTPURLResponse, data: Data) throws {
+        guard HTTPResponseValidator.isSuccess(response) else {
+            throw AccountServiceError.requestFailed(
+                HTTPResponseValidator.localizedErrorMessage(
+                    from: data,
+                    fallback: L10n.invalidApiResponse
+                )
             )
         }
     }

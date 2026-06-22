@@ -21,7 +21,6 @@ enum UserStatus {
 struct User: Decodable, Equatable, Identifiable {
     let id: String
     let email: String
-    let password: String
     let firstName: String
     let lastName: String
     let avatar: String?
@@ -29,7 +28,6 @@ struct User: Decodable, Equatable, Identifiable {
     let isDeleted: Bool
     let emailVerified: Bool
     let lastLogin: Date?
-    let refreshToken: String?
     let birthDate: Date?
     let nationality: String?
     let height: Double?
@@ -91,7 +89,6 @@ struct User: Decodable, Equatable, Identifiable {
     func with(
         id: String? = nil,
         email: String? = nil,
-        password: String? = nil,
         firstName: String? = nil,
         lastName: String? = nil,
         avatar: String?? = nil,
@@ -99,7 +96,6 @@ struct User: Decodable, Equatable, Identifiable {
         isDeleted: Bool? = nil,
         emailVerified: Bool? = nil,
         lastLogin: Date?? = nil,
-        refreshToken: String?? = nil,
         birthDate: Date?? = nil,
         nationality: String?? = nil,
         height: Double?? = nil,
@@ -116,7 +112,6 @@ struct User: Decodable, Equatable, Identifiable {
         User(
             id: id ?? self.id,
             email: email ?? self.email,
-            password: password ?? self.password,
             firstName: firstName ?? self.firstName,
             lastName: lastName ?? self.lastName,
             avatar: avatar ?? self.avatar,
@@ -124,7 +119,6 @@ struct User: Decodable, Equatable, Identifiable {
             isDeleted: isDeleted ?? self.isDeleted,
             emailVerified: emailVerified ?? self.emailVerified,
             lastLogin: lastLogin ?? self.lastLogin,
-            refreshToken: refreshToken ?? self.refreshToken,
             birthDate: birthDate ?? self.birthDate,
             nationality: nationality ?? self.nationality,
             height: height ?? self.height,
@@ -143,7 +137,6 @@ struct User: Decodable, Equatable, Identifiable {
     init(
         id: String,
         email: String,
-        password: String = "",
         firstName: String,
         lastName: String,
         avatar: String? = nil,
@@ -151,7 +144,6 @@ struct User: Decodable, Equatable, Identifiable {
         isDeleted: Bool = false,
         emailVerified: Bool = false,
         lastLogin: Date? = nil,
-        refreshToken: String? = nil,
         birthDate: Date? = nil,
         nationality: String? = nil,
         height: Double? = nil,
@@ -167,7 +159,6 @@ struct User: Decodable, Equatable, Identifiable {
     ) {
         self.id = id
         self.email = email
-        self.password = password
         self.firstName = firstName
         self.lastName = lastName
         self.avatar = avatar
@@ -175,7 +166,6 @@ struct User: Decodable, Equatable, Identifiable {
         self.isDeleted = isDeleted
         self.emailVerified = emailVerified
         self.lastLogin = lastLogin
-        self.refreshToken = refreshToken
         self.birthDate = birthDate
         self.nationality = nationality
         self.height = height
@@ -197,7 +187,6 @@ struct User: Decodable, Equatable, Identifiable {
             ?? container.decodeIfPresent(String.self, forKey: .id)
             ?? ""
         email = try container.decodeIfPresent(String.self, forKey: .email) ?? ""
-        password = try container.decodeIfPresent(String.self, forKey: .password) ?? ""
         firstName = try container.decodeIfPresent(String.self, forKey: .firstName) ?? ""
         lastName = try container.decodeIfPresent(String.self, forKey: .lastName) ?? ""
         avatar = try container.decodeIfPresent(String.self, forKey: .avatar)
@@ -208,7 +197,6 @@ struct User: Decodable, Equatable, Identifiable {
         isDeleted = try container.decodeIfPresent(Bool.self, forKey: .isDeleted) ?? false
         emailVerified = try container.decodeIfPresent(Bool.self, forKey: .emailVerified) ?? false
         lastLogin = UserJSONParsing.parseDate(from: container, forKey: .lastLogin)
-        refreshToken = try container.decodeIfPresent(String.self, forKey: .refreshToken)
         birthDate = UserJSONParsing.parseDate(from: container, forKey: .birthDate)
         nationality = try container.decodeIfPresent(String.self, forKey: .nationality)
         height = UserJSONParsing.parseDouble(from: container, forKey: .height)
@@ -227,7 +215,6 @@ struct User: Decodable, Equatable, Identifiable {
         case mongoId = "_id"
         case id
         case email
-        case password
         case firstName
         case lastName
         case avatar
@@ -238,7 +225,6 @@ struct User: Decodable, Equatable, Identifiable {
         case isDeleted
         case emailVerified
         case lastLogin
-        case refreshToken
         case birthDate
         case nationality
         case height

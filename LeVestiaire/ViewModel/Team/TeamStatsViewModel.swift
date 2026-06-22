@@ -1,0 +1,221 @@
+//
+//  TeamStatsViewModel.swift
+//  LeVestaire
+//
+
+import Combine
+import Foundation
+
+@MainActor
+final class TeamStatsViewModel: ObservableObject {
+    @Published var teamSeasonStats: TeamSeasonStatsPayload?
+    @Published var teamRankings: TeamSeasonRankings?
+    @Published var availableSeasons: [String] = []
+    @Published var selectedStatsSeason = ""
+    @Published var selectedRankingSeason = ""
+    @Published var selectedRankingKind: TeamRankingKind = .scorers
+    @Published var isLoadingStats = false
+    @Published var isLoadingRankings = false
+    @Published var statsLoadError: String?
+    @Published var rankingsLoadError: String?
+
+    private weak var host: TeamViewModel?
+    private let statsService: StatsService
+
+    var statsLoadedForTeamId: String?
+    var rankingsLoadedForTeamId: String?
+    var seasonsTeamId: String?
+
+    init(statsService: StatsService) {
+        self.statsService = statsService
+    }
+
+    func attach(to host: TeamViewModel) {
+        self.host = host
+    }
+
+    var statsKPIsUnavailable: Bool {
+        TeamKPIDisplay.statsUnavailable(
+            stats: teamSeasonStats,
+            hasError: statsLoadError != nil,
+            isLoading: isLoadingStats
+        )
+    }
+
+    var kpiMatchesPlayedDisplay: String {
+        TeamKPIDisplay.matchesPlayed(
+            stats: teamSeasonStats,
+            hasError: statsLoadError != nil,
+            isLoading: isLoadingStats
+        )
+    }
+
+    var kpiGoalsDisplay: String {
+        TeamKPIDisplay.goals(
+            stats: teamSeasonStats,
+            hasError: statsLoadError != nil,
+            isLoading: isLoadingStats
+        )
+    }
+
+    var kpiAssistsDisplay: String {
+        TeamKPIDisplay.assists(
+            stats: teamSeasonStats,
+            hasError: statsLoadError != nil,
+            isLoading: isLoadingStats
+        )
+    }
+
+    var isLoadingKPIs: Bool { isLoadingStats && teamSeasonStats == nil }
+
+    func resetCache() {
+        teamSeasonStats = nil
+        teamRankings = nil
+        availableSeasons = []
+        selectedStatsSeason = ""
+        selectedRankingSeason = ""
+        statsLoadError = nil
+        rankingsLoadError = nil
+        statsLoadedForTeamId = nil
+        rankingsLoadedForTeamId = nil
+        seasonsTeamId = nil
+    }
+
+    func invalidateLazyLoads() {
+        statsLoadedForTeamId = nil
+        rankingsLoadedForTeamId = nil
+    }
+
+    func loadIfNeeded(_ tab: TeamContentTab, force: Bool = false) async {
+        guard let teamId = host?.selectedTeamId, !teamId.isEmpty else { return }
+
+        switch tab {
+        case .stats:
+            if force || statsLoadedForTeamId != teamId {
+                await loadStats()
+                statsLoadedForTeamId = teamId
+            }
+        case .rankings:
+            if force || rankingsLoadedForTeamId != teamId {
+                await loadRankings()
+                rankingsLoadedForTeamId = teamId
+            }
+        case .roster, .compositions:
+            break
+        }
+    }
+
+    func loadSeasonsIfNeeded() async {
+        guard let teamId = host?.selectedTeamId, !teamId.isEmpty else {
+            availableSeasons = []
+            seasonsTeamId = nil
+            return
+        }
+
+        guard seasonsTeamId != teamId else { return }
+
+        let seasons = await statsService.fetchAvailableSeasons()
+        if seasons.isEmpty {
+            availableSeasons = [SeasonFormatter.currentSeason()]
+        } else {
+            availableSeasons = seasons
+        }
+        selectedStatsSeason = availableSeasons.first ?? ""
+        selectedRankingSeason = availableSeasons.first ?? ""
+        seasonsTeamId = teamId
+    }
+
+    func loadStats() async {
+        guard let teamId = host?.selectedTeamId, !teamId.isEmpty, !selectedStatsSeason.isEmpty else {
+            teamSeasonStats = nil
+            statsLoadError = nil
+            return
+        }
+
+        isLoadingStats = true
+        defer { isLoadingStats = false }
+
+        do {
+            if var stats = try await statsService.fetchTeamSeasonStats(
+                teamId: teamId,
+                season: selectedStatsSeason
+            ) {
+                if let team = host?.selectedTeam {
+                    stats = stats.enrichedWithRosterGuests(from: team)
+                }
+                teamSeasonStats = stats
+            } else {
+                teamSeasonStats = nil
+            }
+            statsLoadError = nil
+        } catch {
+            teamSeasonStats = nil
+            statsLoadError = error.localizedDescription
+        }
+    }
+
+    func loadRankings() async {
+        guard let teamId = host?.selectedTeamId, !teamId.isEmpty, !selectedRankingSeason.isEmpty else {
+            teamRankings = nil
+            rankingsLoadError = nil
+            return
+        }
+
+        isLoadingRankings = true
+        defer { isLoadingRankings = false }
+
+        do {
+            teamRankings = try await statsService.fetchTeamSeasonRankings(
+                teamId: teamId,
+                season: selectedRankingSeason
+            )
+            rankingsLoadError = nil
+        } catch {
+            teamRankings = nil
+            rankingsLoadError = error.localizedDescription
+        }
+    }
+
+    func onStatsSeasonChanged() async {
+        await loadStats()
+        statsLoadedForTeamId = host?.selectedTeamId
+    }
+
+    func onRankingSeasonChanged() async {
+        await loadRankings()
+        rankingsLoadedForTeamId = host?.selectedTeamId
+    }
+
+    func retryStats() async {
+        await loadStats()
+        statsLoadedForTeamId = host?.selectedTeamId
+    }
+
+    func retryRankings() async {
+        await loadRankings()
+        rankingsLoadedForTeamId = host?.selectedTeamId
+    }
+
+    func rankingEntries(for kind: TeamRankingKind) -> [RankingPlayerEntry] {
+        guard let teamRankings else { return [] }
+        switch kind {
+        case .scorers:
+            return teamRankings.scorers
+        case .assisters:
+            return teamRankings.assisters
+        case .general:
+            return teamRankings.general
+        }
+    }
+
+    func clearLoadErrors() {
+        statsLoadError = nil
+        rankingsLoadError = nil
+    }
+
+    func prepareForTeamChange() {
+        if rankingsLoadedForTeamId != host?.selectedTeamId {
+            teamRankings = nil
+        }
+    }
+}

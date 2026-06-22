@@ -7,12 +7,19 @@ import SwiftUI
 
 struct MatchDetailEventsTab: View {
     @ObservedObject var viewModel: MatchDetailViewModel
+    @ObservedObject var eventsViewModel: MatchDetailEventsViewModel
     let match: MatchDetail
 
     @State private var showsAddEventSheet = false
 
+    init(viewModel: MatchDetailViewModel, match: MatchDetail) {
+        self.viewModel = viewModel
+        self.eventsViewModel = viewModel.eventsViewModel
+        self.match = match
+    }
+
     private var canManageEvents: Bool {
-        viewModel.canManageMatchEvents
+        eventsViewModel.canManage
     }
 
     private var canFinishMatch: Bool {
@@ -27,10 +34,10 @@ struct MatchDetailEventsTab: View {
                     title: L10n.text("matchNotStartedYet"),
                     message: L10n.text("eventsWillAppearHere")
                 )
-            } else if viewModel.isLoadingEvents, viewModel.sortedEvents.isEmpty {
+            } else if eventsViewModel.isLoadingEvents, eventsViewModel.sortedEvents.isEmpty {
                 ProgressView(L10n.loading)
                     .frame(maxWidth: .infinity, minHeight: 120)
-            } else if viewModel.sortedEvents.isEmpty {
+            } else if eventsViewModel.sortedEvents.isEmpty {
                 TeamEmptyState(
                     icon: "clock.fill",
                     title: L10n.text("matchEvents"),
@@ -38,11 +45,11 @@ struct MatchDetailEventsTab: View {
                 )
             } else {
                 MatchEventsTimelineView(
-                    events: viewModel.sortedEvents,
+                    events: eventsViewModel.sortedEvents,
                     canManageEvents: canManageEvents,
-                    isSubmitting: viewModel.isSubmitting,
+                    isSubmitting: eventsViewModel.isSubmitting,
                     onDelete: { eventId in
-                        Task { await viewModel.deleteEvent(eventId) }
+                        Task { await eventsViewModel.delete(eventId) }
                     }
                 )
             }
@@ -75,17 +82,20 @@ struct MatchDetailEventsTab: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .task {
-            await viewModel.loadEventsIfNeeded()
-            if viewModel.canManageMatchEvents {
-                await viewModel.loadEventContext()
+            await eventsViewModel.loadIfNeeded()
+            if eventsViewModel.canManage {
+                await eventsViewModel.loadContext()
             }
         }
-        .onChange(of: viewModel.canManageMatchEvents) { _, canManage in
+        .onChange(of: eventsViewModel.canManage) { _, canManage in
             guard canManage else { return }
-            Task { await viewModel.loadEventContext() }
+            Task { await eventsViewModel.loadContext() }
         }
         .sheet(isPresented: $showsAddEventSheet) {
-            AddMatchEventSheet(viewModel: viewModel)
+            AddMatchEventSheet(
+                viewModel: viewModel,
+                eventsViewModel: eventsViewModel
+            )
         }
     }
 }

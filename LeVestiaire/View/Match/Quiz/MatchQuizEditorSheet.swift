@@ -6,15 +6,15 @@
 import SwiftUI
 
 struct MatchQuizEditorSheet: View {
-    @ObservedObject var matchViewModel: MatchDetailViewModel
+    @ObservedObject var quizViewModel: MatchDetailQuizViewModel
     @StateObject private var editorViewModel: MatchQuizEditorViewModel
     @Environment(\.dismiss) private var dismiss
 
     @State private var showsPublishConfirmation = false
     @State private var showsDeleteConfirmation = false
 
-    init(matchViewModel: MatchDetailViewModel, detail: MatchQuizDetail) {
-        self.matchViewModel = matchViewModel
+    init(quizViewModel: MatchDetailQuizViewModel, detail: MatchQuizDetail) {
+        self.quizViewModel = quizViewModel
         _editorViewModel = StateObject(wrappedValue: MatchQuizEditorViewModel(detail: detail))
     }
 
@@ -57,7 +57,7 @@ struct MatchQuizEditorSheet: View {
                         }
                     )
                     .opacity(editorViewModel.isValidForPublish ? 1 : 0.5)
-                    .disabled(!editorViewModel.isValidForPublish || matchViewModel.isSubmitting)
+                    .disabled(!editorViewModel.isValidForPublish || quizViewModel.isSubmitting)
                     .confirmationDialog(
                         L10n.text("publish"),
                         isPresented: $showsPublishConfirmation,
@@ -69,7 +69,7 @@ struct MatchQuizEditorSheet: View {
                         Button(L10n.cancel, role: .cancel) {}
                     }
 
-                    if matchViewModel.activeQuizDetail?.resolvedStatus.isPlayable == true {
+                    if quizViewModel.activeQuizDetail?.resolvedStatus.isPlayable == true {
                         UButton(
                             text: L10n.text("closeQuiz"),
                             textColor: AppPalette.Primary.onMain,
@@ -197,18 +197,18 @@ struct MatchQuizEditorSheet: View {
     }
 
     private func saveDraft() async {
-        if await matchViewModel.saveQuizDraft(
+        if await quizViewModel.saveDraft(
             title: editorViewModel.title,
             questions: editorViewModel.questions
         ) {
-            editorViewModel.title = matchViewModel.activeQuizDetail?.resolvedTitle ?? editorViewModel.title
+            editorViewModel.title = quizViewModel.activeQuizDetail?.resolvedTitle ?? editorViewModel.title
         }
     }
 
     private func publish() async {
         _ = await saveDraft()
         guard editorViewModel.isValidForPublish else { return }
-        if await matchViewModel.publishQuiz(
+        if await quizViewModel.publish(
             title: editorViewModel.title,
             questions: editorViewModel.questions
         ) {
@@ -217,13 +217,13 @@ struct MatchQuizEditorSheet: View {
     }
 
     private func closeQuiz() async {
-        if await matchViewModel.closeQuiz() {
+        if await quizViewModel.close() {
             dismiss()
         }
     }
 
     private func deleteQuiz() async {
-        if await matchViewModel.deleteQuiz() {
+        if await quizViewModel.delete() {
             dismiss()
         }
     }
@@ -232,7 +232,7 @@ struct MatchQuizEditorSheet: View {
 #if DEBUG
 #Preview {
     MatchQuizEditorSheet(
-        matchViewModel: .preview(status: .finished),
+        quizViewModel: MatchDetailViewModel.preview(status: .finished).quizViewModel,
         detail: .preview
     )
     .teamPreviewEnvironment()

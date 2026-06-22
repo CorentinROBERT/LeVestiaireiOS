@@ -8,6 +8,12 @@ import SwiftUI
 struct MatchCompositionViewerSheet: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var viewModel: MatchDetailViewModel
+    @ObservedObject var compositionViewModel: MatchDetailCompositionViewModel
+
+    init(viewModel: MatchDetailViewModel) {
+        self.viewModel = viewModel
+        self.compositionViewModel = viewModel.compositionViewModel
+    }
 
     private var composition: TeamComposition? { viewModel.match?.composition }
 
@@ -34,7 +40,7 @@ struct MatchCompositionViewerSheet: View {
             }
         }
         .task {
-            await viewModel.loadSelectablePlayers()
+            await compositionViewModel.loadSelectablePlayers()
         }
     }
 }

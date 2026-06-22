@@ -1,21 +1,51 @@
 //
-//  MatchDetailViewModel+Availability.swift
+//  MatchDetailAvailabilityViewModel.swift
 //  LeVestaire
 //
 
+import Combine
 import Foundation
 
-extension MatchDetailViewModel {
+@MainActor
+final class MatchDetailAvailabilityViewModel: ObservableObject {
+    @Published var availability: [MatchAvailabilityEntry] = []
+    @Published var availabilityBoardSummary: AvailabilitySummary?
+    @Published var isLoadingAvailability = false
+    @Published var hasLoadedAvailability = false
+    @Published var isUpdatingAvailability = false
+    @Published var isSubmitting = false
+
+    private weak var host: MatchDetailViewModel?
+    private let matchService: MatchService
+
+    init(matchService: MatchService) {
+        self.matchService = matchService
+    }
+
+    func attach(to host: MatchDetailViewModel) {
+        self.host = host
+    }
+
+    var showsManagement: Bool {
+        host?.showsAvailabilityManagement == true
+    }
+
+    func resetCache() {
+        hasLoadedAvailability = false
+        availability = []
+        availabilityBoardSummary = nil
+    }
+
     func submitMyAvailability(_ status: MatchAvailabilityStatus) async -> Bool {
-        guard match?.capabilities.canRespond == true else { return false }
+        guard host?.match?.capabilities.canRespond == true,
+              let matchId = host?.matchId else { return false }
 
         isSubmitting = true
-        errorMessage = nil
         defer { isSubmitting = false }
 
         do {
             _ = try await matchService.updateMyAvailability(matchId: matchId, status: status)
-            match = try await matchService.fetchMatch(id: matchId)
+            host?.match = try await matchService.fetchMatch(id: matchId)
             return true
         } catch {
             surfaceError(error)
@@ -27,14 +57,14 @@ extension MatchDetailViewModel {
         playerId: String,
         status: MatchAvailabilityStatus
     ) async -> Bool {
-        guard showsAvailabilityManagement else { return false }
+        guard showsManagement,
+              let matchId = host?.matchId else { return false }
         guard let entry = availability.first(where: { matchesAvailabilityTarget($0, playerId: playerId) }),
               entry.canForceAvailability else {
             return false
         }
 
         isUpdatingAvailability = true
-        errorMessage = nil
         defer { isUpdatingAvailability = false }
 
         do {
@@ -44,7 +74,7 @@ extension MatchDetailViewModel {
                 status: status
             )
             applyAvailabilityEntryUpdate(updatedEntry)
-            await refreshAvailabilityBoard(force: true, silent: true)
+            await refreshBoard(force: true, silent: true)
             syncMatchAvailabilitySummaryFromBoard()
             return true
         } catch {
@@ -53,18 +83,19 @@ extension MatchDetailViewModel {
         }
     }
 
-    func loadAvailabilityIfNeeded() async {
-        guard showsAvailabilityManagement, !hasLoadedAvailability else { return }
-        await refreshAvailabilityBoard()
+    func loadIfNeeded() async {
+        guard showsManagement, !hasLoadedAvailability else { return }
+        await refreshBoard()
     }
 
     func refreshMyAvailabilityStatus() async {
-        guard showsRespondSection else { return }
+        guard host?.showsRespondSection == true,
+              let matchId = host?.matchId else { return }
 
         do {
             let response = try await matchService.fetchMyAvailability(matchId: matchId)
-            if let current = match {
-                match = current.replacingMyAvailabilityStatus(response.status)
+            if let current = host?.match {
+                host?.match = current.replacingMyAvailabilityStatus(response.status)
             }
         } catch {
             if !isCancellationError(error) {
@@ -73,8 +104,8 @@ extension MatchDetailViewModel {
         }
     }
 
-    func refreshAvailabilityBoard(force: Bool = false, silent: Bool = false) async {
-        guard force || showsAvailabilityManagement else { return }
+    func refreshBoard(force: Bool = false, silent: Bool = false) async {
+        guard force || showsManagement else { return }
 
         if !silent {
             isLoadingAvailability = true
@@ -87,9 +118,9 @@ extension MatchDetailViewModel {
         }
 
         do {
-            let roster = try await matchService.fetchAvailabilityRoster(matchId: matchId)
+            let roster = try await matchService.fetchAvailabilityRoster(matchId: host?.matchId ?? "")
             availability = roster.resolvedBoardEntries
-            availabilityBoardSummary = roster.summary ?? match?.availabilitySummary
+            availabilityBoardSummary = roster.summary ?? host?.match?.availabilitySummary
             syncMatchAvailabilitySummaryFromBoard()
         } catch {
             if isCancellationError(error) { return }
@@ -109,8 +140,8 @@ extension MatchDetailViewModel {
     }
 
     private func syncMatchAvailabilitySummaryFromBoard() {
-        guard let summary = availabilityBoardSummary, let current = match else { return }
-        match = current.replacingAvailabilitySummary(summary)
+        guard let summary = availabilityBoardSummary, let current = host?.match else { return }
+        host?.match = current.replacingAvailabilitySummary(summary)
     }
 
     private func matchesAvailabilityTarget(_ entry: MatchAvailabilityEntry, playerId: String) -> Bool {
@@ -119,5 +150,13 @@ extension MatchDetailViewModel {
             .compactMap { $0 }
             .filter { !$0.isEmpty })
         return !targetIds.isDisjoint(with: entryIds)
+    }
+
+    private func surfaceError(_ error: Error) {
+        host?.surfaceError(error)
+    }
+
+    private func isCancellationError(_ error: Error) -> Bool {
+        TaskCancellation.isError(error)
     }
 }

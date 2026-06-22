@@ -7,7 +7,7 @@ import Foundation
 
 extension MatchDetailViewModel {
     func updateMatchInfo(from updatedMatch: MatchDetail) {
-        applyMatchUpdate(updatedMatch)
+        compositionViewModel.applyMatchUpdate(updatedMatch)
     }
 
     func cancelMatch() async -> Bool {

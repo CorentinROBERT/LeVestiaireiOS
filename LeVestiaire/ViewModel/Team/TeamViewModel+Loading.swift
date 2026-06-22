@@ -49,21 +49,10 @@ extension TeamViewModel {
         switch tab {
         case .roster:
             break
-        case .stats:
-            if force || statsLoadedForTeamId != selectedTeamId {
-                await loadTeamStats()
-                statsLoadedForTeamId = selectedTeamId
-            }
-        case .rankings:
-            if force || rankingsLoadedForTeamId != selectedTeamId {
-                await loadTeamRankings()
-                rankingsLoadedForTeamId = selectedTeamId
-            }
+        case .stats, .rankings:
+            await statsViewModel.loadIfNeeded(tab, force: force)
         case .compositions:
-            if force || compositionsLoadedForTeamId != selectedTeamId {
-                await loadCompositions()
-                compositionsLoadedForTeamId = selectedTeamId
-            }
+            await compositionsViewModel.loadIfNeeded(force: force)
         }
     }
 
@@ -71,29 +60,9 @@ extension TeamViewModel {
         await refreshSelectedTeamContent()
     }
 
-    func retryStats() async {
-        await loadTeamStats()
-        statsLoadedForTeamId = selectedTeamId
-    }
-
-    func retryRankings() async {
-        await loadTeamRankings()
-        rankingsLoadedForTeamId = selectedTeamId
-    }
-
-    func retryCompositions() async {
-        await loadCompositions()
-        compositionsLoadedForTeamId = selectedTeamId
-    }
-
-    func retryInvitations() async {
-        await loadTeamInvitations()
-    }
-
     func invalidateLazyTabLoads() {
-        statsLoadedForTeamId = nil
-        rankingsLoadedForTeamId = nil
-        compositionsLoadedForTeamId = nil
+        statsViewModel.invalidateLazyLoads()
+        compositionsViewModel.invalidateLazyLoads()
     }
 
     func restoreSelection() {
@@ -109,11 +78,9 @@ extension TeamViewModel {
     func refreshSelectedTeamContent() async {
         guard !selectedTeamId.isEmpty else {
             selectedTeam = nil
-            compositions = []
-            teamSeasonStats = nil
-            teamRankings = nil
-            teamInvitations = []
-            clearSectionLoadErrors()
+            statsViewModel.resetCache()
+            invitationsViewModel.resetCache()
+            compositionsViewModel.resetCache()
             return
         }
 
@@ -145,132 +112,21 @@ extension TeamViewModel {
         }
 
         clearSectionLoadErrors()
-        await loadSeasonsForSelectedTeam()
+        await statsViewModel.loadSeasonsIfNeeded()
 
-        async let statsTask: Void = loadTeamStats()
-        async let invitationsTask: Void = loadTeamInvitations()
+        async let statsTask: Void = statsViewModel.loadStats()
+        async let invitationsTask: Void = invitationsViewModel.loadIfNeeded()
         _ = await (statsTask, invitationsTask)
-        statsLoadedForTeamId = selectedTeamId
+        statsViewModel.statsLoadedForTeamId = selectedTeamId
 
-        if rankingsLoadedForTeamId != selectedTeamId {
-            teamRankings = nil
-        }
-        if compositionsLoadedForTeamId != selectedTeamId {
-            compositions = []
-        }
+        statsViewModel.prepareForTeamChange()
+        compositionsViewModel.prepareForTeamChange()
     }
 
     func clearSectionLoadErrors() {
-        compositionsLoadError = nil
-        invitationsLoadError = nil
-        statsLoadError = nil
-        rankingsLoadError = nil
-    }
-
-    func loadSeasonsForSelectedTeam() async {
-        guard !selectedTeamId.isEmpty else {
-            availableSeasons = []
-            seasonsTeamId = nil
-            return
-        }
-
-        guard seasonsTeamId != selectedTeamId else { return }
-
-        let seasons = await statsService.fetchAvailableSeasons()
-        if seasons.isEmpty {
-            availableSeasons = [SeasonFormatter.currentSeason()]
-        } else {
-            availableSeasons = seasons
-        }
-        selectedStatsSeason = availableSeasons.first ?? ""
-        selectedRankingSeason = availableSeasons.first ?? ""
-        seasonsTeamId = selectedTeamId
-    }
-
-    func loadCompositions() async {
-        guard !selectedTeamId.isEmpty else {
-            compositions = []
-            compositionsLoadError = nil
-            return
-        }
-
-        do {
-            compositions = try await compositionService.fetchTeamCompositions(teamId: selectedTeamId)
-            compositionsLoadError = nil
-        } catch {
-            compositions = []
-            compositionsLoadError = error.localizedDescription
-        }
-    }
-
-    func loadTeamStats() async {
-        guard !selectedTeamId.isEmpty, !selectedStatsSeason.isEmpty else {
-            teamSeasonStats = nil
-            statsLoadError = nil
-            return
-        }
-
-        isLoadingStats = true
-        defer { isLoadingStats = false }
-
-        do {
-            if var stats = try await statsService.fetchTeamSeasonStats(
-                teamId: selectedTeamId,
-                season: selectedStatsSeason
-            ) {
-                if let team = selectedTeam {
-                    stats = stats.enrichedWithRosterGuests(from: team)
-                }
-                teamSeasonStats = stats
-            } else {
-                teamSeasonStats = nil
-            }
-            statsLoadError = nil
-        } catch {
-            teamSeasonStats = nil
-            statsLoadError = error.localizedDescription
-        }
-    }
-
-    func loadTeamRankings() async {
-        guard !selectedTeamId.isEmpty, !selectedRankingSeason.isEmpty else {
-            teamRankings = nil
-            rankingsLoadError = nil
-            return
-        }
-
-        isLoadingRankings = true
-        defer { isLoadingRankings = false }
-
-        do {
-            teamRankings = try await statsService.fetchTeamSeasonRankings(
-                teamId: selectedTeamId,
-                season: selectedRankingSeason
-            )
-            rankingsLoadError = nil
-        } catch {
-            teamRankings = nil
-            rankingsLoadError = error.localizedDescription
-        }
-    }
-
-    func loadTeamInvitations() async {
-        guard canManageTeam, !selectedTeamId.isEmpty else {
-            teamInvitations = []
-            invitationsLoadError = nil
-            return
-        }
-
-        isLoadingInvitations = true
-        defer { isLoadingInvitations = false }
-
-        do {
-            teamInvitations = try await teamService.fetchTeamInvitations(teamId: selectedTeamId)
-            invitationsLoadError = nil
-        } catch {
-            teamInvitations = []
-            invitationsLoadError = error.localizedDescription
-        }
+        statsViewModel.clearLoadErrors()
+        invitationsViewModel.clearLoadErrors()
+        compositionsViewModel.clearLoadErrors()
     }
 
     func replaceTeam(_ team: SquadTeam) {

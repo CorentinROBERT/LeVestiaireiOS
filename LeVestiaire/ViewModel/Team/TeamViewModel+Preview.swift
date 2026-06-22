@@ -51,18 +51,18 @@ extension TeamViewModel {
         self.teams = teams
         self.selectedTeam = selectedTeam
         selectedTeamId = selectedTeam?.id ?? ""
-        self.compositions = compositions
-        teamSeasonStats = stats
-        teamRankings = rankings
-        teamInvitations = invitations
-        availableSeasons = seasons
-        selectedStatsSeason = seasons.first ?? TeamPreviewData.season
-        selectedRankingSeason = seasons.first ?? TeamPreviewData.season
+        compositionsViewModel.compositions = compositions
+        statsViewModel.teamSeasonStats = stats
+        statsViewModel.teamRankings = rankings
+        invitationsViewModel.teamInvitations = invitations
+        statsViewModel.availableSeasons = seasons
+        statsViewModel.selectedStatsSeason = seasons.first ?? TeamPreviewData.season
+        statsViewModel.selectedRankingSeason = seasons.first ?? TeamPreviewData.season
         isLoading = false
         isRefreshingTeam = false
-        isLoadingStats = false
-        isLoadingRankings = false
-        isLoadingInvitations = false
+        statsViewModel.isLoadingStats = false
+        statsViewModel.isLoadingRankings = false
+        invitationsViewModel.isLoadingInvitations = false
         isSubmitting = false
     }
 }

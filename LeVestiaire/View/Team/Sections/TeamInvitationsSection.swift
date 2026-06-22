@@ -7,7 +7,13 @@ import SwiftUI
 
 struct TeamInvitationsSection: View {
     @ObservedObject var viewModel: TeamViewModel
+    @ObservedObject var invitationsViewModel: TeamInvitationsViewModel
     @State private var isExpanded = false
+
+    init(viewModel: TeamViewModel) {
+        self.viewModel = viewModel
+        self.invitationsViewModel = viewModel.invitationsViewModel
+    }
 
     var body: some View {
         UCard {
@@ -34,13 +40,13 @@ struct TeamInvitationsSection: View {
                 Image(systemName: "envelope.open.fill")
                     .foregroundStyle(AppPalette.Primary.main)
 
-                Text(L10n.format("sentInvitations", viewModel.teamInvitations.count))
+                Text(L10n.format("sentInvitations", invitationsViewModel.teamInvitations.count))
                     .font(.headline)
                     .foregroundStyle(AppPalette.Primary.dark)
 
                 Spacer(minLength: 0)
 
-                if viewModel.isLoadingInvitations {
+                if invitationsViewModel.isLoadingInvitations {
                     ProgressView()
                         .controlSize(.small)
                 }
@@ -57,13 +63,13 @@ struct TeamInvitationsSection: View {
 
     @ViewBuilder
     private var collapsedSummary: some View {
-        if let error = viewModel.invitationsLoadError {
+        if let error = invitationsViewModel.invitationsLoadError {
             TeamSectionErrorText(message: error)
-        } else if viewModel.isLoadingInvitations {
+        } else if invitationsViewModel.isLoadingInvitations {
             Text(L10n.loading)
                 .font(.caption)
                 .foregroundStyle(AppPalette.Neutral.textSecondary)
-        } else if viewModel.teamInvitations.isEmpty {
+        } else if invitationsViewModel.teamInvitations.isEmpty {
             Text(L10n.text("noInvitationsSent"))
                 .font(.caption)
                 .foregroundStyle(AppPalette.Neutral.textSecondary)
@@ -76,13 +82,13 @@ struct TeamInvitationsSection: View {
 
     @ViewBuilder
     private var expandedContent: some View {
-        if viewModel.isLoadingInvitations {
+        if invitationsViewModel.isLoadingInvitations {
             TeamLoadingPlaceholder(rowCount: 2)
-        } else if let error = viewModel.invitationsLoadError {
+        } else if let error = invitationsViewModel.invitationsLoadError {
             TeamSectionErrorView(message: error) {
-                Task { await viewModel.retryInvitations() }
+                Task { await invitationsViewModel.retry() }
             }
-        } else if viewModel.teamInvitations.isEmpty {
+        } else if invitationsViewModel.teamInvitations.isEmpty {
             TeamEmptyState(
                 icon: "envelope",
                 title: L10n.text("noInvitationsSent"),
@@ -93,7 +99,7 @@ struct TeamInvitationsSection: View {
             )
         } else {
             VStack(spacing: 12) {
-                ForEach(viewModel.teamInvitations) { invitation in
+                ForEach(invitationsViewModel.teamInvitations) { invitation in
                     invitationRow(invitation)
                 }
             }
@@ -101,11 +107,11 @@ struct TeamInvitationsSection: View {
     }
 
     private var pendingInvitationsSummary: String {
-        let pendingCount = viewModel.teamInvitations.filter { $0.status == .pending }.count
+        let pendingCount = invitationsViewModel.teamInvitations.filter { $0.status == .pending }.count
         if pendingCount > 0 {
             return L10n.format("pendingInvitationsCount", pendingCount)
         }
-        return L10n.format("sentInvitations", viewModel.teamInvitations.count)
+        return L10n.format("sentInvitations", invitationsViewModel.teamInvitations.count)
     }
 
     private func invitationRow(_ invitation: TeamInvitation) -> some View {
@@ -136,10 +142,10 @@ struct TeamInvitationsSection: View {
             if invitation.status.canManage {
                 Menu {
                     Button(L10n.text("resend")) {
-                        Task { await viewModel.resendInvitation(invitation) }
+                        Task { await invitationsViewModel.resendInvitation(invitation) }
                     }
                     Button(L10n.text("cancelInvitation"), role: .destructive) {
-                        viewModel.confirmCancelInvitation(invitation)
+                        invitationsViewModel.confirmCancelInvitation(invitation)
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")

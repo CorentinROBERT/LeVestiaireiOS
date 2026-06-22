@@ -27,6 +27,7 @@ final class LoginViewModel: ObservableObject {
 
     private var developerTapCount = 0
     private var lastDeveloperTapDate: Date?
+
     private var cancellables = Set<AnyCancellable>()
     private let authService: AuthService
     private let savedEmailStore: SavedLoginEmailStore

@@ -1,43 +1,83 @@
 //
-//  MatchDetailViewModel+Quiz.swift
+//  MatchDetailQuizViewModel.swift
 //  LeVestaire
 //
 
+import Combine
 import Foundation
 
-extension MatchDetailViewModel {
+@MainActor
+final class MatchDetailQuizViewModel: ObservableObject {
+    @Published var matchQuizzes: [MatchQuizSummary] = []
+    @Published var activeQuizDetail: MatchQuizDetail?
+    @Published var quizUserSubmission: MatchQuizUserSubmission?
+    @Published var quizLeaderboard: [MatchQuizLeaderboardEntry] = []
+    @Published var quizLeaderboardCounts: MatchQuizLeaderboardCounts?
+    @Published var quizTeamMembers: [TeamMember] = []
+    @Published var isLoadingQuizDetail = false
+    @Published var quizSubmitFeedback: MatchQuizSubmitResult?
+    @Published var selectedQuizId: String?
+    @Published var isLoadingQuizzes = false
+    @Published var hasLoadedQuizzes = false
+    @Published var isSubmitting = false
+
+    private weak var host: MatchDetailViewModel?
+    private let quizService: QuizService
+    private let teamService: TeamService
+
+    init(quizService: QuizService, teamService: TeamService) {
+        self.quizService = quizService
+        self.teamService = teamService
+    }
+
+    func attach(to host: MatchDetailViewModel) {
+        self.host = host
+    }
+
     var primaryQuiz: MatchQuizSummary? {
         matchQuizzes.first
     }
 
-    var quizCanManage: Bool {
-        canManageMatchTeam
+    var canManage: Bool {
+        host?.canManageMatchTeam == true
     }
 
-    var quizIsExcludedPlayer: Bool {
+    var isExcludedPlayer: Bool {
         MatchQuizEligibility.isExcludedFromQuiz(
-            userId: currentUserId,
+            userId: host?.currentUserId,
             eligibleUserIds: activeQuizDetail?.eligibleUserIds ?? [],
             teamMembers: quizTeamMembers,
-            composition: match?.composition
+            composition: host?.match?.composition
         )
     }
 
-    var quizCanParticipate: Bool {
+    var canParticipate: Bool {
         MatchQuizEligibility.canParticipate(
-            userId: currentUserId,
+            userId: host?.currentUserId,
             eligibleUserIds: activeQuizDetail?.eligibleUserIds ?? [],
             teamMembers: quizTeamMembers,
-            composition: match?.composition
+            composition: host?.match?.composition
         )
     }
 
-    var quizHasCompletedSubmission: Bool {
+    var hasCompletedSubmission: Bool {
         quizUserSubmission?.isComplete == true
     }
 
-    func loadQuizzesIfNeeded(force: Bool = false) async {
-        guard let match else { return }
+    func resetCache() {
+        hasLoadedQuizzes = false
+        matchQuizzes = []
+        activeQuizDetail = nil
+        quizUserSubmission = nil
+        quizLeaderboard = []
+        quizLeaderboardCounts = nil
+        quizSubmitFeedback = nil
+        selectedQuizId = nil
+        quizTeamMembers = []
+    }
+
+    func loadIfNeeded(force: Bool = false) async {
+        guard let match = host?.match else { return }
         guard match.status == .finished else { return }
         guard force || !hasLoadedQuizzes else { return }
 
@@ -45,12 +85,12 @@ extension MatchDetailViewModel {
         defer { isLoadingQuizzes = false }
 
         do {
-            await loadQuizTeamMembersIfNeeded()
-            matchQuizzes = try await quizService.fetchQuizzesForMatch(matchId: matchId)
+            await loadTeamMembersIfNeeded()
+            matchQuizzes = try await quizService.fetchQuizzesForMatch(matchId: host?.matchId ?? "")
             hasLoadedQuizzes = true
 
             if let quizId = selectedQuizId ?? matchQuizzes.first?.id {
-                await loadQuizContext(quizId: quizId)
+                await loadContext(quizId: quizId)
             } else {
                 activeQuizDetail = nil
                 quizUserSubmission = nil
@@ -63,7 +103,7 @@ extension MatchDetailViewModel {
         }
     }
 
-    func loadQuizContext(quizId: String) async {
+    func loadContext(quizId: String) async {
         selectedQuizId = quizId
         isLoadingQuizDetail = true
         quizSubmitFeedback = nil
@@ -77,7 +117,7 @@ extension MatchDetailViewModel {
             activeQuizDetail = detail
             quizUserSubmission = try await submissionTask
 
-            if detail.resolvedStatus.showsLeaderboard || quizIsExcludedPlayer {
+            if detail.resolvedStatus.showsLeaderboard || isExcludedPlayer {
                 let leaderboard = try await quizService.fetchLeaderboard(quizId: quizId)
                 applyLeaderboardResponse(leaderboard)
             } else {
@@ -88,11 +128,10 @@ extension MatchDetailViewModel {
         }
     }
 
-    func createQuizForMatch() async -> Bool {
-        guard quizCanManage else { return false }
+    func createForMatch() async -> Bool {
+        guard canManage, let matchId = host?.matchId else { return false }
 
         isSubmitting = true
-        errorMessage = nil
         defer { isSubmitting = false }
 
         do {
@@ -108,18 +147,17 @@ extension MatchDetailViewModel {
         }
     }
 
-    func saveQuizDraft(title: String, questions: [MatchQuizQuestion]) async -> Bool {
-        guard quizCanManage, let quizId = activeQuizDetail?.id else { return false }
+    func saveDraft(title: String, questions: [MatchQuizQuestion]) async -> Bool {
+        guard canManage, let quizId = activeQuizDetail?.id else { return false }
         guard questions.count == 10 else {
-            errorMessage = L10n.text("quizRulesNotSatisfied")
+            host?.errorMessage = L10n.text("quizRulesNotSatisfied")
             return false
         }
 
         isSubmitting = true
-        errorMessage = nil
         defer { isSubmitting = false }
 
-        let locale = quizPatchLocale
+        let locale = patchLocale
         let draftQuestions = questions.map { $0.draftQuestionPatch(locale: locale) }
 
         do {
@@ -140,20 +178,19 @@ extension MatchDetailViewModel {
         }
     }
 
-    func publishQuiz(title: String, questions: [MatchQuizQuestion]) async -> Bool {
-        guard quizCanManage, let quizId = activeQuizDetail?.id else { return false }
+    func publish(title: String, questions: [MatchQuizQuestion]) async -> Bool {
+        guard canManage, let quizId = activeQuizDetail?.id else { return false }
         guard questions.count == 10,
               questions.allSatisfy(\.hasDefinedAnswer),
               questions.contains(where: { $0.correctAnswer == false }) else {
-            errorMessage = L10n.text("quizRulesNotSatisfied")
+            host?.errorMessage = L10n.text("quizRulesNotSatisfied")
             return false
         }
 
         isSubmitting = true
-        errorMessage = nil
         defer { isSubmitting = false }
 
-        let locale = quizPatchLocale
+        let locale = patchLocale
         let draftQuestions = questions.map { $0.draftQuestionPatch(locale: locale) }
 
         do {
@@ -175,11 +212,10 @@ extension MatchDetailViewModel {
         }
     }
 
-    func closeQuiz() async -> Bool {
-        guard quizCanManage, let quizId = activeQuizDetail?.id else { return false }
+    func close() async -> Bool {
+        guard canManage, let quizId = activeQuizDetail?.id else { return false }
 
         isSubmitting = true
-        errorMessage = nil
         defer { isSubmitting = false }
 
         do {
@@ -199,11 +235,10 @@ extension MatchDetailViewModel {
         }
     }
 
-    func deleteQuiz() async -> Bool {
-        guard quizCanManage, let quizId = activeQuizDetail?.id else { return false }
+    func delete() async -> Bool {
+        guard canManage, let quizId = activeQuizDetail?.id else { return false }
 
         isSubmitting = true
-        errorMessage = nil
         defer { isSubmitting = false }
 
         do {
@@ -220,8 +255,8 @@ extension MatchDetailViewModel {
         }
     }
 
-    func submitQuizAnswers(_ answers: [MatchQuizAnswerDraft]) async -> MatchQuizSubmitResult? {
-        guard quizCanParticipate,
+    func submitAnswers(_ answers: [MatchQuizAnswerDraft]) async -> MatchQuizSubmitResult? {
+        guard canParticipate,
               let quizId = activeQuizDetail?.id,
               activeQuizDetail?.resolvedStatus.isPlayable == true else {
             return nil
@@ -229,12 +264,11 @@ extension MatchDetailViewModel {
 
         guard answers.count == activeQuizDetail?.questions.count,
               answers.allSatisfy({ $0.answer != nil }) else {
-            errorMessage = L10n.text("quizRulesNotSatisfied")
+            host?.errorMessage = L10n.text("quizRulesNotSatisfied")
             return nil
         }
 
         isSubmitting = true
-        errorMessage = nil
         defer { isSubmitting = false }
 
         let request = MatchQuizSubmitRequest(
@@ -263,9 +297,9 @@ extension MatchDetailViewModel {
         }
     }
 
-    func loadQuizTeamMembersIfNeeded() async {
+    func loadTeamMembersIfNeeded() async {
         guard quizTeamMembers.isEmpty,
-              let teamId = match?.teamId,
+              let teamId = host?.match?.teamId,
               !teamId.isEmpty else { return }
 
         do {
@@ -277,11 +311,11 @@ extension MatchDetailViewModel {
         }
     }
 
-    func reloadQuizLeaderboardIfNeeded() async {
+    func reloadLeaderboardIfNeeded() async {
         guard let quizId = activeQuizDetail?.id, !quizId.isEmpty else { return }
         guard activeQuizDetail?.resolvedStatus.showsLeaderboard == true
-            || quizCanManage
-            || quizIsExcludedPlayer else { return }
+            || canManage
+            || isExcludedPlayer else { return }
 
         do {
             let leaderboard = try await quizService.fetchLeaderboard(quizId: quizId)
@@ -307,8 +341,16 @@ extension MatchDetailViewModel {
         }
     }
 
-    private var quizPatchLocale: String {
+    private var patchLocale: String {
         LocalizationManager.shared.language.rawValue
+    }
+
+    private func surfaceError(_ error: Error) {
+        host?.surfaceError(error)
+    }
+
+    private func isCancellationError(_ error: Error) -> Bool {
+        TaskCancellation.isError(error)
     }
 }
 

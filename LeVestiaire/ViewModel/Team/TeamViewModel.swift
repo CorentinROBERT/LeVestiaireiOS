@@ -12,42 +12,15 @@ final class TeamViewModel: ObservableObject {
     @Published var teams: [SquadTeam] = []
     @Published var selectedTeamId: String = ""
     @Published var selectedTeam: SquadTeam?
-    @Published var compositions: [TeamComposition] = []
-    @Published var teamSeasonStats: TeamSeasonStatsPayload?
-    @Published var teamRankings: TeamSeasonRankings?
-    @Published var teamInvitations: [TeamInvitation] = []
-    @Published var availableSeasons: [String] = []
-    @Published var selectedStatsSeason = ""
-    @Published var selectedRankingSeason = ""
-    @Published var selectedRankingKind: TeamRankingKind = .scorers
 
     @Published var isLoading = false
     @Published var isRefreshingTeam = false
-    @Published var isLoadingStats = false
-    @Published var isLoadingRankings = false
-    @Published var isLoadingInvitations = false
     @Published var isSubmitting = false
 
-    @Published var invitationPendingCancellation: TeamInvitation?
-    @Published var memberPendingRemoval: TeamMember?
-    @Published var guestPendingMerge: TeamMember?
-    @Published var compositionPendingDeletion: TeamComposition?
-
-    @Published var compositionsLoadError: String?
-    @Published var invitationsLoadError: String?
-    @Published var statsLoadError: String?
-    @Published var rankingsLoadError: String?
-
     @Published var activeSheet: TeamSheet?
-    @Published var editingComposition: TeamComposition?
     @Published var alertMessage: String?
     @Published var toastMessage: String?
     @Published var errorMessage: String?
-
-    var seasonsTeamId: String?
-    var statsLoadedForTeamId: String?
-    var rankingsLoadedForTeamId: String?
-    var compositionsLoadedForTeamId: String?
 
     let pullToRefreshTask = PullToRefreshTask()
 
@@ -57,18 +30,37 @@ final class TeamViewModel: ObservableObject {
     let selectedTeamStore: SelectedTeamStore
     let authService: AuthService
 
+    let statsViewModel: TeamStatsViewModel
+    let invitationsViewModel: TeamInvitationsViewModel
+    let compositionsViewModel: TeamCompositionsViewModel
+    let rosterViewModel: TeamRosterViewModel
+
     init(
         teamService: TeamService,
         compositionService: CompositionService,
         statsService: StatsService,
         selectedTeamStore: SelectedTeamStore,
-        authService: AuthService
+        authService: AuthService,
+        statsViewModel: TeamStatsViewModel? = nil,
+        invitationsViewModel: TeamInvitationsViewModel? = nil,
+        compositionsViewModel: TeamCompositionsViewModel? = nil,
+        rosterViewModel: TeamRosterViewModel? = nil
     ) {
         self.teamService = teamService
         self.compositionService = compositionService
         self.statsService = statsService
         self.selectedTeamStore = selectedTeamStore
         self.authService = authService
+        self.statsViewModel = statsViewModel ?? TeamStatsViewModel(statsService: statsService)
+        self.invitationsViewModel = invitationsViewModel ?? TeamInvitationsViewModel(teamService: teamService)
+        self.compositionsViewModel = compositionsViewModel ?? TeamCompositionsViewModel(
+            compositionService: compositionService
+        )
+        self.rosterViewModel = rosterViewModel ?? TeamRosterViewModel(teamService: teamService)
+        self.statsViewModel.attach(to: self)
+        self.invitationsViewModel.attach(to: self)
+        self.compositionsViewModel.attach(to: self)
+        self.rosterViewModel.attach(to: self)
     }
 
     convenience init() {
@@ -95,43 +87,9 @@ final class TeamViewModel: ObservableObject {
         currentUserRole?.canChangeMemberRoles == true
     }
 
-    var statsKPIsUnavailable: Bool {
-        TeamKPIDisplay.statsUnavailable(
-            stats: teamSeasonStats,
-            hasError: statsLoadError != nil,
-            isLoading: isLoadingStats
-        )
-    }
-
-    var kpiMatchesPlayedDisplay: String {
-        TeamKPIDisplay.matchesPlayed(
-            stats: teamSeasonStats,
-            hasError: statsLoadError != nil,
-            isLoading: isLoadingStats
-        )
-    }
-
-    var kpiGoalsDisplay: String {
-        TeamKPIDisplay.goals(
-            stats: teamSeasonStats,
-            hasError: statsLoadError != nil,
-            isLoading: isLoadingStats
-        )
-    }
-
-    var kpiAssistsDisplay: String {
-        TeamKPIDisplay.assists(
-            stats: teamSeasonStats,
-            hasError: statsLoadError != nil,
-            isLoading: isLoadingStats
-        )
-    }
-
     var kpiMemberCountDisplay: String {
         "\(selectedTeam?.resolvedMemberCount ?? 0)"
     }
-
-    var isLoadingKPIs: Bool { isLoadingStats && teamSeasonStats == nil }
 
     var showsTeamDetailError: Bool {
         hasTeams && selectedTeam == nil && errorMessage != nil
@@ -145,11 +103,14 @@ final class TeamViewModel: ObservableObject {
     func showError(_ message: String) {
         alertMessage = message
     }
-}
 
-private extension String {
-    var nilIfWhitespace: String? {
-        let trimmed = trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? nil : trimmed
+    func applyLocalTeamUpdate(_ team: SquadTeam) {
+        let guests = selectedTeam?.guests ?? team.guests ?? []
+        let mergedTeam = team.withGuests(guests)
+
+        selectedTeam = mergedTeam
+        if let index = teams.firstIndex(where: { $0.id == team.id }) {
+            teams[index] = mergedTeam
+        }
     }
 }

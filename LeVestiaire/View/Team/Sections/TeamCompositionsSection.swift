@@ -7,6 +7,12 @@ import SwiftUI
 
 struct TeamCompositionsSection: View {
     @ObservedObject var viewModel: TeamViewModel
+    @ObservedObject var compositionsViewModel: TeamCompositionsViewModel
+
+    init(viewModel: TeamViewModel) {
+        self.viewModel = viewModel
+        self.compositionsViewModel = viewModel.compositionsViewModel
+    }
 
     var body: some View {
         UCard(
@@ -15,7 +21,7 @@ struct TeamCompositionsSection: View {
             trailingHeader: {
                 if viewModel.canManageTeam {
                     Button {
-                        viewModel.openCompositionEditor(for: nil)
+                        compositionsViewModel.openCompositionEditor(for: nil)
                     } label: {
                         Image(systemName: "plus.circle.fill")
                             .font(.title3)
@@ -25,23 +31,23 @@ struct TeamCompositionsSection: View {
                 }
             }
         ) {
-            if viewModel.isRefreshingTeam, viewModel.compositions.isEmpty {
+            if viewModel.isRefreshingTeam, compositionsViewModel.compositions.isEmpty {
                 TeamLoadingPlaceholder()
-            } else if let error = viewModel.compositionsLoadError {
+            } else if let error = compositionsViewModel.compositionsLoadError {
                 TeamSectionErrorView(message: error) {
-                    Task { await viewModel.retryCompositions() }
+                    Task { await compositionsViewModel.retry() }
                 }
-            } else if viewModel.compositions.isEmpty {
+            } else if compositionsViewModel.compositions.isEmpty {
                 TeamEmptyState(
                     icon: "sportscourt",
                     title: L10n.text("aucuneCompositionCreee"),
                     message: L10n.text("compositionsDescription"),
                     actionTitle: viewModel.canManageTeam ? L10n.text("creerComposition") : nil,
-                    action: viewModel.canManageTeam ? { viewModel.openCompositionEditor(for: nil) } : nil
+                    action: viewModel.canManageTeam ? { compositionsViewModel.openCompositionEditor(for: nil) } : nil
                 )
             } else {
                 VStack(spacing: 12) {
-                    ForEach(viewModel.compositions) { composition in
+                    ForEach(compositionsViewModel.compositions) { composition in
                         compositionRow(composition)
                     }
                 }
@@ -52,7 +58,7 @@ struct TeamCompositionsSection: View {
     @ViewBuilder
     private func compositionRow(_ composition: TeamComposition) -> some View {
         Button {
-            viewModel.openCompositionEditor(for: composition)
+            compositionsViewModel.openCompositionEditor(for: composition)
         } label: {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
@@ -81,10 +87,10 @@ struct TeamCompositionsSection: View {
         .contextMenu {
             if viewModel.canManageTeam {
                 Button(L10n.text("edit")) {
-                    viewModel.openCompositionEditor(for: composition)
+                    compositionsViewModel.openCompositionEditor(for: composition)
                 }
                 Button(L10n.text("delete"), role: .destructive) {
-                    viewModel.confirmDeleteComposition(composition)
+                    compositionsViewModel.confirmDeleteComposition(composition)
                 }
             }
         }

@@ -9,16 +9,16 @@ extension MatchDetailViewModel {
     func loadTabContentIfNeeded(_ tab: MatchDetailTab) async {
         switch tab {
         case .composition:
-            await loadSelectablePlayers()
+            await compositionViewModel.loadSelectablePlayers()
         case .events:
-            await loadEventsIfNeeded()
-            if canManageMatchEvents {
-                await loadEventContext()
+            await eventsViewModel.loadIfNeeded()
+            if eventsViewModel.canManage {
+                await eventsViewModel.loadContext()
             }
         case .statistics:
-            await loadMatchStatsIfNeeded()
+            await statisticsViewModel.loadIfNeeded()
         case .quiz:
-            await loadQuizzesIfNeeded()
+            await quizViewModel.loadIfNeeded()
         }
     }
 
@@ -26,15 +26,15 @@ extension MatchDetailViewModel {
         guard let match else { return }
 
         if match.status == .ongoing || match.status == .finished {
-            await loadEventsIfNeeded(force: force)
-            if canManageMatchEvents {
-                await loadEventContext()
+            await eventsViewModel.loadIfNeeded(force: force)
+            if eventsViewModel.canManage {
+                await eventsViewModel.loadContext()
             }
-            await loadMatchStatsIfNeeded(force: force)
+            await statisticsViewModel.loadIfNeeded(force: force)
         }
 
         if match.status == .finished {
-            await loadQuizzesIfNeeded(force: force)
+            await quizViewModel.loadIfNeeded(force: force)
         }
     }
 
@@ -42,42 +42,31 @@ extension MatchDetailViewModel {
         guard let match, match.showsPrepareHub else { return }
 
         if force {
-            availabilityBoardSummary = match.availabilitySummary
-            await refreshAvailabilityBoard(force: true)
+            availabilityViewModel.availabilityBoardSummary = match.availabilitySummary
+            await availabilityViewModel.refreshBoard(force: true)
         } else if showsAvailabilityManagement {
-            await loadAvailabilityIfNeeded()
+            await availabilityViewModel.loadIfNeeded()
         }
 
         if match.composition != nil || match.capabilities.canManageComposition {
-            await loadCompositionPlayerDirectory()
+            await compositionViewModel.loadPlayerDirectory()
         }
 
         if match.capabilities.canManageComposition {
-            await loadTeamTemplates()
+            await compositionViewModel.loadTeamTemplates()
         }
 
         if match.composition != nil {
-            enrichCompositionFromTeamTemplatesIfNeeded()
+            compositionViewModel.enrichFromTeamTemplatesIfNeeded()
         }
     }
 
     func resetTabCaches() {
-        hasLoadedEvents = false
-        hasLoadedMatchStats = false
-        hasLoadedQuizzes = false
-        hasLoadedAvailability = false
-        events = []
-        availability = []
-        availabilityBoardSummary = nil
-        matchStats = nil
-        matchQuizzes = []
-        activeQuizDetail = nil
-        quizUserSubmission = nil
-        quizLeaderboard = []
-        quizLeaderboardCounts = nil
-        quizSubmitFeedback = nil
-        selectedQuizId = nil
-        quizTeamMembers = []
+        availabilityViewModel.resetCache()
+        compositionViewModel.resetCache()
+        statisticsViewModel.resetCache()
+        eventsViewModel.resetCache()
+        quizViewModel.resetCache()
     }
 
     func loadSupplementaryData() async {
@@ -89,15 +78,15 @@ extension MatchDetailViewModel {
         }
 
         if match.composition != nil || match.capabilities.canManageComposition {
-            await loadCompositionPlayerDirectory()
+            await compositionViewModel.loadPlayerDirectory()
         }
 
         if match.capabilities.canManageComposition {
-            await loadTeamTemplates()
+            await compositionViewModel.loadTeamTemplates()
         }
 
         if match.composition != nil {
-            enrichCompositionFromTeamTemplatesIfNeeded()
+            compositionViewModel.enrichFromTeamTemplatesIfNeeded()
         }
     }
 

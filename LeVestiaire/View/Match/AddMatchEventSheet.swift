@@ -8,6 +8,7 @@ import SwiftUI
 struct AddMatchEventSheet: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var viewModel: MatchDetailViewModel
+    @ObservedObject var eventsViewModel: MatchDetailEventsViewModel
 
     @State private var eventType: MatchEventType = .goal
     @State private var minute = ""
@@ -34,7 +35,7 @@ struct AddMatchEventSheet: View {
                         text: $comment,
                         autocapitalization: .sentences
                     )
-                    .disabled(viewModel.isSubmitting)
+                    .disabled(eventsViewModel.isSubmitting)
 
                     if let errorMessage = viewModel.errorMessage {
                         Text(errorMessage)
@@ -43,9 +44,9 @@ struct AddMatchEventSheet: View {
                     }
 
                     Button(L10n.text("addEventButton"), action: submitEvent)
-                        .primarySheetButton(isLoading: viewModel.isSubmitting)
+                        .primarySheetButton(isLoading: eventsViewModel.isSubmitting)
                         .opacity(canSubmit ? 1 : 0.5)
-                        .disabled(!canSubmit || viewModel.isSubmitting)
+                        .disabled(!canSubmit || eventsViewModel.isSubmitting)
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
@@ -70,7 +71,7 @@ struct AddMatchEventSheet: View {
         .presentationDetents([.height(sheetHeight)])
         .presentationDragIndicator(.visible)
         .task {
-            await viewModel.loadEventContext()
+            await eventsViewModel.loadContext()
         }
     }
 
@@ -110,7 +111,7 @@ struct AddMatchEventSheet: View {
             }
             .pickerStyle(.menu)
             .tint(AppPalette.Primary.main)
-            .disabled(viewModel.isSubmitting)
+            .disabled(eventsViewModel.isSubmitting)
             .onChange(of: eventType) { _, newValue in
                 if !newValue.requiresPlayer {
                     selectedPlayerId = nil
@@ -131,7 +132,7 @@ struct AddMatchEventSheet: View {
                 text: $minute,
                 keyboardType: .numberPad
             )
-            .disabled(viewModel.isSubmitting)
+            .disabled(eventsViewModel.isSubmitting)
         }
     }
 
@@ -141,20 +142,20 @@ struct AddMatchEventSheet: View {
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(AppPalette.Neutral.textSecondary)
 
-            if viewModel.eventPlayerOptions.isEmpty {
+            if eventsViewModel.eventPlayerOptions.isEmpty {
                 Text(L10n.text("noPlayersAvailable"))
                     .font(.caption)
                     .foregroundStyle(AppPalette.Neutral.textTertiary)
             } else {
                 Picker(L10n.selectPlayer, selection: $selectedPlayerId) {
                     Text(L10n.select).tag(Optional<String>.none)
-                    ForEach(viewModel.eventPlayerOptions) { player in
+                    ForEach(eventsViewModel.eventPlayerOptions) { player in
                         Text(player.name).tag(Optional(player.id))
                     }
                 }
                 .pickerStyle(.menu)
                 .tint(AppPalette.Primary.main)
-                .disabled(viewModel.isSubmitting)
+                .disabled(eventsViewModel.isSubmitting)
             }
         }
     }
@@ -194,7 +195,7 @@ struct AddMatchEventSheet: View {
         let trimmedComment = comment.trimmingCharacters(in: .whitespacesAndNewlines)
 
         Task {
-            let success = await viewModel.createEvent(
+            let success = await eventsViewModel.create(
                 CreateMatchEventRequest(
                     type: eventType,
                     minute: parsedMinute,
@@ -211,8 +212,12 @@ struct AddMatchEventSheet: View {
 
 #if DEBUG
 #Preview {
-    AddMatchEventSheet(viewModel: MatchDetailViewModel(matchId: "preview"))
-        .teamPreviewEnvironment()
+    let viewModel = MatchDetailViewModel(matchId: "preview")
+    AddMatchEventSheet(
+        viewModel: viewModel,
+        eventsViewModel: viewModel.eventsViewModel
+    )
+    .teamPreviewEnvironment()
 }
 #endif
 

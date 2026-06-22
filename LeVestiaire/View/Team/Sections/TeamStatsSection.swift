@@ -6,26 +6,30 @@
 import SwiftUI
 
 struct TeamStatsSection: View {
-    @ObservedObject var viewModel: TeamViewModel
+    @ObservedObject var statsViewModel: TeamStatsViewModel
+
+    init(viewModel: TeamViewModel) {
+        self.statsViewModel = viewModel.statsViewModel
+    }
 
     var body: some View {
         UCard(title: L10n.text("teamStatistics"), icon: "chart.bar.fill") {
             VStack(alignment: .leading, spacing: 16) {
                 TeamSeasonPicker(
-                    availableSeasons: viewModel.availableSeasons,
-                    selection: $viewModel.selectedStatsSeason,
+                    availableSeasons: statsViewModel.availableSeasons,
+                    selection: $statsViewModel.selectedStatsSeason,
                     onChange: {
-                        Task { await viewModel.onStatsSeasonChanged() }
+                        Task { await statsViewModel.onStatsSeasonChanged() }
                     }
                 )
 
-                if viewModel.isLoadingStats, viewModel.teamSeasonStats == nil {
+                if statsViewModel.isLoadingStats, statsViewModel.teamSeasonStats == nil {
                     TeamLoadingPlaceholder()
-                } else if let error = viewModel.statsLoadError {
+                } else if let error = statsViewModel.statsLoadError {
                     TeamSectionErrorView(message: error) {
-                        Task { await viewModel.retryStats() }
+                        Task { await statsViewModel.retryStats() }
                     }
-                } else if let stats = viewModel.teamSeasonStats, stats.hasContent {
+                } else if let stats = statsViewModel.teamSeasonStats, stats.hasContent {
                     Text(L10n.text("seasonStats"))
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(AppPalette.Neutral.textPrimary)

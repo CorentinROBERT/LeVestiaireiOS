@@ -6,16 +6,16 @@
 import SwiftUI
 
 struct MatchQuizPlaySheet: View {
-    @ObservedObject var matchViewModel: MatchDetailViewModel
+    @ObservedObject var quizViewModel: MatchDetailQuizViewModel
     @StateObject private var playViewModel: MatchQuizPlayViewModel
     @Environment(\.dismiss) private var dismiss
 
-    init(matchViewModel: MatchDetailViewModel, quiz: MatchQuizDetail) {
-        self.matchViewModel = matchViewModel
+    init(quizViewModel: MatchDetailQuizViewModel, quiz: MatchQuizDetail) {
+        self.quizViewModel = quizViewModel
         _playViewModel = StateObject(
             wrappedValue: MatchQuizPlayViewModel(
                 quiz: quiz,
-                existingSubmission: matchViewModel.quizUserSubmission
+                existingSubmission: quizViewModel.quizUserSubmission
             )
         )
     }
@@ -143,7 +143,7 @@ struct MatchQuizPlaySheet: View {
     }
 
     private func submit() async {
-        let result = await matchViewModel.submitQuizAnswers(playViewModel.answers)
+        let result = await quizViewModel.submitAnswers(playViewModel.answers)
         if let result {
             playViewModel.applySubmissionResult(result)
         }
@@ -153,7 +153,7 @@ struct MatchQuizPlaySheet: View {
 #if DEBUG
 #Preview {
     MatchQuizPlaySheet(
-        matchViewModel: .preview(status: .finished),
+        quizViewModel: MatchDetailViewModel.preview(status: .finished).quizViewModel,
         quiz: .preview
     )
     .teamPreviewEnvironment()

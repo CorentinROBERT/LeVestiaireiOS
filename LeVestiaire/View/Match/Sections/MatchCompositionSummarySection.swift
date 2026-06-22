@@ -7,7 +7,14 @@ import SwiftUI
 
 struct MatchCompositionSummarySection: View {
     @ObservedObject var viewModel: MatchDetailViewModel
+    @ObservedObject var compositionViewModel: MatchDetailCompositionViewModel
     let match: MatchDetail
+
+    init(viewModel: MatchDetailViewModel, match: MatchDetail) {
+        self.viewModel = viewModel
+        self.compositionViewModel = viewModel.compositionViewModel
+        self.match = match
+    }
 
     var body: some View {
         if let composition = match.composition {
@@ -20,7 +27,7 @@ struct MatchCompositionSummarySection: View {
                 )
             }
             .task {
-                await viewModel.loadSelectablePlayers()
+                await compositionViewModel.loadSelectablePlayers()
             }
         }
     }

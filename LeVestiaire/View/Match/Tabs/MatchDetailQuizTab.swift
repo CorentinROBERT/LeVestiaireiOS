@@ -7,10 +7,17 @@ import SwiftUI
 
 struct MatchDetailQuizTab: View {
     @ObservedObject var viewModel: MatchDetailViewModel
+    @ObservedObject var quizViewModel: MatchDetailQuizViewModel
     let match: MatchDetail
 
     @State private var showEditor = false
     @State private var showPlay = false
+
+    init(viewModel: MatchDetailViewModel, match: MatchDetail) {
+        self.viewModel = viewModel
+        self.quizViewModel = viewModel.quizViewModel
+        self.match = match
+    }
 
     var body: some View {
         ScrollView {
@@ -19,9 +26,9 @@ struct MatchDetailQuizTab: View {
                     ProgressView(L10n.loading)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 32)
-                } else if let quiz = viewModel.activeQuizDetail {
+                } else if let quiz = quizViewModel.activeQuizDetail {
                     quizContent(quiz)
-                } else if viewModel.quizCanManage {
+                } else if quizViewModel.canManage {
                     emptyManagerState
                 } else {
                     emptyPlayerState
@@ -32,21 +39,21 @@ struct MatchDetailQuizTab: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .sheet(isPresented: $showEditor) {
-            if let detail = viewModel.activeQuizDetail {
-                MatchQuizEditorSheet(matchViewModel: viewModel, detail: detail)
+            if let detail = quizViewModel.activeQuizDetail {
+                MatchQuizEditorSheet(quizViewModel: quizViewModel, detail: detail)
             }
         }
         .sheet(isPresented: $showPlay) {
-            if let detail = viewModel.activeQuizDetail {
-                MatchQuizPlaySheet(matchViewModel: viewModel, quiz: detail)
+            if let detail = quizViewModel.activeQuizDetail {
+                MatchQuizPlaySheet(quizViewModel: quizViewModel, quiz: detail)
             }
         }
     }
 
     private var isLoadingInitialQuiz: Bool {
-        (viewModel.isLoadingQuizzes || viewModel.isLoadingQuizDetail)
-            && viewModel.activeQuizDetail == nil
-            && viewModel.matchQuizzes.isEmpty
+        (quizViewModel.isLoadingQuizzes || quizViewModel.isLoadingQuizDetail)
+            && quizViewModel.activeQuizDetail == nil
+            && quizViewModel.matchQuizzes.isEmpty
     }
 
     // MARK: - Empty states
@@ -65,14 +72,14 @@ struct MatchDetailQuizTab: View {
                 isFullWidth: true,
                 onPress: {
                     Task {
-                        if await viewModel.createQuizForMatch() {
+                        if await quizViewModel.createForMatch() {
                             showEditor = true
                         }
                     }
                 }
             )
-            .opacity(viewModel.isSubmitting ? 0.5 : 1)
-            .disabled(viewModel.isSubmitting)
+            .opacity(quizViewModel.isSubmitting ? 0.5 : 1)
+            .disabled(quizViewModel.isSubmitting)
         }
     }
 
@@ -96,11 +103,11 @@ struct MatchDetailQuizTab: View {
                 .foregroundStyle(AppPalette.Semantic.error)
         }
 
-        if viewModel.quizCanManage {
+        if quizViewModel.canManage {
             managerSection(quiz)
-        } else if viewModel.quizIsExcludedPlayer {
+        } else if quizViewModel.isExcludedPlayer {
             excludedSection(quiz)
-        } else if viewModel.quizCanParticipate {
+        } else if quizViewModel.canParticipate {
             playerSection(quiz)
         } else {
             Text(L10n.text("noQuizForMatch"))
@@ -205,20 +212,20 @@ struct MatchDetailQuizTab: View {
                 cornerRadius: 12,
                 isFullWidth: true,
                 onPress: {
-                    Task { await viewModel.closeQuiz() }
+                    Task { await quizViewModel.close() }
                 }
             )
-            .opacity(viewModel.isSubmitting ? 0.5 : 1)
-            .disabled(viewModel.isSubmitting)
+            .opacity(quizViewModel.isSubmitting ? 0.5 : 1)
+            .disabled(quizViewModel.isSubmitting)
         }
 
         if quiz.resolvedStatus.isEditable {
             Button(L10n.text("deleteQuiz"), role: .destructive) {
-                Task { await viewModel.deleteQuiz() }
+                Task { await quizViewModel.delete() }
             }
             .font(.subheadline.weight(.semibold))
             .frame(maxWidth: .infinity)
-            .disabled(viewModel.isSubmitting)
+            .disabled(quizViewModel.isSubmitting)
         }
     }
 
@@ -227,13 +234,13 @@ struct MatchDetailQuizTab: View {
     @ViewBuilder
     private func playerSection(_ quiz: MatchQuizDetail) -> some View {
         if quiz.resolvedStatus.isPlayable {
-            if let submission = viewModel.quizUserSubmission, submission.isComplete {
+            if let submission = quizViewModel.quizUserSubmission, submission.isComplete {
                 successCard(submission)
             } else {
-                playCard(quiz, submission: viewModel.quizUserSubmission)
+                playCard(quiz, submission: quizViewModel.quizUserSubmission)
             }
         } else if quiz.resolvedStatus.showsLeaderboard {
-            if let submission = viewModel.quizUserSubmission {
+            if let submission = quizViewModel.quizUserSubmission {
                 closedResultCard(submission)
             } else {
                 Text(L10n.text("quizClosedNoParticipation"))
@@ -338,16 +345,16 @@ struct MatchDetailQuizTab: View {
     // MARK: - Leaderboard
 
     private func shouldShowLeaderboard(for quiz: MatchQuizDetail) -> Bool {
-        quiz.resolvedStatus.showsLeaderboard || viewModel.quizCanManage
+        quiz.resolvedStatus.showsLeaderboard || quizViewModel.canManage
     }
 
     private var leaderboardSection: some View {
         MatchQuizLeaderboardView(
-            entries: viewModel.quizLeaderboard,
-            counts: viewModel.quizLeaderboardCounts
+            entries: quizViewModel.quizLeaderboard,
+            counts: quizViewModel.quizLeaderboardCounts
         )
-            .task(id: viewModel.activeQuizDetail?.id) {
-                await viewModel.reloadQuizLeaderboardIfNeeded()
+            .task(id: quizViewModel.activeQuizDetail?.id) {
+                await quizViewModel.reloadLeaderboardIfNeeded()
             }
     }
 }

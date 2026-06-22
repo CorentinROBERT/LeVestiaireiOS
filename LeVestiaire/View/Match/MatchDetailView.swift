@@ -198,7 +198,7 @@ struct MatchDetailView: View {
                             status: status,
                             isSelected: match.myAvailabilityStatus == status
                         ) {
-                            Task { await viewModel.submitMyAvailability(status) }
+                            Task { await viewModel.availabilityViewModel.submitMyAvailability(status) }
                         }
                     }
                 }
@@ -224,7 +224,7 @@ struct MatchDetailView: View {
                 )
         }
         .buttonStyle(.plain)
-        .disabled(viewModel.isSubmitting)
+        .disabled(viewModel.availabilityViewModel.isSubmitting)
     }
 
     private var placeholderContent: some View {

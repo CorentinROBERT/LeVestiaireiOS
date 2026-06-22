@@ -39,11 +39,6 @@ extension MatchDetailViewModel {
         }
     }
 
-    var sortedEvents: [MatchEvent] {
-        let grouped = events.groupedForTimeline
-        return grouped.startEvents + grouped.middleEvents + grouped.endEvents
-    }
-
     var editorMembers: [TeamMember] {
         if match?.composition != nil {
             return compositionDisplayMembers
@@ -53,12 +48,12 @@ extension MatchDetailViewModel {
     }
 
     var compositionPlayerPool: [TeamMember] {
-        if !selectablePlayers.isEmpty {
-            return selectablePlayers.map { $0.asTeamMember() }
+        if !compositionViewModel.selectablePlayers.isEmpty {
+            return compositionViewModel.selectablePlayers.map { $0.asTeamMember() }
         }
 
-        if !availability.isEmpty {
-            return availability.map { $0.asSelectablePlayer().asTeamMember() }
+        if !availabilityViewModel.availability.isEmpty {
+            return availabilityViewModel.availability.map { $0.asSelectablePlayer().asTeamMember() }
         }
 
         return []
@@ -93,7 +88,7 @@ extension MatchDetailViewModel {
     }
 
     var canEditComposition: Bool {
-        match?.capabilities.canManageComposition == true && match?.isCompositionLocked == false
+        compositionViewModel.canEdit
     }
 
     var canEditMatchInfo: Bool {
@@ -121,8 +116,6 @@ extension MatchDetailViewModel {
     }
 
     var canManageMatchEvents: Bool {
-        guard let match else { return false }
-        if match.allowsEventCorrections { return true }
-        return match.status == .finished && canManageMatchTeam
+        eventsViewModel.canManage
     }
 }
