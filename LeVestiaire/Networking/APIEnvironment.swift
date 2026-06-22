@@ -35,6 +35,15 @@ enum APIEnvironment: String, CaseIterable, Identifiable, Codable {
             return ""
         }
     }
+
+    /// Environnement par défaut à la première installation (aucune valeur persistée).
+    static var buildDefault: APIEnvironment {
+        #if DEBUG
+        .dev
+        #else
+        .production
+        #endif
+    }
 }
 
 

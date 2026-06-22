@@ -49,7 +49,7 @@ final class APIConfiguration {
            let storedEnvironment = APIEnvironment(rawValue: rawValue) {
             self.environment = storedEnvironment
         } else {
-            self.environment = .production
+            self.environment = APIEnvironment.buildDefault
         }
 
         self.customBaseURL = userDefaults.string(forKey: StorageKey.customBaseURL) ?? ""
