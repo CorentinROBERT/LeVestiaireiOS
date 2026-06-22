@@ -11,7 +11,6 @@ import FirebaseCrashlytics
 struct DeveloperView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel = DeveloperViewModel()
-    @ObservedObject private var remoteSettings = RemoteSettingsService.shared
 
     var body: some View {
         NavigationStack {
@@ -31,8 +30,6 @@ struct DeveloperView: View {
                         apiEnvironmentCard
 
                         crashlyticsCard
-
-                        remoteSettingsCard
 
                         developerCard(
                             title: L10n.informationTitle,
@@ -125,37 +122,6 @@ struct DeveloperView: View {
                     onPress: triggerTestCrash
                 )
             }
-        }
-    }
-
-    private var remoteSettingsCard: some View {
-        developerCard(
-            title: L10n.developerRemoteSettingsTitle,
-            icon: "gearshape.2.fill",
-            tint: AppPalette.Primary.main
-        ) {
-            VStack(alignment: .leading, spacing: 8) {
-                infoRow(
-                    label: L10n.developerRemoteSettingsLoaded,
-                    value: remoteSettings.hasLoadedSettings ? L10n.yes : L10n.no
-                )
-                infoRow(label: L10n.versionLabel, value: AppInfo.version)
-                infoRow(
-                    label: L10n.developerRemoteSettingsMinimumVersion,
-                    value: remoteSettings.settings.minimumVersion ?? "—"
-                )
-                infoRow(
-                    label: L10n.developerRemoteSettingsForceUpdate,
-                    value: remoteSettings.settings.forceUpdate?.enabled == true ? L10n.yes : L10n.no
-                )
-                infoRow(
-                    label: L10n.developerRemoteSettingsForceUpdateRequired,
-                    value: remoteSettings.requiresForceUpdate ? L10n.yes : L10n.no
-                )
-            }
-        }
-        .task {
-            remoteSettings.start()
         }
     }
 
