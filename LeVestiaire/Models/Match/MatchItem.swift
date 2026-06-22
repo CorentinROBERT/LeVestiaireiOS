@@ -50,7 +50,7 @@ struct MatchItem: Identifiable, Decodable, Hashable {
     }
 
     var resolvedStatusLabel: String {
-        statusLabel ?? status.displayName
+        status.displayName
     }
 
     var canRespondFromListing: Bool {

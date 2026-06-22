@@ -11,6 +11,9 @@ import FirebaseCore
 class AppDelegate: NSObject, UIApplicationDelegate {
   func application(_ application: UIApplication,
                    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+    #if DEBUG
+    try? FileManager.default.removeItem(atPath: NSHomeDirectory() + "/Library/SplashBoard")
+    #endif
     FirebaseApp.configure()
 
     return true

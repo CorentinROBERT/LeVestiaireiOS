@@ -12973,6 +12973,40 @@
         }
       }
     },
+    "launchScreenSubtitle" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Put the locker room in your pocket"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mettez le vestiaire dans votre poche"
+          }
+        }
+      }
+    },
+    "launchScreenTitle" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le Vestiaire"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le Vestiaire"
+          }
+        }
+      }
+    },
     "leaderboard" : {
       "localizations" : {
         "en" : {
@@ -14279,6 +14313,7 @@
       }
     },
     "matchInformation" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

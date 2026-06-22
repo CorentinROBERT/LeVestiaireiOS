@@ -454,7 +454,7 @@ struct MatchDetail: Decodable, Identifiable, Equatable {
     }
 
     var resolvedStatusLabel: String {
-        statusLabel ?? status.displayName
+        status.displayName
     }
 
     var scoreText: String? {

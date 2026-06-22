@@ -12,7 +12,6 @@ struct MatchPrepareHubSection: View {
     @State private var showsCompositionEditor = false
     @State private var showsCompositionViewer = false
     @State private var compositionEditorReadOnly = false
-    @State private var showsEditMatchSheet = false
     @State private var showsCancelConfirmation = false
     @State private var showsPostponeConfirmation = false
     @State private var showsLockCompositionConfirmation = false
@@ -28,10 +27,6 @@ struct MatchPrepareHubSection: View {
     @ViewBuilder
     private func prepareHubContent(for match: MatchDetail) -> some View {
         VStack(alignment: .leading, spacing: 16) {
-            if viewModel.canEditMatchInfo {
-                matchInfoSection(for: match)
-            }
-
             if viewModel.showsAvailabilityManagement {
                 availabilityManagementSection(for: match)
             }
@@ -58,58 +53,6 @@ struct MatchPrepareHubSection: View {
         }
         .sheet(isPresented: $showsCompositionViewer) {
             MatchCompositionViewerSheet(viewModel: viewModel)
-        }
-        .sheet(isPresented: $showsEditMatchSheet) {
-            EditMatchSheet(match: match) { updatedMatch in
-                viewModel.updateMatchInfo(from: updatedMatch)
-            }
-        }
-    }
-
-    private func matchInfoSection(for match: MatchDetail) -> some View {
-        UCard(
-            title: L10n.text("matchInformation"),
-            icon: "info.circle.fill",
-            trailingHeader: {
-                Button {
-                    showsEditMatchSheet = true
-                } label: {
-                    Image(systemName: "square.and.pencil")
-                        .font(.body.weight(.semibold))
-                        .foregroundStyle(AppPalette.Primary.main)
-                        .frame(width: 32, height: 32)
-                        .background(
-                            Circle()
-                                .fill(AppPalette.Primary.soft.opacity(0.6))
-                        )
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(L10n.editMatchInfo)
-            }
-        ) {
-            VStack(alignment: .leading, spacing: 12) {
-                if let opponentTeam = match.opponentTeam, !opponentTeam.isEmpty {
-                    Label(opponentTeam, systemImage: "shield.fill")
-                        .font(.subheadline)
-                        .foregroundStyle(AppPalette.Neutral.textPrimary)
-                }
-
-                if let location = match.location, !location.isEmpty {
-                    Label(location, systemImage: "mappin.and.ellipse")
-                        .font(.caption)
-                        .foregroundStyle(AppPalette.Neutral.textSecondary)
-                }
-
-                Label(match.date.formatted(date: .abbreviated, time: .omitted), systemImage: "calendar")
-                    .font(.caption)
-                    .foregroundStyle(AppPalette.Neutral.textSecondary)
-
-                if let startTime = match.startTime, !startTime.isEmpty {
-                    Label(startTime, systemImage: "clock")
-                        .font(.caption)
-                        .foregroundStyle(AppPalette.Neutral.textSecondary)
-                }
-            }
         }
     }
 

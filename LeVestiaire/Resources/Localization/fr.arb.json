@@ -1,5 +1,7 @@
 {
   "appName": "Le Vestiaire",
+  "launchScreenTitle": "Le Vestiaire",
+  "launchScreenSubtitle": "Mettez le vestiaire dans votre poche",
   "hello": "Bonjour",
   "tagline": "Votre équipe, votre passion",
   "loginSubtitle": "Connectez-vous à votre compte",

@@ -12,6 +12,7 @@ struct MatchDetailView: View {
     var onLeave: ((String) -> Void)? = nil
 
     @StateObject private var viewModel: MatchDetailViewModel
+    @State private var showsEditMatchSheet = false
 
     init(matchId: String, onLeave: ((String) -> Void)? = nil) {
         self.matchId = matchId
@@ -81,6 +82,11 @@ struct MatchDetailView: View {
             }
             .padding(20)
         }
+        .sheet(isPresented: $showsEditMatchSheet) {
+            EditMatchSheet(match: match) { updatedMatch in
+                viewModel.updateMatchInfo(from: updatedMatch)
+            }
+        }
     }
 
     private var cancelledBanner: some View {
@@ -92,7 +98,28 @@ struct MatchDetailView: View {
     }
 
     private func matchHeroCard(_ match: MatchDetail) -> some View {
-        UCard(title: match.title, icon: "sportscourt.fill") {
+        UCard(
+            title: match.title,
+            icon: "sportscourt.fill",
+            trailingHeader: {
+                if viewModel.canEditMatchInfo {
+                    Button {
+                        showsEditMatchSheet = true
+                    } label: {
+                        Image(systemName: "square.and.pencil")
+                            .font(.body.weight(.semibold))
+                            .foregroundStyle(AppPalette.Primary.main)
+                            .frame(width: 32, height: 32)
+                            .background(
+                                Circle()
+                                    .fill(AppPalette.Primary.soft.opacity(0.6))
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(L10n.editMatchInfo)
+                }
+            }
+        ) {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 8) {
                     Text(match.resolvedStatusLabel)

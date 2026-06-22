@@ -4,7 +4,5 @@
 <dict>
 	<key>NSApplicationCrashOnExceptions</key>
 	<true/>
-	<key>UILaunchScreen</key>
-	<false/>
 </dict>
 </plist>
