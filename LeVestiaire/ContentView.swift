@@ -66,8 +66,14 @@ struct ContentView: View {
         ZStack {
             AuthScreenBackground()
                 .ignoresSafeArea()
-            ProgressView()
-                .tint(AppPalette.Primary.main)
+            VStack {
+                Image(systemName: "pencil.and.list.clipboard")
+                    .font(.system(size: 48))
+                    .foregroundStyle(AppPalette.Primary.main)
+                UText(text: L10n.loading)
+                ProgressView()
+                    .tint(AppPalette.Primary.main)
+            }
         }
     }
 
