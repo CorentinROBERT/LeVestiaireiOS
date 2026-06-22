@@ -6,13 +6,35 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		F804B8482FE92E68000E307E /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = F804B8472FE92E68000E307E /* FirebaseCore */; };
+		F804B84A2FE92E68000E307E /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = F804B8492FE92E68000E307E /* FirebaseCrashlytics */; };
+		F804B84C2FE92E68000E307E /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = F804B84B2FE92E68000E307E /* FirebaseDatabase */; };
+		F804B84E2FE92E68000E307E /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = F804B84D2FE92E68000E307E /* FirebaseMessaging */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		F8B110012FD6F78D0061F056 /* LeVestiaire.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LeVestiaire.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		F804B65C2FE92C99000E307E /* Exceptions for "LeVestiaire" folder in "LeVestiaire" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+				"GoogleService-Info-dev.plist",
+				"GoogleService-Info-prd.plist",
+			);
+			target = F8B110002FD6F78D0061F056 /* LeVestiaire */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		F8B110032FD6F78D0061F056 /* LeVestiaire */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				F804B65C2FE92C99000E307E /* Exceptions for "LeVestiaire" folder in "LeVestiaire" target */,
+			);
 			path = LeVestiaire;
 			sourceTree = "<group>";
 		};
@@ -23,16 +45,28 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F804B84E2FE92E68000E307E /* FirebaseMessaging in Frameworks */,
+				F804B84C2FE92E68000E307E /* FirebaseDatabase in Frameworks */,
+				F804B8482FE92E68000E307E /* FirebaseCore in Frameworks */,
+				F804B84A2FE92E68000E307E /* FirebaseCrashlytics in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		F804B8462FE92E68000E307E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		F8B10FF82FD6F78D0061F056 = {
 			isa = PBXGroup;
 			children = (
 				F8B110032FD6F78D0061F056 /* LeVestiaire */,
+				F804B8462FE92E68000E307E /* Frameworks */,
 				F8B110022FD6F78D0061F056 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -55,6 +89,8 @@
 				F8B10FFD2FD6F78D0061F056 /* Sources */,
 				F8B10FFE2FD6F78D0061F056 /* Frameworks */,
 				F8B10FFF2FD6F78D0061F056 /* Resources */,
+				F804B65B2FE92C99000E307E /* Copy Firebase plist */,
+				F804B65A2FE92B72000E307E /* Upload Crashlytics dSYM */,
 			);
 			buildRules = (
 			);
@@ -65,6 +101,10 @@
 			);
 			name = LeVestiaire;
 			packageProductDependencies = (
+				F804B8472FE92E68000E307E /* FirebaseCore */,
+				F804B8492FE92E68000E307E /* FirebaseCrashlytics */,
+				F804B84B2FE92E68000E307E /* FirebaseDatabase */,
+				F804B84D2FE92E68000E307E /* FirebaseMessaging */,
 			);
 			productName = LeVestaire;
 			productReference = F8B110012FD6F78D0061F056 /* LeVestiaire.app */;
@@ -95,6 +135,9 @@
 			);
 			mainGroup = F8B10FF82FD6F78D0061F056;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				F804B6592FE921E3000E307E /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = F8B110022FD6F78D0061F056 /* Products */;
 			projectDirPath = "";
@@ -114,6 +157,57 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		F804B65B2FE92C99000E307E /* Copy Firebase plist */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(PROJECT_DIR)/LeVestiaire/GoogleService-Info-dev.plist",
+				"$(PROJECT_DIR)/LeVestiaire/GoogleService-Info-prd.plist",
+			);
+			name = "Copy Firebase plist";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/GoogleService-Info.plist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ \"${CONFIGURATION}\" = \"Debug\" ]; then\n  SOURCE_PLIST=\"${PROJECT_DIR}/LeVestiaire/GoogleService-Info-dev.plist\"\nelse\n  SOURCE_PLIST=\"${PROJECT_DIR}/LeVestiaire/GoogleService-Info-prd.plist\"\nfi\n\nDEST_PLIST=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleService-Info.plist\"\n\nif [ ! -f \"${SOURCE_PLIST}\" ]; then\n  echo \"error: Firebase plist introuvable: ${SOURCE_PLIST}\"\n  exit 1\nfi\n\nmkdir -p \"$(dirname \"${DEST_PLIST}\")\"\ncp \"${SOURCE_PLIST}\" \"${DEST_PLIST}\"\necho \"Firebase plist copié (${CONFIGURATION}): ${SOURCE_PLIST}\"\n";
+		};
+		F804B65A2FE92B72000E307E /* Upload Crashlytics dSYM */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}",
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${PRODUCT_NAME}",
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Info.plist",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/GoogleService-Info.plist",
+				"$(TARGET_BUILD_DIR)/$(EXECUTABLE_PATH)",
+				"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run",
+				"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/upload-symbols",
+			);
+			name = "Upload Crashlytics dSYM";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		F8B10FFD2FD6F78D0061F056 /* Sources */ = {
@@ -160,11 +254,11 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8UTV7J6Z6Z;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -228,7 +322,7 @@
 				DEVELOPMENT_TEAM = 8UTV7J6Z6Z;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -255,9 +349,11 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8UTV7J6Z6Z;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = LeVestiaire/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Le Vestiaire";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.sports";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Le Vestiaire a besoin de l'appareil photo pour votre photo de profil.";
@@ -265,7 +361,6 @@
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Le Vestiaire a besoin d'accéder à vos photos pour votre photo de profil.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
 				INFOPLIST_KEY_UILaunchStoryboardName = "Launch Screen";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
@@ -301,6 +396,7 @@
 				DEVELOPMENT_TEAM = 8UTV7J6Z6Z;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = LeVestiaire/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Le Vestiaire";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.sports";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Le Vestiaire a besoin de l'appareil photo pour votre photo de profil.";
@@ -308,7 +404,6 @@
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Le Vestiaire a besoin d'accéder à vos photos pour votre photo de profil.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
 				INFOPLIST_KEY_UILaunchStoryboardName = "Launch Screen";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
@@ -355,6 +450,40 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		F804B6592FE921E3000E307E /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.15.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		F804B8472FE92E68000E307E /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F804B6592FE921E3000E307E /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		F804B8492FE92E68000E307E /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F804B6592FE921E3000E307E /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
+		};
+		F804B84B2FE92E68000E307E /* FirebaseDatabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F804B6592FE921E3000E307E /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseDatabase;
+		};
+		F804B84D2FE92E68000E307E /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F804B6592FE921E3000E307E /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = F8B10FF92FD6F78D0061F056 /* Project object */;
 }

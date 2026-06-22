@@ -408,6 +408,21 @@ enum L10n {
     // MARK: - Developer
 
     static var developerViewTitle: String { text("developerViewTitle") }
+    static var developerCrashlyticsTitle: String { text("developerCrashlyticsTitle") }
+    static var developerCrashlyticsHint: String { text("developerCrashlyticsHint") }
+    static var developerTestCrashButton: String { text("developerTestCrashButton") }
+    static var developerRemoteSettingsTitle: String { text("developerRemoteSettingsTitle") }
+    static var developerRemoteSettingsLoaded: String { text("developerRemoteSettingsLoaded") }
+    static var developerRemoteSettingsMinimumVersion: String { text("developerRemoteSettingsMinimumVersion") }
+    static var developerRemoteSettingsForceUpdate: String { text("developerRemoteSettingsForceUpdate") }
+    static var developerRemoteSettingsForceUpdateRequired: String { text("developerRemoteSettingsForceUpdateRequired") }
+    static var yes: String { text("yes") }
+    static var no: String { text("no") }
+    static var forceUpdateTitle: String { text("forceUpdateTitle") }
+    static var forceUpdateDefaultMessage: String { text("forceUpdateDefaultMessage") }
+    static var updateOnAppStore: String { text("updateOnAppStore") }
+    static var maintenanceTitle: String { text("maintenanceTitle") }
+    static var maintenanceDefaultMessage: String { text("maintenanceDefaultMessage") }
     static var informationTitle: String { text("informationTitle") }
     static var apiEnvironment: String { text("apiEnvironment") }
     static var environment: String { text("environment") }

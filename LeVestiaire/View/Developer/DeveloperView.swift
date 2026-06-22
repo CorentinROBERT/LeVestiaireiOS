@@ -6,10 +6,12 @@
 //
 
 import SwiftUI
+import FirebaseCrashlytics
 
 struct DeveloperView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel = DeveloperViewModel()
+    @ObservedObject private var remoteSettings = RemoteSettingsService.shared
 
     var body: some View {
         NavigationStack {
@@ -27,6 +29,10 @@ struct DeveloperView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
                         apiEnvironmentCard
+
+                        crashlyticsCard
+
+                        remoteSettingsCard
 
                         developerCard(
                             title: L10n.informationTitle,
@@ -98,6 +104,61 @@ struct DeveloperView: View {
         }
     }
 
+    private var crashlyticsCard: some View {
+        developerCard(
+            title: L10n.developerCrashlyticsTitle,
+            icon: "flame.fill",
+            tint: AppPalette.Semantic.error
+        ) {
+            VStack(alignment: .leading, spacing: 16) {
+                Text(L10n.developerCrashlyticsHint)
+                    .font(.subheadline)
+                    .foregroundStyle(AppPalette.Neutral.textSecondary)
+
+                UButton(
+                    text: L10n.developerTestCrashButton,
+                    textColor: AppPalette.Primary.onMain,
+                    backgroundColor: AppPalette.Semantic.error,
+                    cornerRadius: 25,
+                    isFullWidth: true,
+                    leadingIcon: "bolt.trianglebadge.exclamationmark.fill",
+                    onPress: triggerTestCrash
+                )
+            }
+        }
+    }
+
+    private var remoteSettingsCard: some View {
+        developerCard(
+            title: L10n.developerRemoteSettingsTitle,
+            icon: "gearshape.2.fill",
+            tint: AppPalette.Primary.main
+        ) {
+            VStack(alignment: .leading, spacing: 8) {
+                infoRow(
+                    label: L10n.developerRemoteSettingsLoaded,
+                    value: remoteSettings.hasLoadedSettings ? L10n.yes : L10n.no
+                )
+                infoRow(label: L10n.versionLabel, value: AppInfo.version)
+                infoRow(
+                    label: L10n.developerRemoteSettingsMinimumVersion,
+                    value: remoteSettings.settings.minimumVersion ?? "—"
+                )
+                infoRow(
+                    label: L10n.developerRemoteSettingsForceUpdate,
+                    value: remoteSettings.settings.forceUpdate?.enabled == true ? L10n.yes : L10n.no
+                )
+                infoRow(
+                    label: L10n.developerRemoteSettingsForceUpdateRequired,
+                    value: remoteSettings.requiresForceUpdate ? L10n.yes : L10n.no
+                )
+            }
+        }
+        .task {
+            remoteSettings.start()
+        }
+    }
+
     @ViewBuilder
     private var apiTestResultView: some View {
         switch viewModel.apiTestState {
@@ -162,6 +223,11 @@ struct DeveloperView: View {
                 .multilineTextAlignment(.trailing)
         }
         .font(.subheadline)
+    }
+
+    private func triggerTestCrash() {
+        Crashlytics.crashlytics().log("Developer menu test crash")
+        fatalError("Crashlytics test crash")
     }
 }
 

@@ -9,9 +9,40 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject private var authService: AuthService
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @StateObject private var viewModel = ContentViewModel()
+    @ObservedObject private var remoteSettings = RemoteSettingsService.shared
 
     var body: some View {
+        ZStack {
+            rootContent
+
+            if remoteSettings.isMaintenanceMode {
+                MaintenanceView(
+                    message: remoteSettings.localizedMaintenanceMessage(
+                        language: localizationManager.language
+                    )
+                )
+                .transition(.opacity)
+            } else if remoteSettings.requiresForceUpdate {
+                ForceUpdateView(
+                    message: remoteSettings.localizedForceUpdateMessage(
+                        language: localizationManager.language
+                    ),
+                    storeURL: remoteSettings.forceUpdateStoreURL
+                )
+                .transition(.opacity)
+            }
+        }
+        .animation(.easeInOut, value: remoteSettings.isMaintenanceMode)
+        .animation(.easeInOut, value: remoteSettings.requiresForceUpdate)
+        .task {
+            remoteSettings.start()
+        }
+    }
+
+    @ViewBuilder
+    private var rootContent: some View {
         Group {
             if !authService.isBootstrapComplete {
                 bootstrapView
@@ -69,4 +100,5 @@ struct ContentView: View {
 #Preview {
     ContentView()
         .environmentObject(AuthService.shared)
+        .environmentObject(LocalizationManager.shared)
 }
