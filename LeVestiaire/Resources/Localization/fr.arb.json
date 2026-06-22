@@ -1381,6 +1381,7 @@
   "activeFilters": "Filtres actifs",
   "customPeriod": "Période personnalisée",
   "matchesLoading": "Chargement des matchs…",
+  "matchDetailLoading": "Chargement du match…",
   "matchesLoadedCount": "%lld sur %lld matchs",
   "opponentToBeDefined": "Adversaire à définir",
   "createMatchPlaceholder": "Le formulaire de création de match sera disponible prochainement.",

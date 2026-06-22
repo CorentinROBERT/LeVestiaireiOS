@@ -1381,6 +1381,7 @@
   "activeFilters": "Active filters",
   "customPeriod": "Custom period",
   "matchesLoading": "Loading matches…",
+  "matchDetailLoading": "Loading match…",
   "matchesLoadedCount": "%lld of %lld matches",
   "opponentToBeDefined": "Opponent to be defined",
   "createMatchPlaceholder": "The match creation form will be available soon.",

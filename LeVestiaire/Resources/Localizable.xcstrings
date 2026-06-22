@@ -14195,6 +14195,22 @@
         }
       }
     },
+    "matchDetailLoading" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading match…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chargement du match…"
+          }
+        }
+      }
+    },
     "matchesPlayed" : {
       "localizations" : {
         "en" : {

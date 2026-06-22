@@ -140,6 +140,7 @@ enum L10n {
     // MARK: - Match detail / create placeholders
 
     static var matchDetailTitle: String { text("matchDetailsTitle") }
+    static var matchDetailLoading: String { text("matchDetailLoading") }
     static var createMatchTitle: String { text("createMatchTitle") }
     static var createMatchPlaceholder: String { text("createMatchPlaceholder") }
     static var matchDetailPlaceholder: String { text("matchDetailPlaceholder") }

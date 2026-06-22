@@ -86,7 +86,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = F8B1100E2FD6F7900061F056 /* Build configuration list for PBXNativeTarget "LeVestiaire" */;
 			buildPhases = (
-				F804B6762FE95E30000E307E /* Sync Launch Logo (prod) */,
 				F8B10FFD2FD6F78D0061F056 /* Sources */,
 				F8B10FFE2FD6F78D0061F056 /* Frameworks */,
 				F8B10FFF2FD6F78D0061F056 /* Resources */,
@@ -207,27 +206,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "if [ \"${CONFIGURATION}\" = \"Debug\" ]; then\n  SOURCE_PLIST=\"${PROJECT_DIR}/LeVestiaire/GoogleService-Info-dev.plist\"\nelse\n  SOURCE_PLIST=\"${PROJECT_DIR}/LeVestiaire/GoogleService-Info-prd.plist\"\nfi\n\nDEST_PLIST=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleService-Info.plist\"\n\nif [ ! -f \"${SOURCE_PLIST}\" ]; then\n  echo \"error: Firebase plist introuvable: ${SOURCE_PLIST}\"\n  exit 1\nfi\n\nmkdir -p \"$(dirname \"${DEST_PLIST}\")\"\ncp \"${SOURCE_PLIST}\" \"${DEST_PLIST}\"\necho \"Firebase plist copié (${CONFIGURATION}): ${SOURCE_PLIST}\"\n";
-		};
-		F804B6762FE95E30000E307E /* Sync Launch Logo (prod) */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"$(PROJECT_DIR)/LeVestiaire/Assets.xcassets/AppIcon.appiconset/Design sans titre 1.png",
-			);
-			name = "Sync Launch Logo (prod)";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(PROJECT_DIR)/LeVestiaire/LaunchScreenBrand.png",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "SOURCE=\"${PROJECT_DIR}/LeVestiaire/Assets.xcassets/AppIcon.appiconset/Design sans titre 1.png\"\nDEST=\"${PROJECT_DIR}/LeVestiaire/LaunchScreenBrand.png\"\n\nif [ ! -f \"${SOURCE}\" ]; then\n  echo \"error: Icône prod introuvable pour le launch screen\"\n  exit 1\nfi\n\nif ! cmp -s \"${SOURCE}\" \"${DEST}\"; then\n  cp \"${SOURCE}\" \"${DEST}\"\n  echo \"LaunchScreenBrand synchronisé depuis AppIcon (prod)\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

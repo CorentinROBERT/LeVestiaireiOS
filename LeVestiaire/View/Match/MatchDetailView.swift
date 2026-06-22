@@ -23,7 +23,7 @@ struct MatchDetailView: View {
     var body: some View {
         Group {
             if viewModel.isLoading, viewModel.match == nil {
-                ProgressView(L10n.matchesLoading)
+                ProgressView(L10n.matchDetailLoading)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let match = viewModel.match {
                 matchContent(match)
