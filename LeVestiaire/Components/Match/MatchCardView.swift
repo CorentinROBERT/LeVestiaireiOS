@@ -7,23 +7,82 @@
 
 import SwiftUI
 
+/// Carte match unifiée pour le listing : infos + disponibilité dans le même conteneur visuel.
+struct MatchListingCard: View {
+    let match: MatchItem
+    var isSubmittingAvailability: Bool = false
+    var onAvailabilitySelect: ((MatchAvailabilityStatus) -> Void)?
+
+    private var showsAvailabilityActions: Bool {
+        match.canRespondFromListing && onAvailabilitySelect != nil
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            NavigationLink(value: match.id) {
+                MatchCardContent(
+                    match: match,
+                    showsAvailabilityFooter: !showsAvailabilityActions
+                )
+                .padding(16)
+            }
+            .buttonStyle(.plain)
+
+            if showsAvailabilityActions, let onAvailabilitySelect {
+                MatchAvailabilityQuickRespondBar(
+                    matchContext: availabilityContextLabel,
+                    selectedStatus: match.myAvailabilityStatus,
+                    isSubmitting: isSubmittingAvailability,
+                    layout: .embedded,
+                    onSelect: onAvailabilitySelect
+                )
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glassEffect(.regular, in: .rect(cornerRadius: 16))
+        .overlay {
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(match.status.color.opacity(0.25), lineWidth: 1.5)
+        }
+    }
+
+    private var availabilityContextLabel: String {
+        if let time = match.formattedTime, !time.isEmpty {
+            return "\(match.formattedDate) · \(time)"
+        }
+        return match.formattedDate
+    }
+}
+
 struct MatchCardView: View {
     let match: MatchItem
 
     var body: some View {
-        UCard(cornerRadius: 16, padding: 16) {
-            VStack(alignment: .leading, spacing: 12) {
-                headerRow
-                if let scoreText = match.scoreText, match.showsScore {
-                    scoreRow(scoreText)
-                }
-                infoRow
+        MatchCardContent(match: match, showsAvailabilityFooter: true)
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .glassEffect(.regular, in: .rect(cornerRadius: 16))
+            .overlay {
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(match.status.color.opacity(0.25), lineWidth: 1.5)
+            }
+    }
+}
+
+private struct MatchCardContent: View {
+    let match: MatchItem
+    let showsAvailabilityFooter: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            headerRow
+            if let scoreText = match.scoreText, match.showsScore {
+                scoreRow(scoreText)
+            }
+            infoRow
+            if showsAvailabilityFooter {
                 availabilityFooter
             }
-        }
-        .overlay {
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(match.status.color.opacity(0.25), lineWidth: 1.5)
         }
     }
 
@@ -186,14 +245,14 @@ struct MatchCardView: View {
     }
 }
 
-#Preview("Draft joueur") {
+#Preview("Listing avec disponibilité") {
     ZStack {
         AuthScreenBackground()
 
-        MatchCardView(
+        MatchListingCard(
             match: MatchItem(
                 id: "2",
-                title: "Match amical",
+                title: "vs Teuteu",
                 status: .draft,
                 myAvailabilityStatus: .available,
                 capabilities: MatchCapabilities(
@@ -206,10 +265,14 @@ struct MatchCardView: View {
                     canUpdateScore: false,
                     canFinishMatch: false
                 ),
-                opponentTeam: "FC Rivaux",
+                opponentTeam: "Teuteu",
                 location: "Stade municipal",
-                date: Date()
-            )
+                homeTeamName: "PFC",
+                date: Date(),
+                startTime: "20:00"
+            ),
+            isSubmittingAvailability: false,
+            onAvailabilitySelect: { _ in }
         )
         .padding()
     }

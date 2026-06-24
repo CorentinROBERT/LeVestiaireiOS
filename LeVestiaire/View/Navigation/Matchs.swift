@@ -9,11 +9,23 @@ import SwiftUI
 
 struct Matchs: View {
     @EnvironmentObject private var mainTabViewModel: MainTabViewModel
-    @StateObject private var viewModel = MatchsViewModel()
+    @StateObject private var viewModel: MatchsViewModel
     @State private var openedMatchDetail: MatchDetailRoute?
+
+    private let loadsDataOnAppear: Bool
 
     private struct MatchDetailRoute: Identifiable, Hashable {
         let id: String
+    }
+
+    init() {
+        _viewModel = StateObject(wrappedValue: MatchsViewModel())
+        loadsDataOnAppear = true
+    }
+
+    init(previewViewModel: MatchsViewModel) {
+        _viewModel = StateObject(wrappedValue: previewViewModel)
+        loadsDataOnAppear = false
     }
 
     private enum ActionButtonMetrics {
@@ -75,6 +87,7 @@ struct Matchs: View {
             }
         }
         .task {
+            guard loadsDataOnAppear else { return }
             await viewModel.initialize()
         }
         .onChange(of: mainTabViewModel.pendingMatchId) { _, matchId in
@@ -142,29 +155,21 @@ struct Matchs: View {
 
     @ViewBuilder
     private func matchRow(_ match: MatchItem) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            NavigationLink(value: match.id) {
-                MatchCardView(match: match)
-            }
-            .buttonStyle(.plain)
-            .contextMenu {
-                if match.canEditFromListing {
-                    Button {
-                        Task { await viewModel.openEditMatch(id: match.id) }
-                    } label: {
-                        Label(L10n.editMatchInfo, systemImage: "pencil")
-                    }
+        MatchListingCard(
+            match: match,
+            isSubmittingAvailability: viewModel.isSubmittingAvailability(for: match.id),
+            onAvailabilitySelect: match.canRespondFromListing ? { status in
+                Task {
+                    await viewModel.submitAvailability(for: match.id, status: status)
                 }
-            }
-
-            if match.canRespondFromListing {
-                MatchAvailabilityQuickRespondBar(
-                    selectedStatus: match.myAvailabilityStatus,
-                    isSubmitting: viewModel.isSubmittingAvailability(for: match.id)
-                ) { status in
-                    Task {
-                        await viewModel.submitAvailability(for: match.id, status: status)
-                    }
+            } : nil
+        )
+        .contextMenu {
+            if match.canEditFromListing {
+                Button {
+                    Task { await viewModel.openEditMatch(id: match.id) }
+                } label: {
+                    Label(L10n.editMatchInfo, systemImage: "pencil")
                 }
             }
         }
@@ -390,13 +395,36 @@ struct Matchs: View {
     }
 }
 
-#Preview {
+#if DEBUG
+#Preview("Flow complet") {
     NavigationStack {
-        ZStack {
-            AuthScreenBackground()
-            Matchs()
-        }
-        .navigationTitle(L10n.matches)
-        .environmentObject(MainTabViewModel())
+        Matchs(previewViewModel: .preview())
+            .navigationTitle(L10n.matches)
     }
+    .teamPreviewEnvironment()
 }
+
+#Preview("Filtres actifs") {
+    NavigationStack {
+        Matchs(previewViewModel: .previewFiltered())
+            .navigationTitle(L10n.matches)
+    }
+    .teamPreviewEnvironment()
+}
+
+#Preview("Dispo en cours d'envoi") {
+    NavigationStack {
+        Matchs(previewViewModel: .previewSubmittingAvailability())
+            .navigationTitle(L10n.matches)
+    }
+    .teamPreviewEnvironment()
+}
+
+#Preview("Liste vide") {
+    NavigationStack {
+        Matchs(previewViewModel: .previewEmpty())
+            .navigationTitle(L10n.matches)
+    }
+    .teamPreviewEnvironment()
+}
+#endif

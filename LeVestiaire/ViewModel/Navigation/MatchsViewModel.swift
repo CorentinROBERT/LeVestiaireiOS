@@ -262,3 +262,26 @@ final class MatchsViewModel: ObservableObject {
         TaskCancellation.isError(error)
     }
 }
+
+#if DEBUG
+extension MatchsViewModel {
+    func applyPreviewState(
+        matches: [MatchItem],
+        teams: [SquadTeam],
+        filters: MatchFilters = MatchFilters(),
+        submittingAvailabilityMatchIds: Set<String> = []
+    ) {
+        self.matches = matches
+        userTeams = teams
+        self.filters = filters
+        self.submittingAvailabilityMatchIds = submittingAvailabilityMatchIds
+        totalItems = matches.count
+        currentPage = 1
+        hasReachedMax = true
+        isLoading = false
+        isLoadingMore = false
+        isRefreshing = false
+        errorMessage = nil
+    }
+}
+#endif
