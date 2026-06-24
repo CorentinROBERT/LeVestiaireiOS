@@ -6,11 +6,19 @@
 #if DEBUG
 import Foundation
 
+@MainActor
 extension MatchsViewModel {
+    static func preview() -> MatchsViewModel {
+        preview(
+            matches: MatchPreviewData.listingFlow,
+            teams: TeamPreviewData.teams(includeSecond: true)
+        )
+    }
+
     static func preview(
-        matches: [MatchItem] = MatchPreviewData.listingFlow,
-        teams: [SquadTeam] = TeamPreviewData.teams(includeSecond: true),
-        filters: MatchFilters = MatchFilters(),
+        matches: [MatchItem],
+        teams: [SquadTeam],
+        filters: MatchFilters? = nil,
         submittingAvailabilityMatchIds: Set<String> = []
     ) -> MatchsViewModel {
         let viewModel = MatchsViewModel()
@@ -30,6 +38,7 @@ extension MatchsViewModel {
     static func previewFiltered() -> MatchsViewModel {
         preview(
             matches: MatchPreviewData.listingFlow.filter { $0.status == .draft || $0.status == .upcoming },
+            teams: TeamPreviewData.teams(includeSecond: true),
             filters: MatchFilters(
                 statuses: [.draft, .upcoming],
                 teamIds: [TeamPreviewData.team().id],
@@ -40,7 +49,11 @@ extension MatchsViewModel {
     }
 
     static func previewSubmittingAvailability() -> MatchsViewModel {
-        preview(submittingAvailabilityMatchIds: ["preview-match-draft-pending"])
+        preview(
+            matches: MatchPreviewData.listingFlow,
+            teams: TeamPreviewData.teams(includeSecond: true),
+            submittingAvailabilityMatchIds: ["preview-match-draft-pending"]
+        )
     }
 }
 #endif

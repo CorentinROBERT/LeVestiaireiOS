@@ -308,6 +308,8 @@ struct AppNotification: Identifiable, Decodable, Equatable {
     let channels: [NotificationChannel]
     let isRead: Bool
     let readAt: Date?
+    let isArchived: Bool
+    let archivedAt: Date?
     let metadata: NotificationMetadata?
     let createdAt: Date
     let updatedAt: Date?
@@ -384,6 +386,8 @@ struct AppNotification: Identifiable, Decodable, Equatable {
         channels: [NotificationChannel] = [.inApp],
         isRead: Bool,
         readAt: Date? = nil,
+        isArchived: Bool = false,
+        archivedAt: Date? = nil,
         metadata: NotificationMetadata? = nil,
         createdAt: Date,
         updatedAt: Date? = nil
@@ -402,9 +406,22 @@ struct AppNotification: Identifiable, Decodable, Equatable {
         self.channels = channels
         self.isRead = isRead
         self.readAt = readAt
+        self.isArchived = isArchived
+        self.archivedAt = archivedAt
         self.metadata = metadata
         self.createdAt = createdAt
         self.updatedAt = updatedAt
+    }
+
+    func matches(filter: NotificationFilter) -> Bool {
+        switch filter {
+        case .all:
+            return !isArchived
+        case .unread:
+            return !isArchived && !isRead
+        case .archived:
+            return isArchived
+        }
     }
 
     init(from decoder: Decoder) throws {
@@ -433,13 +450,26 @@ struct AppNotification: Identifiable, Decodable, Equatable {
         deepLink = try container.decodeIfPresent(String.self, forKey: .deepLink)
 
         readAt = Self.decodeOptionalDate(from: container, forKey: .readAt)
+            ?? Self.decodeOptionalDate(from: container, forKey: .readOn)
 
-        if let explicitRead = try container.decodeIfPresent(Bool.self, forKey: .isRead) {
+        archivedAt = Self.decodeOptionalDate(from: container, forKey: .archivedAt)
+
+        if let explicitRead = try container.decodeIfPresent(Bool.self, forKey: .isRead)
+            ?? container.decodeIfPresent(Bool.self, forKey: .read) {
             isRead = explicitRead
         } else if readAt != nil {
             isRead = true
         } else {
             isRead = false
+        }
+
+        if let explicitArchived = try container.decodeIfPresent(Bool.self, forKey: .isArchived)
+            ?? container.decodeIfPresent(Bool.self, forKey: .archived) {
+            isArchived = explicitArchived
+        } else if archivedAt != nil {
+            isArchived = true
+        } else {
+            isArchived = false
         }
 
         metadata = try container.decodeIfPresent(NotificationMetadata.self, forKey: .metadata)
@@ -463,9 +493,59 @@ struct AppNotification: Identifiable, Decodable, Equatable {
             channels: channels,
             isRead: true,
             readAt: date,
+            isArchived: isArchived,
+            archivedAt: archivedAt,
             metadata: metadata,
             createdAt: createdAt,
             updatedAt: updatedAt
+        )
+    }
+
+    func markingAsArchived(at date: Date = Date()) -> AppNotification {
+        AppNotification(
+            id: id,
+            userId: userId,
+            targetType: targetType,
+            targetIds: targetIds,
+            title: title,
+            body: body,
+            imageUrl: imageUrl,
+            linkUrl: linkUrl,
+            deepLink: deepLink,
+            type: type,
+            category: category,
+            channels: channels,
+            isRead: true,
+            readAt: readAt ?? date,
+            isArchived: true,
+            archivedAt: date,
+            metadata: metadata,
+            createdAt: createdAt,
+            updatedAt: date
+        )
+    }
+
+    func markingAsUnarchived(at date: Date = Date()) -> AppNotification {
+        AppNotification(
+            id: id,
+            userId: userId,
+            targetType: targetType,
+            targetIds: targetIds,
+            title: title,
+            body: body,
+            imageUrl: imageUrl,
+            linkUrl: linkUrl,
+            deepLink: deepLink,
+            type: type,
+            category: category,
+            channels: channels,
+            isRead: isRead,
+            readAt: readAt,
+            isArchived: false,
+            archivedAt: nil,
+            metadata: metadata,
+            createdAt: createdAt,
+            updatedAt: date
         )
     }
 
@@ -486,7 +566,12 @@ struct AppNotification: Identifiable, Decodable, Equatable {
         case category
         case channels
         case isRead
+        case read
         case readAt
+        case readOn
+        case isArchived
+        case archived
+        case archivedAt
         case metadata
         case createdAt
         case updatedAt
@@ -625,6 +710,7 @@ struct NotificationUnreadCountResponse: Decodable {
 enum NotificationFilter: String, CaseIterable, Identifiable {
     case all
     case unread
+    case archived
 
     var id: String { rawValue }
 
@@ -634,6 +720,8 @@ enum NotificationFilter: String, CaseIterable, Identifiable {
             return L10n.text("allNotifications")
         case .unread:
             return L10n.text("unreadNotifications")
+        case .archived:
+            return L10n.text("archivedNotifications")
         }
     }
 }
@@ -783,6 +871,18 @@ extension AppNotification {
         metadata: NotificationMetadata(teamId: "team-preview", teamName: "FC Test"),
         createdAt: Date().addingTimeInterval(-86_400),
         updatedAt: Date().addingTimeInterval(-86_000)
+    )
+
+    static let previewArchived = AppNotification(
+        id: "preview-3",
+        title: "Rappel de match",
+        body: "Match demain à 15h.",
+        type: .matchReminder,
+        isRead: true,
+        isArchived: true,
+        archivedAt: Date().addingTimeInterval(-172_800),
+        metadata: NotificationMetadata(matchId: "match-archived", teamName: "FC Test"),
+        createdAt: Date().addingTimeInterval(-259_200)
     )
 }
 #endif

@@ -268,12 +268,12 @@ extension MatchsViewModel {
     func applyPreviewState(
         matches: [MatchItem],
         teams: [SquadTeam],
-        filters: MatchFilters = MatchFilters(),
+        filters: MatchFilters? = nil,
         submittingAvailabilityMatchIds: Set<String> = []
     ) {
         self.matches = matches
         userTeams = teams
-        self.filters = filters
+        self.filters = filters ?? MatchFilters()
         self.submittingAvailabilityMatchIds = submittingAvailabilityMatchIds
         totalItems = matches.count
         currentPage = 1

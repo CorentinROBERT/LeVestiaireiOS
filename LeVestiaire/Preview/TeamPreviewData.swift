@@ -4,7 +4,7 @@
 //
 
 #if DEBUG
-import SwiftUI
+import Foundation
 
 enum TeamPreviewData {
     static let season = "2025-2026"
@@ -241,15 +241,5 @@ enum TeamPreviewData {
             status: .accepted
         )
     ]
-}
-
-extension View {
-    func teamPreviewEnvironment() -> some View {
-        self
-            .environmentObject(LocalizationManager.shared)
-            .environmentObject(MainTabViewModel())
-            .environment(\.locale, LocalizationManager.shared.locale)
-            .background(AuthScreenBackground())
-    }
 }
 #endif

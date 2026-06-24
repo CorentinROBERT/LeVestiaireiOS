@@ -13,7 +13,7 @@ struct NotificationsView: View {
     var body: some View {
         Group {
             if viewModel.isLoading, viewModel.notifications.isEmpty {
-                ProgressView(L10n.loading)
+                ProgressView(L10n.notificationsLoading)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let errorMessage = viewModel.errorMessage, viewModel.notifications.isEmpty {
                 errorState(message: errorMessage)
@@ -23,8 +23,11 @@ struct NotificationsView: View {
         }
         .overlay(alignment: .bottom) {
             if let toastMessage = viewModel.toastMessage {
-                TeamToastBanner(message: toastMessage)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                TeamToastBanner(
+                    message: toastMessage,
+                    style: viewModel.toastIsError ? .error : .success
+                )
+                .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
         .animation(.easeInOut(duration: 0.25), value: viewModel.toastMessage)
@@ -43,34 +46,98 @@ struct NotificationsView: View {
     }
 
     private var notificationsList: some View {
-        ScrollView(showsIndicators: false) {
-            LazyVStack(spacing: 16) {
+        List {
+            Section {
                 filterPicker
+                    .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 12, trailing: 0))
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+            }
 
-                if viewModel.notifications.isEmpty {
+            if viewModel.notifications.isEmpty {
+                Section {
                     emptyState
-                } else {
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                }
+            } else {
+                Section {
                     ForEach(viewModel.notifications) { notification in
-                        NotificationRowView(
-                            notification: notification,
-                            isMarkingRead: viewModel.isMarkingRead(notification.id)
-                        ) {
-                            Task {
-                                await viewModel.handleSelection(for: notification)
-                            }
-                        }
-                        .task {
-                            await viewModel.loadNextPageIfNeeded(currentNotification: notification)
-                        }
+                        notificationRow(for: notification)
+                            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 16, trailing: 0))
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
                     }
 
                     paginationFooter
+                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 8, trailing: 0))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
                 }
             }
-            .padding(20)
         }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .contentMargins(.horizontal, 20, for: .scrollContent)
         .refreshable {
             await viewModel.refreshFromPullToRefresh()
+        }
+    }
+
+    @ViewBuilder
+    private func notificationRow(for notification: AppNotification) -> some View {
+        NotificationRowView(
+            notification: notification,
+            isMarkingRead: viewModel.isMarkingRead(notification.id),
+            isArchiving: viewModel.isArchiving(notification.id)
+        ) {
+            Task {
+                await viewModel.handleSelection(for: notification)
+            }
+        }
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            if viewModel.filter == .archived {
+                Button {
+                    Task {
+                        await viewModel.unarchiveNotification(notification)
+                    }
+                } label: {
+                    Label(L10n.text("unarchiveNotification"), systemImage: "tray.and.arrow.up.fill")
+                }
+                .tint(AppPalette.Primary.main)
+            } else {
+                Button {
+                    Task {
+                        await viewModel.archiveNotification(notification)
+                    }
+                } label: {
+                    Label(L10n.text("archiveNotification"), systemImage: "archivebox.fill")
+                }
+                .tint(AppPalette.Primary.main)
+            }
+        }
+        .contextMenu {
+            if viewModel.filter == .archived {
+                Button {
+                    Task {
+                        await viewModel.unarchiveNotification(notification)
+                    }
+                } label: {
+                    Label(L10n.text("unarchiveNotification"), systemImage: "tray.and.arrow.up")
+                }
+            } else {
+                Button {
+                    Task {
+                        await viewModel.archiveNotification(notification)
+                    }
+                } label: {
+                    Label(L10n.text("archiveNotification"), systemImage: "archivebox")
+                }
+            }
+        }
+        .task {
+            await viewModel.loadNextPageIfNeeded(currentNotification: notification)
         }
     }
 
@@ -90,14 +157,41 @@ struct NotificationsView: View {
 
     private var emptyState: some View {
         TeamEmptyState(
-            icon: viewModel.filter == .unread ? "bell.badge" : "bell.slash",
-            title: viewModel.filter == .unread
-                ? L10n.text("noUnreadNotifications")
-                : L10n.noNotifications,
-            message: viewModel.filter == .unread
-                ? nil
-                : L10n.noNotificationsDescription
+            icon: emptyStateIcon,
+            title: emptyStateTitle,
+            message: emptyStateMessage
         )
+    }
+
+    private var emptyStateIcon: String {
+        switch viewModel.filter {
+        case .all:
+            return "bell.slash"
+        case .unread:
+            return "bell.badge"
+        case .archived:
+            return "archivebox"
+        }
+    }
+
+    private var emptyStateTitle: String {
+        switch viewModel.filter {
+        case .all:
+            return L10n.noNotifications
+        case .unread:
+            return L10n.text("noUnreadNotifications")
+        case .archived:
+            return L10n.text("noArchivedNotifications")
+        }
+    }
+
+    private var emptyStateMessage: String? {
+        switch viewModel.filter {
+        case .all:
+            return L10n.noNotificationsDescription
+        case .unread, .archived:
+            return nil
+        }
     }
 
     private var paginationFooter: some View {
@@ -105,7 +199,7 @@ struct NotificationsView: View {
             if viewModel.isLoadingMore {
                 ProgressView()
             } else if viewModel.showsEndOfListMessage {
-                Text(L10n.scrollToLoadMore)
+                Text(L10n.allNotificationsLoaded)
                     .font(.caption)
                     .foregroundStyle(AppPalette.Neutral.textTertiary)
             }
@@ -147,57 +241,58 @@ struct NotificationsView: View {
 private struct NotificationRowView: View {
     let notification: AppNotification
     let isMarkingRead: Bool
+    let isArchiving: Bool
     let onTap: () -> Void
 
     var body: some View {
-        Button(action: onTap) {
-            UCard(cornerRadius: 16, padding: 16) {
-                HStack(alignment: .top, spacing: 12) {
-                    notificationVisual
+        UCard(cornerRadius: 16, padding: 16) {
+            HStack(alignment: .top, spacing: 12) {
+                notificationVisual
 
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack(alignment: .firstTextBaseline) {
-                            Text(notification.title)
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(AppPalette.Neutral.textPrimary)
-                                .multilineTextAlignment(.leading)
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(alignment: .firstTextBaseline) {
+                        Text(notification.title)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(AppPalette.Neutral.textPrimary)
+                            .multilineTextAlignment(.leading)
 
-                            Spacer(minLength: 8)
+                        Spacer(minLength: 8)
 
-                            HStack(spacing: 6) {
-                                if isMarkingRead {
-                                    ProgressView()
-                                        .controlSize(.small)
-                                } else if !notification.isRead {
-                                    Circle()
-                                        .fill(AppPalette.Secondary.coral)
-                                        .frame(width: 10, height: 10)
-                                        .accessibilityLabel(L10n.text("unread"))
-                                }
-
-                                Text(notification.relativeTimestamp)
-                                    .font(.caption)
-                                    .foregroundStyle(AppPalette.Neutral.textTertiary)
+                        HStack(spacing: 6) {
+                            if isMarkingRead || isArchiving {
+                                ProgressView()
+                                    .controlSize(.small)
+                            } else if !notification.isRead, !notification.isArchived {
+                                Circle()
+                                    .fill(AppPalette.Secondary.coral)
+                                    .frame(width: 10, height: 10)
+                                    .accessibilityLabel(L10n.text("unread"))
                             }
-                        }
 
-                        Text(notification.subtitleLabel)
-                            .font(.caption.weight(.medium))
-                            .foregroundStyle(AppPalette.Primary.muted)
-
-                        if !notification.body.isEmpty {
-                            Text(notification.body)
-                                .font(.subheadline)
-                                .foregroundStyle(AppPalette.Neutral.textSecondary)
-                                .multilineTextAlignment(.leading)
+                            Text(notification.relativeTimestamp)
+                                .font(.caption)
+                                .foregroundStyle(AppPalette.Neutral.textTertiary)
                         }
                     }
+
+                    Text(notification.subtitleLabel)
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(AppPalette.Primary.muted)
+
+                    if !notification.body.isEmpty {
+                        Text(notification.body)
+                            .font(.subheadline)
+                            .foregroundStyle(AppPalette.Neutral.textSecondary)
+                            .multilineTextAlignment(.leading)
+                    }
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .buttonStyle(.plain)
+        .contentShape(Rectangle())
+        .onTapGesture(perform: onTap)
         .opacity(notification.isRead ? 0.88 : 1)
+        .accessibilityAddTraits(.isButton)
     }
 
     @ViewBuilder
@@ -234,6 +329,12 @@ private struct NotificationRowView: View {
 #Preview("Unread filter") {
     NavigationStack {
         NotificationsView(viewModel: .preview(unreadOnly: true))
+            .navigationTitle(L10n.notifications)
+    }
+}
+#Preview("Archived filter") {
+    NavigationStack {
+        NotificationsView(viewModel: .previewArchived())
             .navigationTitle(L10n.notifications)
     }
 }

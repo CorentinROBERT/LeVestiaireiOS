@@ -250,6 +250,14 @@ enum APIEndpoints {
         "/api/v1/notifications/\(id)/read"
     }
 
+    static func notificationArchive(_ id: String) -> String {
+        "/api/v1/notifications/\(id)/archive"
+    }
+
+    static func notificationUnarchive(_ id: String) -> String {
+        "/api/v1/notifications/\(id)/unarchive"
+    }
+
     // MARK: - Sport Profile
 
     static let sportProfile = "/api/v1/sport-profile"

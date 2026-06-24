@@ -11,6 +11,12 @@ struct NotificationFetchCriteria {
     var filter: NotificationFilter = .all
 }
 
+/// Payload JSON passé dans `?criteria=...` sur `GET /api/v1/notifications`.
+private struct NotificationListQueryCriteria: Encodable {
+    var isRead: Bool?
+    var isArchived: Bool?
+}
+
 enum NotificationServiceError: LocalizedError {
     case unauthorized
     case requestFailed(String)
@@ -94,6 +100,32 @@ final class NotificationService {
         )
     }
 
+    @MainActor
+    func archive(notificationId: String) async throws {
+        let (data, response) = try await authorizedRequest(
+            path: APIEndpoints.notificationArchive(notificationId),
+            method: "PATCH"
+        )
+        try validate(
+            response: response,
+            data: data,
+            fallback: L10n.text("errorArchivingNotification")
+        )
+    }
+
+    @MainActor
+    func unarchive(notificationId: String) async throws {
+        let (data, response) = try await authorizedRequest(
+            path: APIEndpoints.notificationUnarchive(notificationId),
+            method: "PATCH"
+        )
+        try validate(
+            response: response,
+            data: data,
+            fallback: L10n.text("errorUnarchivingNotification")
+        )
+    }
+
     private func authorizedRequest(
         path: String,
         method: String,
@@ -120,12 +152,24 @@ final class NotificationService {
             URLQueryItem(name: "limit", value: String(criteria.limit))
         ]
 
-        if criteria.filter == .unread {
-            items.append(URLQueryItem(name: "unreadOnly", value: "true"))
-            items.append(URLQueryItem(name: "isRead", value: "false"))
+        if let apiCriteria = listQueryCriteria(for: criteria.filter),
+           let data = try? JSONEncoder().encode(apiCriteria),
+           let json = String(data: data, encoding: .utf8) {
+            items.append(URLQueryItem(name: "criteria", value: json))
         }
 
         return items
+    }
+
+    private func listQueryCriteria(for filter: NotificationFilter) -> NotificationListQueryCriteria? {
+        switch filter {
+        case .all:
+            return NotificationListQueryCriteria(isRead: nil, isArchived: false)
+        case .unread:
+            return NotificationListQueryCriteria(isRead: false, isArchived: false)
+        case .archived:
+            return NotificationListQueryCriteria(isRead: nil, isArchived: true)
+        }
     }
 
     private func validate(response: HTTPURLResponse, data: Data, fallback: String) throws {

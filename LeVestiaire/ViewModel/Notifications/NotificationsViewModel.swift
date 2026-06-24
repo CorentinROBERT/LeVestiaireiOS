@@ -22,7 +22,9 @@ final class NotificationsViewModel: ObservableObject {
     @Published private(set) var isMarkingAllAsRead = false
     @Published private(set) var errorMessage: String?
     @Published var toastMessage: String?
+    @Published private(set) var toastIsError = false
     @Published private(set) var markingReadNotificationIds: Set<String> = []
+    @Published private(set) var archivingNotificationIds: Set<String> = []
 
     private let notificationService: NotificationService
     private var currentPage = 1
@@ -32,7 +34,7 @@ final class NotificationsViewModel: ObservableObject {
     let pullToRefreshTask = PullToRefreshTask()
 
     var showsMarkAllAsRead: Bool {
-        notifications.contains { !$0.isRead }
+        filter != .archived && notifications.contains { !$0.isRead && !$0.isArchived }
     }
 
     var showsEndOfListMessage: Bool {
@@ -94,13 +96,18 @@ final class NotificationsViewModel: ObservableObject {
 
         do {
             try await notificationService.markAllAsRead()
-            notifications = notifications.map { $0.markingAsRead() }
-            toastMessage = L10n.text("allNotificationsMarkedAsReadSuccess")
+            notifications = notifications.map { notification in
+                notification.isArchived ? notification : notification.markingAsRead()
+            }
+            if filter == .unread {
+                notifications.removeAll { !$0.matches(filter: .unread) }
+            }
+            presentSuccessToast(L10n.text("allNotificationsMarkedAsReadSuccess"))
             await onUnreadCountChanged?()
         } catch let error as NotificationServiceError {
-            toastMessage = error.errorDescription
+            presentErrorToast(error.errorDescription)
         } catch {
-            toastMessage = error.localizedDescription
+            presentErrorToast(error.localizedDescription)
         }
     }
 
@@ -111,8 +118,57 @@ final class NotificationsViewModel: ObservableObject {
         navigate(for: notification)
     }
 
+    func archiveNotification(_ notification: AppNotification) async {
+        guard !archivingNotificationIds.contains(notification.id) else { return }
+
+        archivingNotificationIds.insert(notification.id)
+        defer { archivingNotificationIds.remove(notification.id) }
+
+        do {
+            try await notificationService.archive(notificationId: notification.id)
+            if let index = notifications.firstIndex(where: { $0.id == notification.id }) {
+                let archived = notifications[index].markingAsArchived()
+                if filter == .archived {
+                    notifications[index] = archived
+                } else {
+                    notifications.remove(at: index)
+                }
+            }
+            presentSuccessToast(L10n.text("notificationArchived"))
+            await onUnreadCountChanged?()
+        } catch let error as NotificationServiceError {
+            presentErrorToast(error.errorDescription)
+        } catch {
+            presentErrorToast(error.localizedDescription)
+        }
+    }
+
+    func unarchiveNotification(_ notification: AppNotification) async {
+        guard !archivingNotificationIds.contains(notification.id) else { return }
+
+        archivingNotificationIds.insert(notification.id)
+        defer { archivingNotificationIds.remove(notification.id) }
+
+        do {
+            try await notificationService.unarchive(notificationId: notification.id)
+            if let index = notifications.firstIndex(where: { $0.id == notification.id }) {
+                notifications.remove(at: index)
+            }
+            presentSuccessToast(L10n.text("notificationUnarchived"))
+            await onUnreadCountChanged?()
+        } catch let error as NotificationServiceError {
+            presentErrorToast(error.errorDescription)
+        } catch {
+            presentErrorToast(error.localizedDescription)
+        }
+    }
+
     func isMarkingRead(_ notificationId: String) -> Bool {
         markingReadNotificationIds.contains(notificationId)
+    }
+
+    func isArchiving(_ notificationId: String) -> Bool {
+        archivingNotificationIds.contains(notificationId)
     }
 
     private func markAsRead(_ notification: AppNotification) async {
@@ -124,17 +180,31 @@ final class NotificationsViewModel: ObservableObject {
         do {
             try await notificationService.markAsRead(notificationId: notification.id)
             if let index = notifications.firstIndex(where: { $0.id == notification.id }) {
-                notifications[index] = notifications[index].markingAsRead()
-            }
-            if filter == .unread {
-                notifications.removeAll { $0.id == notification.id }
+                let updated = notifications[index].markingAsRead()
+                if filter == .unread {
+                    notifications.remove(at: index)
+                } else {
+                    notifications[index] = updated
+                }
             }
             await onUnreadCountChanged?()
         } catch let error as NotificationServiceError {
-            toastMessage = error.errorDescription
+            presentErrorToast(error.errorDescription)
         } catch {
-            toastMessage = error.localizedDescription
+            presentErrorToast(error.localizedDescription)
         }
+    }
+
+    private func presentSuccessToast(_ message: String?) {
+        guard let message, !message.isEmpty else { return }
+        toastMessage = message
+        toastIsError = false
+    }
+
+    private func presentErrorToast(_ message: String?) {
+        guard let message, !message.isEmpty else { return }
+        toastMessage = message
+        toastIsError = true
     }
 
     private func navigate(for notification: AppNotification) {
@@ -179,7 +249,9 @@ final class NotificationsViewModel: ObservableObject {
             let response = try await notificationService.fetchNotifications(criteria: criteria)
             guard generation == loadGeneration else { return }
 
-            let fetchedNotifications = response.notifications.filter { !$0.id.isEmpty }
+            let fetchedNotifications = response.notifications
+                .filter { !$0.id.isEmpty }
+                .filter { $0.matches(filter: filter) }
 
             if append {
                 let existingIDs = Set(notifications.map(\.id))
@@ -204,7 +276,7 @@ final class NotificationsViewModel: ObservableObject {
                     errorMessage = error.localizedDescription
                 }
             } else if append {
-                toastMessage = L10n.text("errorLoadingMoreNotifications")
+                presentErrorToast(L10n.text("errorLoadingMoreNotifications"))
             }
         }
     }
@@ -214,9 +286,17 @@ final class NotificationsViewModel: ObservableObject {
 extension NotificationsViewModel {
     static func preview(unreadOnly: Bool = false) -> NotificationsViewModel {
         let viewModel = NotificationsViewModel()
+        viewModel.filter = unreadOnly ? .unread : .all
         viewModel.notifications = unreadOnly
             ? [.previewUnread]
             : [.previewUnread, .previewRead]
+        return viewModel
+    }
+
+    static func previewArchived() -> NotificationsViewModel {
+        let viewModel = NotificationsViewModel()
+        viewModel.filter = .archived
+        viewModel.notifications = [.previewArchived]
         return viewModel
     }
 }
