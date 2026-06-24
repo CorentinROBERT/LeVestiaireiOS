@@ -16,6 +16,29 @@ struct MatchFetchCriteria {
     var toDate: Date?
 }
 
+/// Payload JSON passé dans `?criteria=...` sur `GET /api/v1/matches`.
+private struct MatchListQueryCriteria: Encodable {
+    var teamId: String?
+    var status: StatusFilter?
+    var from: String?
+    var to: String?
+
+    enum StatusFilter: Encodable {
+        case single(String)
+        case multiple([String])
+
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.singleValueContainer()
+            switch self {
+            case .single(let value):
+                try container.encode(value)
+            case .multiple(let values):
+                try container.encode(values)
+            }
+        }
+    }
+}
+
 enum MatchServiceError: LocalizedError {
     case unauthorized
     case availabilityClosed
@@ -396,33 +419,33 @@ final class MatchService {
             URLQueryItem(name: "limit", value: String(criteria.limit))
         ]
 
-        for status in criteria.statuses.sorted(by: { $0.rawValue < $1.rawValue }) {
-            items.append(URLQueryItem(name: "status", value: status.rawValue))
-        }
-
-        for teamId in criteria.teamIds.sorted() {
-            items.append(URLQueryItem(name: "teamId", value: teamId))
-        }
-
-        if let fromDate = criteria.fromDate {
-            items.append(
-                URLQueryItem(
-                    name: "fromDate",
-                    value: Self.apiDateFormatter.string(from: fromDate)
-                )
-            )
-        }
-
-        if let toDate = criteria.toDate {
-            items.append(
-                URLQueryItem(
-                    name: "toDate",
-                    value: Self.apiDateFormatter.string(from: toDate)
-                )
-            )
+        if let apiCriteria = matchListQueryCriteria(from: criteria),
+           let data = try? JSONEncoder().encode(apiCriteria),
+           let json = String(data: data, encoding: .utf8) {
+            items.append(URLQueryItem(name: "criteria", value: json))
         }
 
         return items
+    }
+
+    private func matchListQueryCriteria(from criteria: MatchFetchCriteria) -> MatchListQueryCriteria? {
+        let sortedStatuses = criteria.statuses.sorted { $0.rawValue < $1.rawValue }.map(\.rawValue)
+        let status: MatchListQueryCriteria.StatusFilter? = switch sortedStatuses.count {
+        case 0: nil
+        case 1: .single(sortedStatuses[0])
+        default: .multiple(sortedStatuses)
+        }
+
+        // L'API n'accepte qu'un seul teamId dans criteria ; le multi-équipe est affiné côté client.
+        let teamId = criteria.teamIds.count == 1 ? criteria.teamIds.first : nil
+        let from = criteria.fromDate.map { Self.apiDateFormatter.string(from: $0) }
+        let to = criteria.toDate.map { Self.apiDateFormatter.string(from: $0) }
+
+        guard status != nil || teamId != nil || from != nil || to != nil else {
+            return nil
+        }
+
+        return MatchListQueryCriteria(teamId: teamId, status: status, from: from, to: to)
     }
 
     private func validate(response: HTTPURLResponse, data: Data, fallback: String) throws {

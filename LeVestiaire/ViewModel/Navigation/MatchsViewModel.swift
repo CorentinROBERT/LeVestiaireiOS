@@ -232,7 +232,9 @@ final class MatchsViewModel: ObservableObject {
             let response = try await matchService.fetchMatches(criteria: criteria)
             guard generation == loadGeneration else { return }
 
-            let fetchedMatches = response.matches.filter { !$0.id.isEmpty }
+            let fetchedMatches = response.matches
+                .filter { !$0.id.isEmpty }
+                .filter { filters.includes($0) }
 
             if append {
                 let existingIDs = Set(matches.map(\.id))
