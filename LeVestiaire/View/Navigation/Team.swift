@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct Team: View {
+    @EnvironmentObject private var mainTabViewModel: MainTabViewModel
     @StateObject private var viewModel: TeamViewModel
     @State private var selectedTab: TeamContentTab = .roster
 
@@ -85,6 +86,13 @@ struct Team: View {
                 }
             }
         }
+        .onChange(of: mainTabViewModel.pendingTeamId) { _, teamId in
+            guard let teamId, !teamId.isEmpty else { return }
+            Task {
+                await viewModel.selectTeamFromNotification(id: teamId)
+                mainTabViewModel.clearPendingTeamNavigation()
+            }
+        }
         .refreshable {
             await viewModel.refreshFromPullToRefresh(currentTab: selectedTab)
         }
@@ -105,6 +113,8 @@ struct Team: View {
                 TeamSettingsSheet(viewModel: viewModel)
             case .invitePlayer:
                 InvitePlayerSheet(viewModel: viewModel)
+            case .shareTeamInvite:
+                TeamInviteShareSheet(viewModel: viewModel)
             case .addGuest:
                 AddGuestSheet(viewModel: viewModel)
             case .compositionEditor:

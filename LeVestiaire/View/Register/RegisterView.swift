@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct RegisterView: View {
+    @EnvironmentObject private var teamInviteCoordinator: TeamInviteCoordinator
     @StateObject private var viewModel = RegisterViewModel()
     @State private var presentedLegalDocument: LegalDocument?
 
@@ -23,6 +24,11 @@ struct RegisterView: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
                     header
+
+                    if let teamName = teamInviteCoordinator.pendingInviteTeamName {
+                        TeamInviteBanner(teamName: teamName)
+                    }
+
                     formCard
                     legalSection
                     submitButton
@@ -220,5 +226,6 @@ struct RegisterView: View {
 #Preview {
     NavigationStack {
         RegisterView()
+            .environmentObject(TeamInviteCoordinator.shared)
     }
 }

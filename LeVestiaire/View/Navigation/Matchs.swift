@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct Matchs: View {
+    @EnvironmentObject private var mainTabViewModel: MainTabViewModel
     @StateObject private var viewModel = MatchsViewModel()
     @State private var openedMatchDetail: MatchDetailRoute?
 
@@ -75,6 +76,11 @@ struct Matchs: View {
         }
         .task {
             await viewModel.initialize()
+        }
+        .onChange(of: mainTabViewModel.pendingMatchId) { _, matchId in
+            guard let matchId, !matchId.isEmpty else { return }
+            openedMatchDetail = MatchDetailRoute(id: matchId)
+            mainTabViewModel.clearPendingMatchNavigation()
         }
     }
 
@@ -391,5 +397,6 @@ struct Matchs: View {
             Matchs()
         }
         .navigationTitle(L10n.matches)
+        .environmentObject(MainTabViewModel())
     }
 }

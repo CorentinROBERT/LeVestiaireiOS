@@ -22,6 +22,7 @@ final class EmailVerificationViewModel: ObservableObject {
     private var resendCooldownTask: Task<Void, Never>?
     private let authService: AuthService
     private let pendingCredentialsStore: PendingAuthCredentialsStore
+    private let teamInviteCoordinator: TeamInviteCoordinator
 
     var canResendEmail: Bool {
         resendCooldownRemaining == 0 && !isResending
@@ -30,18 +31,21 @@ final class EmailVerificationViewModel: ObservableObject {
     init(
         email: String,
         authService: AuthService,
-        pendingCredentialsStore: PendingAuthCredentialsStore
+        pendingCredentialsStore: PendingAuthCredentialsStore,
+        teamInviteCoordinator: TeamInviteCoordinator
     ) {
         self.email = email
         self.authService = authService
         self.pendingCredentialsStore = pendingCredentialsStore
+        self.teamInviteCoordinator = teamInviteCoordinator
     }
 
     convenience init(email: String) {
         self.init(
             email: email,
             authService: AuthService.shared,
-            pendingCredentialsStore: PendingAuthCredentialsStore.shared
+            pendingCredentialsStore: PendingAuthCredentialsStore.shared,
+            teamInviteCoordinator: .shared
         )
     }
 
@@ -89,6 +93,7 @@ final class EmailVerificationViewModel: ObservableObject {
 
     private func signInAfterVerification() async -> Bool {
         if authService.isAuthenticated {
+            _ = await teamInviteCoordinator.joinPendingTeamIfNeeded()
             return true
         }
 
@@ -102,6 +107,7 @@ final class EmailVerificationViewModel: ObservableObject {
 
         if response.success && response.hasValidData {
             pendingCredentialsStore.clear()
+            _ = await teamInviteCoordinator.joinPendingTeamIfNeeded()
             return true
         }
 

@@ -10,6 +10,7 @@ import FirebaseCrashlytics
 
 struct DeveloperView: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var authService: AuthService
     @StateObject private var viewModel = DeveloperViewModel()
 
     var body: some View {
@@ -30,6 +31,10 @@ struct DeveloperView: View {
                         apiEnvironmentCard
 
                         crashlyticsCard
+
+                        if authService.isAuthenticated {
+                            pushNotificationsCard
+                        }
 
                         developerCard(
                             title: L10n.informationTitle,
@@ -97,6 +102,67 @@ struct DeveloperView: View {
                 .opacity(viewModel.canTestAPI ? 1 : 0.5)
 
                 apiTestResultView
+            }
+        }
+    }
+
+    private var pushNotificationsCard: some View {
+        developerCard(
+            title: L10n.text("developerPushTitle"),
+            icon: "bell.badge.fill",
+            tint: AppPalette.Secondary.coral
+        ) {
+            VStack(alignment: .leading, spacing: 16) {
+                Text(L10n.text("developerPushHint"))
+                    .font(.subheadline)
+                    .foregroundStyle(AppPalette.Neutral.textSecondary)
+
+                UButton(
+                    text: viewModel.pushTestState == .loading
+                        ? L10n.text("sendingTestNotification")
+                        : L10n.text("developerTestPushButton"),
+                    textColor: AppPalette.Primary.onMain,
+                    backgroundColor: AppPalette.Primary.main,
+                    cornerRadius: 25,
+                    isFullWidth: true,
+                    leadingIcon: viewModel.pushTestState == .loading ? nil : "paperplane.fill",
+                    onPress: viewModel.sendTestPushNotification
+                )
+                .disabled(!viewModel.canSendTestPush)
+                .opacity(viewModel.canSendTestPush ? 1 : 0.5)
+
+                pushTestResultView
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var pushTestResultView: some View {
+        switch viewModel.pushTestState {
+        case .idle:
+            EmptyView()
+        case .loading:
+            HStack(spacing: 10) {
+                ProgressView()
+                Text(L10n.text("sendingTestNotification"))
+                    .font(.subheadline)
+                    .foregroundStyle(AppPalette.Neutral.textSecondary)
+            }
+        case .success(let message):
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(AppPalette.Semantic.success)
+                Text(message)
+                    .font(.subheadline)
+                    .foregroundStyle(AppPalette.Neutral.textPrimary)
+            }
+        case .failure(let message):
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: "xmark.circle.fill")
+                    .foregroundStyle(AppPalette.Semantic.error)
+                Text(message)
+                    .font(.subheadline)
+                    .foregroundStyle(AppPalette.Neutral.textPrimary)
             }
         }
     }
@@ -199,4 +265,5 @@ struct DeveloperView: View {
 
 #Preview {
     DeveloperView()
+        .environmentObject(AuthService.shared)
 }

@@ -9,6 +9,7 @@ enum TeamSheet: Identifiable, Equatable {
     case createTeam
     case settings
     case invitePlayer
+    case shareTeamInvite
     case addGuest
     case compositionEditor(TeamComposition?)
 
@@ -20,6 +21,8 @@ enum TeamSheet: Identifiable, Equatable {
             return "settings"
         case .invitePlayer:
             return "invitePlayer"
+        case .shareTeamInvite:
+            return "shareTeamInvite"
         case .addGuest:
             return "addGuest"
         case .compositionEditor(let composition):

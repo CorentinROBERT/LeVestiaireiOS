@@ -26,20 +26,31 @@ final class RegisterViewModel: ObservableObject {
 
     private let authService: AuthService
     private let pendingCredentialsStore: PendingAuthCredentialsStore
+    private let teamInviteCoordinator: TeamInviteCoordinator
+
+    var pendingInviteTeamName: String? {
+        teamInviteCoordinator.pendingInviteTeamName
+    }
 
     var trimmedEmail: String {
         email.trimmed
     }
 
-    init(authService: AuthService, pendingCredentialsStore: PendingAuthCredentialsStore) {
+    init(
+        authService: AuthService,
+        pendingCredentialsStore: PendingAuthCredentialsStore,
+        teamInviteCoordinator: TeamInviteCoordinator
+    ) {
         self.authService = authService
         self.pendingCredentialsStore = pendingCredentialsStore
+        self.teamInviteCoordinator = teamInviteCoordinator
     }
 
     convenience init() {
         self.init(
             authService: AuthService.shared,
-            pendingCredentialsStore: PendingAuthCredentialsStore.shared
+            pendingCredentialsStore: PendingAuthCredentialsStore.shared,
+            teamInviteCoordinator: .shared
         )
         selectedLanguage = LocalizationManager.shared.language
     }
@@ -95,7 +106,8 @@ final class RegisterViewModel: ObservableObject {
                 firstName: firstName.trimmed,
                 lastName: lastName.trimmed,
                 birthDate: birthDate,
-                language: selectedLanguage.rawValue
+                language: selectedLanguage.rawValue,
+                teamInviteCode: teamInviteCoordinator.pendingCode
             )
 
             if response.success {

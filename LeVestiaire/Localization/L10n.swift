@@ -36,6 +36,8 @@ enum L10n {
     static var close: String { text("close") }
     static var noNotifications: String { text("noNotifications") }
     static var noNotificationsDescription: String { text("noNotificationsDescription") }
+    static var markAllAsRead: String { text("markAllAsRead") }
+    static var justNow: String { text("justNow") }
 
     // MARK: - Matchs
 

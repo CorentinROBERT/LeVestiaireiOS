@@ -8,7 +8,9 @@
 import SwiftUI
 
 struct Login: View {
+    @EnvironmentObject private var teamInviteCoordinator: TeamInviteCoordinator
     @StateObject private var viewModel = LoginViewModel()
+    @StateObject private var developerAccess = DeveloperAccessViewModel()
     @State private var navigationPath = NavigationPath()
     @FocusState private var focusedField: Int?
 
@@ -39,6 +41,11 @@ struct Login: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 28) {
                     header
+
+                    if let teamName = teamInviteCoordinator.pendingInviteTeamName {
+                        TeamInviteBanner(teamName: teamName)
+                    }
+
                     formCard
                     secondaryActions
                 }
@@ -57,25 +64,7 @@ struct Login: View {
             .safeAreaPadding(.bottom, 10)
         }
         .ignoresSafeArea()
-        .alert(L10n.developerMode, isPresented: $viewModel.showDeveloperPasswordDialog) {
-            SecureField(L10n.password, text: $viewModel.developerPasswordInput)
-            Button(L10n.validate) {
-                viewModel.validateDeveloperPassword()
-            }
-            Button(L10n.cancel, role: .cancel) {
-                viewModel.cancelDeveloperPassword()
-            }
-        } message: {
-            Text(L10n.enterDeveloperPassword)
-        }
-        .alert(L10n.accessRefused, isPresented: $viewModel.showDeveloperPasswordError) {
-            Button(L10n.ok, role: .cancel) {}
-        } message: {
-            Text(L10n.incorrectPassword)
-        }
-        .fullScreenCover(isPresented: $viewModel.showDeveloperPage) {
-            DeveloperView()
-        }
+        .developerAccess(developerAccess)
         .navigationDestination(isPresented: $viewModel.showEmailVerification) {
             EmailVerificationView(email: viewModel.trimmedEmail)
         }
@@ -101,7 +90,7 @@ struct Login: View {
                 .glassEffect(.regular, in: .circle)
                 .contentShape(Circle())
                 .onTapGesture {
-                    viewModel.registerDeveloperTap()
+                    developerAccess.registerTap()
                 }
 
             UText(text: L10n.loginHeroTitle, type: .title)
@@ -196,4 +185,5 @@ struct Login: View {
 #Preview {
     Login()
         .environmentObject(AuthService.shared)
+        .environmentObject(TeamInviteCoordinator.shared)
 }

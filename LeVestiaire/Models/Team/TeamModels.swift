@@ -543,6 +543,66 @@ struct InvitePlayerRequest: Encodable {
     let lastName: String?
 }
 
+struct JoinTeamRequest: Encodable {
+    let teamInviteCode: String
+}
+
+struct TeamInviteLink: Decodable, Equatable {
+    let teamId: String?
+    let teamName: String?
+    let code: String?
+    let shareUrl: String?
+    let expiresAt: String?
+    let isExpired: Bool?
+    let previousCodeRevoked: Bool?
+}
+
+struct TeamInviteValidation: Decodable, Equatable {
+    let code: String?
+    let isValid: Bool?
+    let teamId: String?
+    let teamName: String?
+    let expiresAt: String?
+    let reason: String?
+}
+
+struct JoinTeamResponse: Decodable {
+    let success: Bool?
+    let message: String?
+    let error: String?
+    let team: SquadTeam?
+    let joinedAt: String?
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        success = try container.decodeIfPresent(Bool.self, forKey: .success)
+        message = try container.decodeIfPresent(String.self, forKey: .message)
+        error = try container.decodeIfPresent(String.self, forKey: .error)
+
+        if let nested = try? container.decode(JoinTeamData.self, forKey: .data) {
+            team = nested.team
+            joinedAt = nested.joinedAt
+        } else {
+            team = try container.decodeIfPresent(SquadTeam.self, forKey: .team)
+            joinedAt = try container.decodeIfPresent(String.self, forKey: .joinedAt)
+        }
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case success
+        case message
+        case error
+        case team
+        case data
+        case joinedAt
+    }
+}
+
+private struct JoinTeamData: Decodable {
+    let team: SquadTeam?
+    let joinedAt: String?
+}
+
 struct CreateGuestRequest: Encodable {
     let firstName: String
     let lastName: String?

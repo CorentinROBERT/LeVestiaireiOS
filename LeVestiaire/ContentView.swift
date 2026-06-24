@@ -10,6 +10,7 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject private var authService: AuthService
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @EnvironmentObject private var teamInviteCoordinator: TeamInviteCoordinator
     @StateObject private var viewModel = ContentViewModel()
     @ObservedObject private var remoteSettings = RemoteSettingsService.shared
 
@@ -38,6 +39,28 @@ struct ContentView: View {
         .animation(.easeInOut, value: remoteSettings.requiresForceUpdate)
         .task {
             remoteSettings.start()
+        }
+        .task(id: authService.isBootstrapComplete) {
+            await handlePendingTeamInviteIfNeeded()
+        }
+        .onChange(of: teamInviteCoordinator.hasPendingCode) { _, hasCode in
+            guard hasCode else { return }
+            viewModel.completeOnboarding()
+            Task { await teamInviteCoordinator.validatePendingCode() }
+        }
+    }
+
+    private func handlePendingTeamInviteIfNeeded() async {
+        guard authService.isBootstrapComplete, teamInviteCoordinator.hasPendingCode else { return }
+
+        if !authService.isAuthenticated {
+            viewModel.completeOnboarding()
+        }
+
+        await teamInviteCoordinator.validatePendingCode()
+
+        if authService.isAuthenticated {
+            _ = await teamInviteCoordinator.joinPendingTeamIfNeeded()
         }
     }
 
@@ -107,4 +130,5 @@ struct ContentView: View {
     ContentView()
         .environmentObject(AuthService.shared)
         .environmentObject(LocalizationManager.shared)
+        .environmentObject(TeamInviteCoordinator.shared)
 }

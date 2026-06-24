@@ -43,6 +43,17 @@ extension TeamViewModel {
         await refreshSelectedTeamContent()
     }
 
+    func selectTeamFromNotification(id: String) async {
+        if !teams.contains(where: { $0.id == id }) {
+            await loadInitialData()
+        }
+
+        guard teams.contains(where: { $0.id == id }) else { return }
+
+        selectedTeamId = id
+        await onTeamSelectionChanged()
+    }
+
     func loadTabContentIfNeeded(_ tab: TeamContentTab, force: Bool = false) async {
         guard !selectedTeamId.isEmpty else { return }
 

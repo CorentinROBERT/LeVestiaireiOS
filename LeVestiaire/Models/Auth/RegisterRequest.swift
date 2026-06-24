@@ -14,6 +14,7 @@ struct RegisterRequest: Encodable, Equatable {
     let lastName: String
     let birthdate: String?
     let language: String?
+    let teamInviteCode: String?
 
     init(
         email: String,
@@ -21,12 +22,14 @@ struct RegisterRequest: Encodable, Equatable {
         firstName: String,
         lastName: String,
         birthDate: Date? = nil,
-        language: String? = nil
+        language: String? = nil,
+        teamInviteCode: String? = nil
     ) {
         self.email = email
         self.password = password
         self.firstName = firstName
         self.lastName = lastName
+        self.teamInviteCode = teamInviteCode
 
         if let birthDate {
             self.birthdate = Self.birthdateFormatter.string(from: birthDate)

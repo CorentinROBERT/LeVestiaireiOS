@@ -9,6 +9,7 @@ import SwiftUI
 
 struct Profile: View {
     @StateObject private var viewModel = ProfileViewModel()
+    @StateObject private var developerAccess = DeveloperAccessViewModel()
     @State private var isStatsExpanded = false
 
     var body: some View {
@@ -72,6 +73,7 @@ struct Profile: View {
         } message: {
             Text(viewModel.alertMessage ?? "")
         }
+        .developerAccess(developerAccess)
     }
 
     private var avatarSection: some View {
@@ -301,6 +303,10 @@ struct Profile: View {
             .font(.caption)
             .foregroundStyle(AppPalette.Neutral.textTertiary)
             .frame(maxWidth: .infinity)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                developerAccess.registerTap()
+            }
     }
 
     private var accountDeletionBanner: some View {

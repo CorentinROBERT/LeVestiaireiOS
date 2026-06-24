@@ -157,7 +157,8 @@ final class AuthService: ObservableObject {
         firstName: String,
         lastName: String,
         birthDate: Date? = nil,
-        language: String? = nil
+        language: String? = nil,
+        teamInviteCode: String? = nil
     ) async -> LoginResponse {
         do {
             let payload = RegisterRequest(
@@ -166,7 +167,8 @@ final class AuthService: ObservableObject {
                 firstName: firstName,
                 lastName: lastName,
                 birthDate: birthDate,
-                language: language
+                language: language,
+                teamInviteCode: teamInviteCode
             )
             let body = try JSONEncoder().encode(payload)
             let (data, response) = try await client.request(

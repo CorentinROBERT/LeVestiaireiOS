@@ -30,6 +30,12 @@ struct TeamSettingsSheet: View {
                                 viewModel.invitationsViewModel.presentInvitePlayerSheet()
                             }
                         }
+                        Button(L10n.text("shareTeamInviteLink")) {
+                            dismiss()
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                                viewModel.presentShareTeamInviteSheet()
+                            }
+                        }
                     }
                 }
 

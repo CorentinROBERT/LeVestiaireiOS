@@ -15,17 +15,27 @@ enum APITestState: Equatable {
     case failure(message: String)
 }
 
+enum PushTestState: Equatable {
+    case idle
+    case loading
+    case success(message: String)
+    case failure(message: String)
+}
+
 @MainActor
 final class DeveloperViewModel: ObservableObject {
     @Published var selectedEnvironment: APIEnvironment
     @Published var customBaseURL: String
     @Published var apiTestState: APITestState = .idle
+    @Published var pushTestState: PushTestState = .idle
 
     private let configuration: APIConfiguration
+    private let pushNotificationManager: PushNotificationManager
     private var cancellables = Set<AnyCancellable>()
 
-    init(configuration: APIConfiguration) {
+    init(configuration: APIConfiguration, pushNotificationManager: PushNotificationManager) {
         self.configuration = configuration
+        self.pushNotificationManager = pushNotificationManager
         self.selectedEnvironment = configuration.environment
         self.customBaseURL = configuration.customBaseURL
 
@@ -47,7 +57,10 @@ final class DeveloperViewModel: ObservableObject {
     }
 
     convenience init() {
-        self.init(configuration: APIConfiguration.shared)
+        self.init(
+            configuration: APIConfiguration.shared,
+            pushNotificationManager: .shared
+        )
     }
 
     var resolvedBaseURL: String {
@@ -72,6 +85,10 @@ final class DeveloperViewModel: ObservableObject {
 
     var canTestAPI: Bool {
         healthCheckURL != nil && apiTestState != .loading
+    }
+
+    var canSendTestPush: Bool {
+        pushTestState != .loading
     }
 
     func testAPI() {
@@ -104,5 +121,20 @@ final class DeveloperViewModel: ObservableObject {
 
     private func resetAPITestState() {
         apiTestState = .idle
+    }
+
+    func sendTestPushNotification() {
+        guard canSendTestPush else { return }
+
+        pushTestState = .loading
+
+        Task {
+            do {
+                try await pushNotificationManager.sendTestPushNotification()
+                pushTestState = .success(message: L10n.text("testPushNotificationSent"))
+            } catch {
+                pushTestState = .failure(message: error.localizedDescription)
+            }
+        }
     }
 }

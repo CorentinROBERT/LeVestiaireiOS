@@ -81,6 +81,16 @@ enum APIEndpoints {
         "/api/v1/teams/\(teamId)/invite"
     }
 
+    static func teamInviteRegenerate(_ teamId: String) -> String {
+        "/api/v1/teams/\(teamId)/invite/regenerate"
+    }
+
+    static func teamInviteByCode(_ code: String) -> String {
+        "/api/v1/teams/invite/\(code)"
+    }
+
+    static let teamsJoin = "/api/v1/teams/join"
+
     static func teamInvitations(_ teamId: String) -> String {
         "/api/v1/teams/\(teamId)/invitations"
     }

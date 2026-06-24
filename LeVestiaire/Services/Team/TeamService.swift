@@ -199,6 +199,57 @@ final class TeamService {
     }
 
     @MainActor
+    func fetchTeamInviteLink(teamId: String) async throws -> TeamInviteLink {
+        let (data, response) = try await authorizedRequest(
+            path: APIEndpoints.teamInvite(teamId),
+            method: "GET"
+        )
+        try validate(response: response, data: data, fallback: L10n.text("errorTeamLoading"))
+        return try APIResponseDecoder.decodePayload(TeamInviteLink.self, from: data)
+    }
+
+    @MainActor
+    func regenerateTeamInviteLink(teamId: String) async throws -> TeamInviteLink {
+        let (data, response) = try await authorizedRequest(
+            path: APIEndpoints.teamInviteRegenerate(teamId),
+            method: "POST",
+            body: Data()
+        )
+        try validate(response: response, data: data, fallback: L10n.text("errorTeamUpdate"))
+        return try APIResponseDecoder.decodePayload(TeamInviteLink.self, from: data)
+    }
+
+    @MainActor
+    func validateTeamInviteCode(_ code: String) async throws -> TeamInviteValidation {
+        let (data, response) = try await client.request(
+            path: APIEndpoints.teamInviteByCode(code),
+            method: "GET"
+        )
+        try validate(response: response, data: data, fallback: L10n.text("errorTeamLoading"))
+        return try APIResponseDecoder.decodePayload(TeamInviteValidation.self, from: data)
+    }
+
+    /// Rejoint une équipe via code d'invitation.
+    /// API : `POST /api/v1/teams/join` avec body `{ "teamInviteCode": "..." }`.
+    @MainActor
+    func joinTeam(inviteCode: String) async throws -> SquadTeam {
+        let body = try JSONEncoder().encode(JoinTeamRequest(teamInviteCode: inviteCode))
+        let (data, response) = try await authorizedRequest(
+            path: APIEndpoints.teamsJoin,
+            method: "POST",
+            body: body
+        )
+        try validate(response: response, data: data, fallback: L10n.text("errorTeamUpdate"))
+
+        if let joinResponse = try? APIResponseDecoder.decode(JoinTeamResponse.self, from: data),
+           let team = joinResponse.team {
+            return team
+        }
+
+        return try TeamDecoding.decodeTeam(from: data)
+    }
+
+    @MainActor
     func addGuest(teamId: String, request: CreateGuestRequest) async throws {
         let body = try JSONEncoder().encode(request)
         let (data, response) = try await authorizedRequest(

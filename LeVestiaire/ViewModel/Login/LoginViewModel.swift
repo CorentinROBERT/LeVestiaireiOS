@@ -10,29 +10,23 @@ import Foundation
 
 @MainActor
 final class LoginViewModel: ObservableObject {
-    private static let developerAccessPassword = "asdescopains"
-    private static let developerTapThreshold = 5
-    private static let developerTapResetInterval: TimeInterval = 2
-
     @Published var email = ""
     @Published var password = ""
     @Published var isPasswordVisible = false
-    @Published var showDeveloperPasswordDialog = false
-    @Published var showDeveloperPasswordError = false
-    @Published var showDeveloperPage = false
-    @Published var developerPasswordInput = ""
     @Published var validationMessage: String?
     @Published var isLoading = false
     @Published var showEmailVerification = false
-
-    private var developerTapCount = 0
-    private var lastDeveloperTapDate: Date?
 
     private var cancellables = Set<AnyCancellable>()
     private let authService: AuthService
     private let savedEmailStore: SavedLoginEmailStore
     private let pendingCredentialsStore: PendingAuthCredentialsStore
     private let biometricStore: BiometricAuthStore
+    private let teamInviteCoordinator: TeamInviteCoordinator
+
+    var pendingInviteTeamName: String? {
+        teamInviteCoordinator.pendingInviteTeamName
+    }
 
     var trimmedEmail: String {
         email.trimmed
@@ -42,12 +36,14 @@ final class LoginViewModel: ObservableObject {
         authService: AuthService,
         savedEmailStore: SavedLoginEmailStore,
         pendingCredentialsStore: PendingAuthCredentialsStore,
-        biometricStore: BiometricAuthStore
+        biometricStore: BiometricAuthStore,
+        teamInviteCoordinator: TeamInviteCoordinator
     ) {
         self.authService = authService
         self.savedEmailStore = savedEmailStore
         self.pendingCredentialsStore = pendingCredentialsStore
         self.biometricStore = biometricStore
+        self.teamInviteCoordinator = teamInviteCoordinator
         self.email = savedEmailStore.load() ?? ""
 
         authService.objectWillChange
@@ -63,48 +59,13 @@ final class LoginViewModel: ObservableObject {
             authService: AuthService.shared,
             savedEmailStore: SavedLoginEmailStore.shared,
             pendingCredentialsStore: PendingAuthCredentialsStore.shared,
-            biometricStore: BiometricAuthStore.shared
+            biometricStore: BiometricAuthStore.shared,
+            teamInviteCoordinator: .shared
         )
     }
 
     var requiresPasswordReauthentication: Bool {
         authService.requiresPasswordReauthentication
-    }
-
-    func registerDeveloperTap() {
-        let now = Date()
-
-        if let lastTap = lastDeveloperTapDate,
-           now.timeIntervalSince(lastTap) > Self.developerTapResetInterval {
-            developerTapCount = 0
-        }
-
-        lastDeveloperTapDate = now
-        developerTapCount += 1
-
-        guard developerTapCount >= Self.developerTapThreshold else { return }
-
-        developerTapCount = 0
-        developerPasswordInput = ""
-        showDeveloperPasswordDialog = true
-    }
-
-    func validateDeveloperPassword() {
-        guard developerPasswordInput == Self.developerAccessPassword else {
-            showDeveloperPasswordDialog = false
-            developerPasswordInput = ""
-            showDeveloperPasswordError = true
-            return
-        }
-
-        showDeveloperPasswordDialog = false
-        developerPasswordInput = ""
-        showDeveloperPage = true
-    }
-
-    func cancelDeveloperPassword() {
-        developerPasswordInput = ""
-        showDeveloperPasswordDialog = false
     }
 
     func login() {
@@ -133,6 +94,7 @@ final class LoginViewModel: ObservableObject {
                     validationMessage = biometricStore.lastErrorMessage ?? L10n.loginFailed
                     return
                 }
+                _ = await teamInviteCoordinator.joinPendingTeamIfNeeded()
                 return
             }
             if response.requiresVerification == true || response.isEmailVerified == false {

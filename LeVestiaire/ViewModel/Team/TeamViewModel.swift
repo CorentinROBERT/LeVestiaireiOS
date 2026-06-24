@@ -22,6 +22,10 @@ final class TeamViewModel: ObservableObject {
     @Published var toastMessage: String?
     @Published var errorMessage: String?
 
+    @Published var teamInviteLink: TeamInviteLink?
+    @Published var isLoadingTeamInviteLink = false
+    @Published var teamInviteLinkError: String?
+
     let pullToRefreshTask = PullToRefreshTask()
 
     let teamService: TeamService
