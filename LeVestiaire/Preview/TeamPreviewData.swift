@@ -241,5 +241,70 @@ enum TeamPreviewData {
             status: .accepted
         )
     ]
+
+    static let insights = TeamSeasonInsightsPayload(
+        teamId: "team-1",
+        season: season,
+        form: TeamFormInsights(
+            results: [.win, .win, .draw, .loss, .win],
+            points: 10,
+            goalsFor: 12,
+            goalsAgainst: 8
+        ),
+        streak: TeamStreakInsights(type: .unbeaten, count: 2),
+        seasonSummary: TeamSeasonSummaryInsights(
+            played: 12,
+            wins: 7,
+            draws: 2,
+            losses: 3,
+            goalsFor: 28,
+            goalsAgainst: 16,
+            points: 23
+        ),
+        playerOfMoment: TeamPlayerOfMomentInsights(
+            player: TeamInsightsPlayerRef(id: "user-3", firstName: "Hugo", lastName: "Petit"),
+            goals: 4,
+            assists: 2,
+            scope: .recent
+        ),
+        availability: TeamAvailabilityInsights(
+            averageResponseRate: 0.82,
+            nextMatchResponseRate: 0.65
+        ),
+        nextMatch: TeamNextMatchInsights(
+            match: TeamInsightsMatchPreview(
+                id: "preview-next-match",
+                title: "vs Olympique Nord",
+                opponentTeam: "Olympique Nord",
+                date: Calendar.current.date(byAdding: .day, value: 3, to: Date()),
+                startTime: "20:30",
+                status: .upcoming
+            ),
+            availability: TeamNextMatchAvailabilitySummary(
+                available: 9,
+                absent: 2,
+                unknown: 3
+            )
+        )
+    )
+
+    static let duos = TeamSeasonDuosPayload(
+        teamId: "team-1",
+        season: season,
+        duos: [
+            TeamSeasonDuoEntry(
+                playerA: TeamInsightsPlayerRef(id: "user-3", firstName: "Hugo", lastName: "Petit"),
+                playerB: TeamInsightsPlayerRef(id: "user-4", firstName: "Léa", lastName: "Moreau"),
+                goalsTogether: 5,
+                totalCombos: 4
+            ),
+            TeamSeasonDuoEntry(
+                playerA: TeamInsightsPlayerRef(id: "user-2", firstName: "Emma", lastName: "Bernard"),
+                playerB: TeamInsightsPlayerRef(id: "user-3", firstName: "Hugo", lastName: "Petit"),
+                goalsTogether: 3,
+                totalCombos: 3
+            )
+        ]
+    )
 }
 #endif

@@ -43,8 +43,13 @@ extension MatchDetailViewModel {
 
         if force {
             availabilityViewModel.availabilityBoardSummary = match.availabilitySummary
-            await availabilityViewModel.refreshBoard(force: true)
-        } else if showsAvailabilityManagement {
+            if showsAvailabilityManagement {
+                await availabilityViewModel.refreshBoard(force: true)
+            }
+            if availabilityViewModel.showsPresentMembersList {
+                await availabilityViewModel.refreshPresentMembers(silent: true)
+            }
+        } else {
             await availabilityViewModel.loadIfNeeded()
         }
 

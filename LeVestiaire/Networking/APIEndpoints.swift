@@ -173,6 +173,10 @@ enum APIEndpoints {
         "/api/v1/matches/\(matchId)/availability/me"
     }
 
+    static func matchAvailabilityPresent(_ matchId: String) -> String {
+        "/api/v1/matches/\(matchId)/availability/present"
+    }
+
     static func matchSelectablePlayers(_ matchId: String) -> String {
         "/api/v1/matches/\(matchId)/selectable-players"
     }
@@ -290,6 +294,14 @@ enum APIEndpoints {
 
     static func teamSeasonRankings(teamId: String, season: String) -> String {
         "/api/v1/teams/\(teamId)/seasons/\(season)/rankings"
+    }
+
+    static func teamSeasonInsights(teamId: String, season: String) -> String {
+        "/api/v1/teams/\(teamId)/seasons/\(season)/insights"
+    }
+
+    static func teamSeasonDuos(teamId: String, season: String) -> String {
+        "/api/v1/teams/\(teamId)/seasons/\(season)/duos"
     }
 
     // MARK: - Quizzes

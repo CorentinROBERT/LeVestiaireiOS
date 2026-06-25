@@ -772,6 +772,63 @@ struct MatchDetail: Decodable, Identifiable, Equatable {
 
 // MARK: - Availability
 
+struct MatchPresentMember: Decodable, Identifiable, Equatable, Hashable {
+    let id: String
+    let firstName: String?
+    let lastName: String?
+    let isGuest: Bool
+
+    var displayName: String {
+        [firstName, lastName]
+            .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+    }
+
+    var initials: String {
+        let first = firstName?.first.map(String.init) ?? ""
+        let last = lastName?.first.map(String.init) ?? ""
+        let value = "\(first)\(last)".uppercased()
+        return value.isEmpty ? "?" : value
+    }
+
+    init(
+        id: String,
+        firstName: String? = nil,
+        lastName: String? = nil,
+        isGuest: Bool = false
+    ) {
+        self.id = id
+        self.firstName = firstName
+        self.lastName = lastName
+        self.isGuest = isGuest
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decodeIfPresent(String.self, forKey: .mongoId)
+            ?? container.decodeIfPresent(String.self, forKey: .id)
+            ?? container.decodeIfPresent(String.self, forKey: .userId)
+            ?? ""
+        firstName = try container.decodeIfPresent(String.self, forKey: .firstName)
+        lastName = try container.decodeIfPresent(String.self, forKey: .lastName)
+        if let explicitGuest = try container.decodeIfPresent(Bool.self, forKey: .isGuest) {
+            isGuest = explicitGuest
+        } else {
+            isGuest = id.hasPrefix("guest_")
+        }
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case mongoId = "_id"
+        case id
+        case userId
+        case firstName
+        case lastName
+        case isGuest
+    }
+}
+
 struct MatchAvailabilityEntry: Decodable, Identifiable, Hashable {
     let playerId: String
     let userId: String?

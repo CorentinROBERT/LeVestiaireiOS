@@ -9,9 +9,12 @@ import Foundation
 @MainActor
 final class MatchDetailAvailabilityViewModel: ObservableObject {
     @Published var availability: [MatchAvailabilityEntry] = []
+    @Published var presentMembers: [MatchPresentMember] = []
     @Published var availabilityBoardSummary: AvailabilitySummary?
     @Published var isLoadingAvailability = false
+    @Published var isLoadingPresentMembers = false
     @Published var hasLoadedAvailability = false
+    @Published var hasLoadedPresentMembers = false
     @Published var isUpdatingAvailability = false
     @Published var isSubmitting = false
 
@@ -30,9 +33,16 @@ final class MatchDetailAvailabilityViewModel: ObservableObject {
         host?.showsAvailabilityManagement == true
     }
 
+    var showsPresentMembersList: Bool {
+        guard !showsManagement, let match = host?.match else { return false }
+        return match.status.isPreparationStatus || match.status == .upcoming
+    }
+
     func resetCache() {
         hasLoadedAvailability = false
+        hasLoadedPresentMembers = false
         availability = []
+        presentMembers = []
         availabilityBoardSummary = nil
     }
 
@@ -46,6 +56,9 @@ final class MatchDetailAvailabilityViewModel: ObservableObject {
         do {
             _ = try await matchService.updateMyAvailability(matchId: matchId, status: status)
             host?.match = try await matchService.fetchMatch(id: matchId)
+            if showsPresentMembersList {
+                await refreshPresentMembers(silent: true)
+            }
             return true
         } catch {
             surfaceError(error)
@@ -84,8 +97,12 @@ final class MatchDetailAvailabilityViewModel: ObservableObject {
     }
 
     func loadIfNeeded() async {
-        guard showsManagement, !hasLoadedAvailability else { return }
-        await refreshBoard()
+        if showsManagement, !hasLoadedAvailability {
+            await refreshBoard()
+        }
+        if showsPresentMembersList, !hasLoadedPresentMembers {
+            await refreshPresentMembers()
+        }
     }
 
     func refreshMyAvailabilityStatus() async {
@@ -101,6 +118,30 @@ final class MatchDetailAvailabilityViewModel: ObservableObject {
             if !isCancellationError(error) {
                 surfaceError(error)
             }
+        }
+    }
+
+    func refreshPresentMembers(silent: Bool = false) async {
+        guard showsPresentMembersList, let matchId = host?.matchId else {
+            presentMembers = []
+            return
+        }
+
+        if !silent {
+            isLoadingPresentMembers = true
+        }
+        defer {
+            if !silent {
+                isLoadingPresentMembers = false
+            }
+            hasLoadedPresentMembers = true
+        }
+
+        do {
+            presentMembers = try await matchService.fetchAvailabilityPresent(matchId: matchId)
+        } catch {
+            if isCancellationError(error) { return }
+            presentMembers = []
         }
     }
 

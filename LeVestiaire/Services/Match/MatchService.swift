@@ -194,6 +194,16 @@ final class MatchService {
     }
 
     @MainActor
+    func fetchAvailabilityPresent(matchId: String) async throws -> [MatchPresentMember] {
+        let (data, response) = try await authorizedRequest(
+            path: APIEndpoints.matchAvailabilityPresent(matchId),
+            method: "GET"
+        )
+        try validate(response: response, data: data, fallback: L10n.text("errorLoadingPresentMembers"))
+        return try MatchDecoding.decodePresentMembers(from: data)
+    }
+
+    @MainActor
     func forcePlayerAvailability(
         matchId: String,
         playerId: String,

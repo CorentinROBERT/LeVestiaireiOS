@@ -376,7 +376,7 @@ extension TeamSeasonStatsPayload {
     }
 }
 
-private enum SeasonStatsDecoding {
+enum SeasonStatsDecoding {
     static func int<K: CodingKey>(
         from container: KeyedDecodingContainer<K>,
         forKey key: K

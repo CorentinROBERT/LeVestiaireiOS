@@ -57,6 +57,10 @@ struct MatchDetailView: View {
                     availabilityRespondSection(match)
                 }
 
+                if viewModel.availabilityViewModel.showsPresentMembersList {
+                    MatchPresentMembersSection(availabilityViewModel: viewModel.availabilityViewModel)
+                }
+
                 if viewModel.showsPrepareHub {
                     MatchPrepareHubSection(viewModel: viewModel)
                 }

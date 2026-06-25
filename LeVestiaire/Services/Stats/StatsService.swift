@@ -139,4 +139,58 @@ final class StatsService {
         let payload = try APIResponseDecoder.decodePayload(TeamSeasonRankingsPayload.self, from: data)
         return payload.rankings
     }
+
+    @MainActor
+    func fetchTeamSeasonInsights(teamId: String, season: String) async throws -> TeamSeasonInsightsPayload? {
+        guard let accessToken = authService.authToken, !accessToken.isEmpty else {
+            throw StatsServiceError.unauthorized
+        }
+
+        let (data, httpResponse) = try await client.request(
+            path: APIEndpoints.teamSeasonInsights(teamId: teamId, season: season),
+            method: "GET",
+            headers: AuthenticatedAPIClient.bearerHeader(accessToken: accessToken)
+        )
+
+        guard HTTPResponseValidator.isSuccess(httpResponse) else {
+            throw StatsServiceError.requestFailed(
+                HTTPResponseValidator.localizedErrorMessage(
+                    from: data,
+                    fallback: L10n.text("noInsightsAvailable")
+                )
+            )
+        }
+
+        return try APIResponseDecoder.decodePayload(TeamSeasonInsightsPayload.self, from: data)
+    }
+
+    @MainActor
+    func fetchTeamSeasonDuos(
+        teamId: String,
+        season: String,
+        limit: Int = 3
+    ) async throws -> TeamSeasonDuosPayload? {
+        guard let accessToken = authService.authToken, !accessToken.isEmpty else {
+            throw StatsServiceError.unauthorized
+        }
+
+        let clampedLimit = min(max(limit, 1), 10)
+        let (data, httpResponse) = try await client.request(
+            path: APIEndpoints.teamSeasonDuos(teamId: teamId, season: season),
+            method: "GET",
+            headers: AuthenticatedAPIClient.bearerHeader(accessToken: accessToken),
+            queryItems: [URLQueryItem(name: "limit", value: "\(clampedLimit)")]
+        )
+
+        guard HTTPResponseValidator.isSuccess(httpResponse) else {
+            throw StatsServiceError.requestFailed(
+                HTTPResponseValidator.localizedErrorMessage(
+                    from: data,
+                    fallback: L10n.text("noDuosAvailable")
+                )
+            )
+        }
+
+        return try APIResponseDecoder.decodePayload(TeamSeasonDuosPayload.self, from: data)
+    }
 }

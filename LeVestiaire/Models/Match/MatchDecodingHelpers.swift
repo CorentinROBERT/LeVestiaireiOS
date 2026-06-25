@@ -15,6 +15,12 @@ enum MatchDecoding {
         let entries: [MatchAvailabilityEntry]?
     }
 
+    private struct PresentMembersPayload: Decodable {
+        let members: [MatchPresentMember]?
+        let players: [MatchPresentMember]?
+        let present: [MatchPresentMember]?
+    }
+
     static func decodeDetail(from data: Data) throws -> MatchDetail {
         if let detail = try? APIResponseDecoder.decodePayload(MatchDetail.self, from: data) {
             return detail
@@ -46,6 +52,37 @@ enum MatchDecoding {
         }
 
         return []
+    }
+
+    static func decodePresentMembers(from data: Data) throws -> [MatchPresentMember] {
+        if let members = try? APIResponseDecoder.decodePayload([MatchPresentMember].self, from: data) {
+            return sortedPresentMembers(members)
+        }
+        if let members = try? APIResponseDecoder.decode([MatchPresentMember].self, from: data) {
+            return sortedPresentMembers(members)
+        }
+
+        if let payload = try? APIResponseDecoder.decodePayload(PresentMembersPayload.self, from: data) {
+            return sortedPresentMembers(mergedPresentMembers(from: payload))
+        }
+
+        if let payload = try? JSONDecoder().decode(PresentMembersPayload.self, from: data) {
+            return sortedPresentMembers(mergedPresentMembers(from: payload))
+        }
+
+        return []
+    }
+
+    private static func mergedPresentMembers(from payload: PresentMembersPayload) -> [MatchPresentMember] {
+        payload.members ?? payload.present ?? payload.players ?? []
+    }
+
+    private static func sortedPresentMembers(_ members: [MatchPresentMember]) -> [MatchPresentMember] {
+        members
+            .filter { !$0.id.isEmpty }
+            .sorted { lhs, rhs in
+                lhs.displayName.localizedCaseInsensitiveCompare(rhs.displayName) == .orderedAscending
+            }
     }
 
     private static func mergedAvailability(from payload: AvailabilityListPayload) -> [MatchAvailabilityEntry] {

@@ -130,6 +130,10 @@ final class MatchDetailViewModel: ObservableObject {
             await availabilityViewModel.refreshMyAvailabilityStatus()
         }
 
+        if availabilityViewModel.showsPresentMembersList {
+            await availabilityViewModel.refreshPresentMembers()
+        }
+
         await reloadAllTabContent(force: true)
     }
 

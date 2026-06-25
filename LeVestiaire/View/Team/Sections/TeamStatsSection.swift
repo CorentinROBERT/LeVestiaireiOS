@@ -13,45 +13,50 @@ struct TeamStatsSection: View {
     }
 
     var body: some View {
-        UCard(title: L10n.text("teamStatistics"), icon: "chart.bar.fill") {
-            VStack(alignment: .leading, spacing: 16) {
-                TeamSeasonPicker(
-                    availableSeasons: statsViewModel.availableSeasons,
-                    selection: $statsViewModel.selectedStatsSeason,
-                    onChange: {
-                        Task { await statsViewModel.onStatsSeasonChanged() }
-                    }
-                )
+        VStack(spacing: 20) {
+            TeamSeasonPicker(
+                availableSeasons: statsViewModel.availableSeasons,
+                selection: $statsViewModel.selectedStatsSeason,
+                onChange: {
+                    Task { await statsViewModel.onStatsSeasonChanged() }
+                }
+            )
 
-                if statsViewModel.isLoadingStats, statsViewModel.teamSeasonStats == nil {
-                    TeamLoadingPlaceholder()
-                } else if let error = statsViewModel.statsLoadError {
-                    TeamSectionErrorView(message: error) {
-                        Task { await statsViewModel.retryStats() }
-                    }
-                } else if let stats = statsViewModel.teamSeasonStats, stats.hasContent {
-                    Text(L10n.text("seasonStats"))
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(AppPalette.Neutral.textPrimary)
+            TeamInsightsSection(statsViewModel: statsViewModel)
+            TeamDuosSection(statsViewModel: statsViewModel)
 
-                    teamTotalsGrid(stats.totals, matchesPlayed: stats.totalMatchesPlayed)
-
-                    if !stats.sortedPlayers.isEmpty {
-                        Text(L10n.text("playerStatistics"))
+            UCard(title: L10n.text("teamStatistics"), icon: "chart.bar.fill") {
+                VStack(alignment: .leading, spacing: 16) {
+                    if statsViewModel.isLoadingStats, statsViewModel.teamSeasonStats == nil {
+                        TeamLoadingPlaceholder()
+                    } else if let error = statsViewModel.statsLoadError {
+                        TeamSectionErrorView(message: error) {
+                            Task { await statsViewModel.retryStats() }
+                        }
+                    } else if let stats = statsViewModel.teamSeasonStats, stats.hasContent {
+                        Text(L10n.text("seasonStats"))
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(AppPalette.Neutral.textPrimary)
-                            .padding(.top, 4)
 
-                        ForEach(stats.sortedPlayers) { player in
-                            playerStatsRow(player)
+                        teamTotalsGrid(stats.totals, matchesPlayed: stats.totalMatchesPlayed)
+
+                        if !stats.sortedPlayers.isEmpty {
+                            Text(L10n.text("playerStatistics"))
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(AppPalette.Neutral.textPrimary)
+                                .padding(.top, 4)
+
+                            ForEach(stats.sortedPlayers) { player in
+                                playerStatsRow(player)
+                            }
                         }
+                    } else if !statsViewModel.isLoadingInsights, statsViewModel.teamInsights == nil {
+                        TeamEmptyState(
+                            icon: "chart.bar",
+                            title: L10n.text("emptyStatsTitle"),
+                            message: L10n.noStatisticsAvailable
+                        )
                     }
-                } else {
-                    TeamEmptyState(
-                        icon: "chart.bar",
-                        title: L10n.text("emptyStatsTitle"),
-                        message: L10n.noStatisticsAvailable
-                    )
                 }
             }
         }

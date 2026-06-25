@@ -18,6 +18,8 @@ extension TeamViewModel {
             selectedTeam: selectedTeam,
             compositions: TeamPreviewData.compositions,
             stats: TeamPreviewData.stats,
+            insights: TeamPreviewData.insights,
+            duos: TeamPreviewData.duos,
             rankings: TeamPreviewData.rankings,
             invitations: TeamPreviewData.invitations,
             seasons: TeamPreviewData.seasons
@@ -44,6 +46,8 @@ extension TeamViewModel {
         selectedTeam: SquadTeam?,
         compositions: [TeamComposition] = [],
         stats: TeamSeasonStatsPayload? = nil,
+        insights: TeamSeasonInsightsPayload? = nil,
+        duos: TeamSeasonDuosPayload? = nil,
         rankings: TeamSeasonRankings? = nil,
         invitations: [TeamInvitation] = [],
         seasons: [String] = []
@@ -53,6 +57,8 @@ extension TeamViewModel {
         selectedTeamId = selectedTeam?.id ?? ""
         compositionsViewModel.compositions = compositions
         statsViewModel.teamSeasonStats = stats
+        statsViewModel.teamInsights = insights
+        statsViewModel.teamDuos = duos
         statsViewModel.teamRankings = rankings
         invitationsViewModel.teamInvitations = invitations
         statsViewModel.availableSeasons = seasons
