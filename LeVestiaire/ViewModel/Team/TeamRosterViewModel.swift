@@ -103,20 +103,15 @@ final class TeamRosterViewModel: ObservableObject {
         memberPendingRemoval = member
     }
 
-    func removeMember() async {
-        guard let member = memberPendingRemoval else { return }
-        memberPendingRemoval = nil
-        await removeMember(memberId: member.id, isGuest: member.isGuest)
-    }
-
-    func removeMember(memberId: String, isGuest: Bool = false) async {
+    func removeMember(_ member: TeamMember) async {
+        let memberId = member.isGuest ? member.id : member.roleUpdateUserId
+        guard !memberId.isEmpty else { return }
         guard let teamId = host?.selectedTeam?.id else { return }
 
-        let memberIsGuest = isGuest
-            || host?.selectedTeam?.resolvedMembers.first(where: { $0.id == memberId })?.isGuest == true
+        memberPendingRemoval = nil
 
         do {
-            if memberIsGuest {
+            if member.isGuest {
                 try await teamService.deleteGuest(guestId: memberId)
             } else {
                 try await teamService.removeMember(teamId: teamId, memberId: memberId)

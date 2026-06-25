@@ -45,6 +45,7 @@ struct Team: View {
                     if viewModel.canManageTeam {
                         VStack(spacing: 12) {
                             TeamQuickActionsSection(viewModel: viewModel)
+                            TeamJoinRequestsSection(viewModel: viewModel)
                             TeamInvitationsSection(viewModel: viewModel)
                         }
                     }
@@ -109,6 +110,8 @@ struct Team: View {
             switch sheet {
             case .createTeam:
                 CreateTeamSheet(viewModel: viewModel)
+            case .joinTeam:
+                JoinTeamSheet(teamViewModel: viewModel)
             case .settings:
                 TeamSettingsSheet(viewModel: viewModel)
             case .invitePlayer:
@@ -154,25 +157,6 @@ struct Team: View {
             Text(L10n.text("cancelInvitationConfirm"))
         }
         .confirmationDialog(
-            L10n.text("supprimerJoueur"),
-            isPresented: Binding(
-                get: { viewModel.rosterViewModel.memberPendingRemoval != nil },
-                set: { if !$0 { viewModel.rosterViewModel.memberPendingRemoval = nil } }
-            ),
-            titleVisibility: .visible
-        ) {
-            Button(L10n.text("supprimerJoueur"), role: .destructive) {
-                Task { await viewModel.rosterViewModel.removeMember() }
-            }
-            Button(L10n.cancel, role: .cancel) {
-                viewModel.rosterViewModel.memberPendingRemoval = nil
-            }
-        } message: {
-            if let member = viewModel.rosterViewModel.memberPendingRemoval {
-                Text(L10n.format("confirmRemovePlayer", member.displayName))
-            }
-        }
-        .confirmationDialog(
             L10n.deleteComposition,
             isPresented: Binding(
                 get: { viewModel.compositionsViewModel.compositionPendingDeletion != nil },
@@ -209,17 +193,31 @@ struct Team: View {
 
     private var createTeamCard: some View {
         UCard(title: L10n.text("monEquipe"), icon: "person.3.fill") {
-            UButton(
-                text: L10n.text("creerUneEquipe"),
-                textColor: AppPalette.Primary.onMain,
-                backgroundColor: AppPalette.Primary.main,
-                cornerRadius: 18,
-                isFullWidth: true,
-                leadingIcon: "plus.circle.fill",
-                onPress: {
-                    viewModel.activeSheet = .createTeam
-                }
-            )
+            VStack(spacing: 12) {
+                UButton(
+                    text: L10n.text("creerUneEquipe"),
+                    textColor: AppPalette.Primary.onMain,
+                    backgroundColor: AppPalette.Primary.main,
+                    cornerRadius: 18,
+                    isFullWidth: true,
+                    leadingIcon: "plus.circle.fill",
+                    onPress: {
+                        viewModel.activeSheet = .createTeam
+                    }
+                )
+
+                UButton(
+                    text: L10n.text("joinTeam"),
+                    textColor: AppPalette.Primary.main,
+                    backgroundColor: AppPalette.Primary.soft.opacity(0.45),
+                    cornerRadius: 18,
+                    isFullWidth: true,
+                    leadingIcon: "magnifyingglass",
+                    onPress: {
+                        viewModel.activeSheet = .joinTeam
+                    }
+                )
+            }
         }
     }
 
@@ -228,7 +226,11 @@ struct Team: View {
             TeamEmptyState(
                 icon: "person.3",
                 title: L10n.text("aucuneEquipeSelectionnee"),
-                message: L10n.text("selectionnezEquipeOuCreez")
+                message: L10n.text("selectionnezEquipeOuCreez"),
+                actionTitle: L10n.text("joinTeam"),
+                action: {
+                    viewModel.activeSheet = .joinTeam
+                }
             )
         }
     }

@@ -1632,5 +1632,69 @@
   "testPushNotificationFailed": "Impossible d'envoyer la notification de test.",
   "pushTokenRegistrationFailed": "Impossible d'enregistrer le token push.",
   "pushTokenUnregistrationFailed": "Impossible de désenregistrer le token push.",
-  "developerPushRequiresLogin": "Connectez-vous, puis ouvrez le menu développeur depuis l'onglet Profil (5 appuis sur la version) pour tester les push."
+  "developerPushRequiresLogin": "Connectez-vous, puis ouvrez le menu développeur depuis l'onglet Profil (5 appuis sur la version) pour tester les push.",
+  "joinTeam": "Rejoindre une équipe",
+  "joinTeamDescription": "Recherchez une équipe par nom ou saisissez son identifiant pour envoyer une demande d'adhésion.",
+  "joinTeamSearchMode": "Mode de recherche",
+  "joinTeamSearchByName": "Nom",
+  "joinTeamSearchById": "ID équipe",
+  "joinTeamSearchNamePlaceholder": "Nom de l'équipe",
+  "joinTeamSearchIdPlaceholder": "Identifiant de l'équipe",
+  "joinTeamSearchRequired": "Saisissez un nom ou un identifiant d'équipe",
+  "joinTeamSearchNoResults": "Aucune équipe trouvée",
+  "joinTeamResults": "Résultats",
+  "myJoinRequests": "Mes demandes en attente",
+  "noPendingJoinRequests": "Aucune demande en attente",
+  "joinRequestMessageOptional": "Message optionnel pour le staff",
+  "joinRequestMessageCounter": "{current}/{max} caractères",
+  "@joinRequestMessageCounter": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "max": { "type": "int" }
+    }
+  },
+  "requestToJoin": "Demander à rejoindre",
+  "alreadyTeamMember": "Déjà membre",
+  "joinRequestPending": "Demande en attente",
+  "joinRequestSent": "Demande envoyée à {teamName}",
+  "@joinRequestSent": {
+    "placeholders": {
+      "teamName": { "type": "String" }
+    }
+  },
+  "joinRequestCancelled": "Demande annulée",
+  "joinRequestMessageTooLong": "Le message ne peut pas dépasser {max} caractères",
+  "@joinRequestMessageTooLong": {
+    "placeholders": {
+      "max": { "type": "int" }
+    }
+  },
+  "joinRequestStatusPending": "En attente",
+  "joinRequestStatusApproved": "Approuvée",
+  "joinRequestStatusRejected": "Refusée",
+  "joinRequestStatusCancelled": "Annulée",
+  "joinRequestsTitle": "Demandes d'adhésion ({count})",
+  "@joinRequestsTitle": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "noJoinRequests": "Aucune demande d'adhésion",
+  "noJoinRequestsMessage": "Les joueurs qui souhaitent rejoindre l'équipe apparaîtront ici.",
+  "pendingJoinRequestsCount": "{count} demande(s) en attente",
+  "@pendingJoinRequestsCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "joinRequestApproved": "Demande approuvée",
+  "joinRequestRejected": "Demande refusée",
+  "approve": "Approuver",
+  "reject": "Refuser",
+  "search": "Rechercher",
+  "errorTeamSearch": "Erreur lors de la recherche d'équipes",
+  "errorJoinRequestCreate": "Impossible d'envoyer la demande",
+  "errorJoinRequestsLoading": "Erreur lors du chargement des demandes",
+  "errorJoinRequestReview": "Impossible de traiter la demande",
+  "errorJoinRequestCancel": "Impossible d'annuler la demande"
 }

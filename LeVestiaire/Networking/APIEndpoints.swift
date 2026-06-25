@@ -91,6 +91,18 @@ enum APIEndpoints {
 
     static let teamsJoin = "/api/v1/teams/join"
 
+    static let teamsSearch = "/api/v1/teams/search"
+
+    static let myJoinRequests = "/api/v1/users/me/join-requests"
+
+    static func teamJoinRequests(_ teamId: String) -> String {
+        "/api/v1/teams/\(teamId)/join-requests"
+    }
+
+    static func teamJoinRequest(_ teamId: String, requestId: String) -> String {
+        "/api/v1/teams/\(teamId)/join-requests/\(requestId)"
+    }
+
     static func teamInvitations(_ teamId: String) -> String {
         "/api/v1/teams/\(teamId)/invitations"
     }

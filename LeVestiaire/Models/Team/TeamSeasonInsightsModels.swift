@@ -73,14 +73,14 @@ struct TeamFormInsights: Decodable, Equatable {
         if let matchResults = try? container.decode([TeamFormMatchEntry].self, forKey: .matches) {
             results = matchResults.compactMap(\.result)
         } else if let rawResults = try? container.decode([String].self, forKey: .results) {
-            results = rawResults.compactMap(TeamMatchResult.init(rawValue:))
+            results = rawResults.compactMap { TeamMatchResult(rawValue: $0) }
         } else {
             results = []
         }
 
-        points = SeasonStatsDecoding.int(from: container, forKey: .points) ?? 0
-        goalsFor = SeasonStatsDecoding.int(from: container, forKey: .goalsFor) ?? 0
-        goalsAgainst = SeasonStatsDecoding.int(from: container, forKey: .goalsAgainst) ?? 0
+        points = SeasonStatsDecoding.int(from: container, forKey: .points)
+        goalsFor = SeasonStatsDecoding.int(from: container, forKey: .goalsFor)
+        goalsAgainst = SeasonStatsDecoding.int(from: container, forKey: .goalsAgainst)
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -122,7 +122,7 @@ enum TeamMatchResult: String, Decodable, Equatable, CaseIterable {
     case draw
     case loss
 
-    init?(rawValue: String) {
+    nonisolated init?(rawValue: String) {
         switch rawValue.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() {
         case "w", "win", "v", "victory", "victoire":
             self = .win
@@ -153,7 +153,7 @@ enum TeamStreakType: String, Decodable, Equatable {
     case unbeaten
     case winless
 
-    init?(rawValue: String) {
+    nonisolated init?(rawValue: String) {
         switch rawValue.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() {
         case "win", "wins", "victory", "victoire":
             self = .win
@@ -184,8 +184,8 @@ struct TeamStreakInsights: Decodable, Equatable {
             ?? container.decodeIfPresent(String.self, forKey: .kind)
             ?? ""
         type = TeamStreakType(rawValue: rawType) ?? .win
-        count = SeasonStatsDecoding.int(from: container, forKey: .count)
-            ?? SeasonStatsDecoding.int(from: container, forKey: .length)
+        count = (try? container.decodeIfPresent(Int.self, forKey: .count))
+            ?? (try? container.decodeIfPresent(Int.self, forKey: .length))
             ?? 0
     }
 
@@ -230,15 +230,15 @@ struct TeamSeasonSummaryInsights: Decodable, Equatable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        played = SeasonStatsDecoding.int(from: container, forKey: .played)
-            ?? SeasonStatsDecoding.int(from: container, forKey: .matchesPlayed)
+        played = (try? container.decodeIfPresent(Int.self, forKey: .played))
+            ?? (try? container.decodeIfPresent(Int.self, forKey: .matchesPlayed))
             ?? 0
-        wins = SeasonStatsDecoding.int(from: container, forKey: .wins) ?? 0
-        draws = SeasonStatsDecoding.int(from: container, forKey: .draws) ?? 0
-        losses = SeasonStatsDecoding.int(from: container, forKey: .losses) ?? 0
-        goalsFor = SeasonStatsDecoding.int(from: container, forKey: .goalsFor) ?? 0
-        goalsAgainst = SeasonStatsDecoding.int(from: container, forKey: .goalsAgainst) ?? 0
-        points = SeasonStatsDecoding.int(from: container, forKey: .points) ?? 0
+        wins = SeasonStatsDecoding.int(from: container, forKey: .wins)
+        draws = SeasonStatsDecoding.int(from: container, forKey: .draws)
+        losses = SeasonStatsDecoding.int(from: container, forKey: .losses)
+        goalsFor = SeasonStatsDecoding.int(from: container, forKey: .goalsFor)
+        goalsAgainst = SeasonStatsDecoding.int(from: container, forKey: .goalsAgainst)
+        points = SeasonStatsDecoding.int(from: container, forKey: .points)
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -307,7 +307,7 @@ enum TeamPlayerOfMomentScope: String, Decodable, Equatable {
     case recent
     case season
 
-    init?(rawValue: String) {
+    nonisolated init?(rawValue: String) {
         switch rawValue.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() {
         case "recent", "last5", "last5matches", "last_matches", "lastmatches":
             self = .recent
@@ -348,8 +348,8 @@ struct TeamPlayerOfMomentInsights: Decodable, Equatable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         player = try container.decodeIfPresent(TeamInsightsPlayerRef.self, forKey: .player)
-        goals = SeasonStatsDecoding.int(from: container, forKey: .goals) ?? 0
-        assists = SeasonStatsDecoding.int(from: container, forKey: .assists) ?? 0
+        goals = SeasonStatsDecoding.int(from: container, forKey: .goals)
+        assists = SeasonStatsDecoding.int(from: container, forKey: .assists)
 
         if let rawScope = try container.decodeIfPresent(String.self, forKey: .scope)
             ?? container.decodeIfPresent(String.self, forKey: .basedOn) {
@@ -512,9 +512,9 @@ struct TeamNextMatchAvailabilitySummary: Decodable, Equatable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        available = SeasonStatsDecoding.int(from: container, forKey: .available) ?? 0
-        absent = SeasonStatsDecoding.int(from: container, forKey: .absent) ?? 0
-        unknown = SeasonStatsDecoding.int(from: container, forKey: .unknown) ?? 0
+        available = SeasonStatsDecoding.int(from: container, forKey: .available)
+        absent = SeasonStatsDecoding.int(from: container, forKey: .absent)
+        unknown = SeasonStatsDecoding.int(from: container, forKey: .unknown)
     }
 
     private enum CodingKeys: String, CodingKey {

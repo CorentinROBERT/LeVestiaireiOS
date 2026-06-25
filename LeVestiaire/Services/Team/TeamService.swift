@@ -311,11 +311,96 @@ final class TeamService {
         try validate(response: response, data: data, fallback: L10n.text("errorTeamUpdate"))
     }
 
+    // MARK: - Team discovery & join requests
+
+    @MainActor
+    func searchTeams(query: String) async throws -> [TeamSearchResult] {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return [] }
+
+        let (data, response) = try await authorizedRequest(
+            path: APIEndpoints.teamsSearch,
+            method: "GET",
+            queryItems: [URLQueryItem(name: "q", value: trimmed)]
+        )
+        try validate(response: response, data: data, fallback: L10n.text("errorTeamSearch"))
+        return try TeamJoinRequestDecoding.decodeSearchResults(from: data)
+    }
+
+    @MainActor
+    func createJoinRequest(teamId: String, message: String?) async throws -> TeamJoinRequest {
+        let trimmedMessage = message?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let body = try JSONEncoder().encode(
+            CreateTeamJoinRequest(message: trimmedMessage?.isEmpty == true ? nil : trimmedMessage)
+        )
+        let (data, response) = try await authorizedRequest(
+            path: APIEndpoints.teamJoinRequests(teamId),
+            method: "POST",
+            body: body
+        )
+        try validate(response: response, data: data, fallback: L10n.text("errorJoinRequestCreate"))
+        return try TeamJoinRequestDecoding.decodeJoinRequest(from: data)
+    }
+
+    @MainActor
+    func fetchTeamJoinRequests(
+        teamId: String,
+        status: TeamJoinRequestStatus? = .pending
+    ) async throws -> [TeamJoinRequest] {
+        var queryItems: [URLQueryItem] = []
+        if let status {
+            queryItems.append(URLQueryItem(name: "status", value: status.rawValue))
+        }
+
+        let (data, response) = try await authorizedRequest(
+            path: APIEndpoints.teamJoinRequests(teamId),
+            method: "GET",
+            queryItems: queryItems
+        )
+        try validate(response: response, data: data, fallback: L10n.text("errorJoinRequestsLoading"))
+        return try TeamJoinRequestDecoding.decodeJoinRequests(from: data)
+    }
+
+    @MainActor
+    func reviewJoinRequest(
+        teamId: String,
+        requestId: String,
+        action: TeamJoinRequestReviewAction
+    ) async throws {
+        let body = try JSONEncoder().encode(ReviewTeamJoinRequest(action: action))
+        let (data, response) = try await authorizedRequest(
+            path: APIEndpoints.teamJoinRequest(teamId, requestId: requestId),
+            method: "PATCH",
+            body: body
+        )
+        try validate(response: response, data: data, fallback: L10n.text("errorJoinRequestReview"))
+    }
+
+    @MainActor
+    func cancelJoinRequest(teamId: String, requestId: String) async throws {
+        let (data, response) = try await authorizedRequest(
+            path: APIEndpoints.teamJoinRequest(teamId, requestId: requestId),
+            method: "DELETE"
+        )
+        try validate(response: response, data: data, fallback: L10n.text("errorJoinRequestCancel"))
+    }
+
+    @MainActor
+    func fetchMyJoinRequests() async throws -> [TeamJoinRequest] {
+        let (data, response) = try await authorizedRequest(
+            path: APIEndpoints.myJoinRequests,
+            method: "GET"
+        )
+        try validate(response: response, data: data, fallback: L10n.text("errorJoinRequestsLoading"))
+        return try TeamJoinRequestDecoding.decodeJoinRequests(from: data)
+    }
+
     @MainActor
     private func authorizedRequest(
         path: String,
         method: String,
-        body: Data? = nil
+        body: Data? = nil,
+        queryItems: [URLQueryItem] = []
     ) async throws -> (Data, HTTPURLResponse) {
         do {
             return try await AuthenticatedAPIClient.performRequest(
@@ -323,7 +408,8 @@ final class TeamService {
                 authService: authService,
                 path: path,
                 method: method,
-                body: body
+                body: body,
+                queryItems: queryItems
             )
         } catch ServiceAuthError.unauthorized {
             throw TeamServiceError.unauthorized

@@ -66,26 +66,11 @@ struct TeamPlayersSection: View {
             Spacer()
 
             if viewModel.canManageTeam {
-                Menu {
-                    if member.isGuest {
-                        Button(L10n.text("mergeGuestWithPlayer")) {
-                            rosterViewModel.presentMergeGuest(member)
-                        }
-                    } else if viewModel.canChangeMemberRoles, member.role != .admin {
-                        ForEach(TeamRole.assignableMemberRoles) { role in
-                            Button(role.localizedLabel) {
-                                Task { await rosterViewModel.updateMemberRole(member: member, role: role) }
-                            }
-                            .disabled(member.role == role)
-                        }
-                    }
-                    Button(L10n.text("supprimerJoueur"), role: .destructive) {
-                        rosterViewModel.confirmRemoveMember(member)
-                    }
-                } label: {
-                    Image(systemName: "ellipsis.circle")
-                        .foregroundStyle(AppPalette.Primary.main)
-                }
+                TeamPlayerRowMenu(
+                    viewModel: viewModel,
+                    rosterViewModel: rosterViewModel,
+                    member: member
+                )
             }
         }
         .padding(12)

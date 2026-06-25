@@ -36,6 +36,7 @@ final class TeamViewModel: ObservableObject {
 
     let statsViewModel: TeamStatsViewModel
     let invitationsViewModel: TeamInvitationsViewModel
+    let joinRequestsViewModel: TeamJoinRequestsViewModel
     let compositionsViewModel: TeamCompositionsViewModel
     let rosterViewModel: TeamRosterViewModel
 
@@ -47,6 +48,7 @@ final class TeamViewModel: ObservableObject {
         authService: AuthService,
         statsViewModel: TeamStatsViewModel? = nil,
         invitationsViewModel: TeamInvitationsViewModel? = nil,
+        joinRequestsViewModel: TeamJoinRequestsViewModel? = nil,
         compositionsViewModel: TeamCompositionsViewModel? = nil,
         rosterViewModel: TeamRosterViewModel? = nil
     ) {
@@ -57,12 +59,14 @@ final class TeamViewModel: ObservableObject {
         self.authService = authService
         self.statsViewModel = statsViewModel ?? TeamStatsViewModel(statsService: statsService)
         self.invitationsViewModel = invitationsViewModel ?? TeamInvitationsViewModel(teamService: teamService)
+        self.joinRequestsViewModel = joinRequestsViewModel ?? TeamJoinRequestsViewModel(teamService: teamService)
         self.compositionsViewModel = compositionsViewModel ?? TeamCompositionsViewModel(
             compositionService: compositionService
         )
         self.rosterViewModel = rosterViewModel ?? TeamRosterViewModel(teamService: teamService)
         self.statsViewModel.attach(to: self)
         self.invitationsViewModel.attach(to: self)
+        self.joinRequestsViewModel.attach(to: self)
         self.compositionsViewModel.attach(to: self)
         self.rosterViewModel.attach(to: self)
     }

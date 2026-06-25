@@ -15,6 +15,8 @@ PLACEHOLDER_PATTERN = re.compile(r"\{([^}]+)\}")
 # Placeholders that map to integer format specifiers in String(format:locale:arguments:).
 INTEGER_PLACEHOLDER_NAMES = frozenset({
     "count",
+    "current",
+    "max",
     "number",
     "seconds",
     "second",

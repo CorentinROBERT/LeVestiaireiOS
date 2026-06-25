@@ -91,6 +91,7 @@ extension TeamViewModel {
             selectedTeam = nil
             statsViewModel.resetCache()
             invitationsViewModel.resetCache()
+            joinRequestsViewModel.resetCache()
             compositionsViewModel.resetCache()
             return
         }
@@ -127,7 +128,8 @@ extension TeamViewModel {
 
         async let statsTask: Void = statsViewModel.loadStats()
         async let invitationsTask: Void = invitationsViewModel.loadIfNeeded()
-        _ = await (statsTask, invitationsTask)
+        async let joinRequestsTask: Void = joinRequestsViewModel.loadIfNeeded()
+        _ = await (statsTask, invitationsTask, joinRequestsTask)
         statsViewModel.statsLoadedForTeamId = selectedTeamId
 
         statsViewModel.prepareForTeamChange()
@@ -137,6 +139,7 @@ extension TeamViewModel {
     func clearSectionLoadErrors() {
         statsViewModel.clearLoadErrors()
         invitationsViewModel.clearLoadErrors()
+        joinRequestsViewModel.clearLoadErrors()
         compositionsViewModel.clearLoadErrors()
     }
 

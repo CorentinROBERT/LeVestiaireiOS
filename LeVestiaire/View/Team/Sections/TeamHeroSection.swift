@@ -112,6 +112,21 @@ struct TeamHeroSection: View {
     private var heroActions: some View {
         HStack(spacing: 8) {
             Button {
+                viewModel.activeSheet = .joinTeam
+            } label: {
+                Image(systemName: "magnifyingglass")
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(AppPalette.Primary.main)
+                    .frame(width: 36, height: 36)
+                    .background(
+                        Circle()
+                            .fill(AppPalette.Primary.soft.opacity(0.6))
+                    )
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(L10n.text("joinTeam"))
+
+            Button {
                 viewModel.activeSheet = .createTeam
             } label: {
                 Image(systemName: "plus.circle.fill")

@@ -804,6 +804,22 @@
         }
       }
     },
+    "alreadyTeamMember" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Already a member"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déjà membre"
+          }
+        }
+      }
+    },
     "alternativeDetails" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1234,6 +1250,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nommer un nouvel administrateur"
+          }
+        }
+      }
+    },
+    "approve" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Approve"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Approuver"
           }
         }
       }
@@ -7429,6 +7461,70 @@
         }
       }
     },
+    "errorJoinRequestCancel" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unable to cancel join request"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible d'annuler la demande"
+          }
+        }
+      }
+    },
+    "errorJoinRequestCreate" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unable to send join request"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible d'envoyer la demande"
+          }
+        }
+      }
+    },
+    "errorJoinRequestReview" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unable to process join request"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible de traiter la demande"
+          }
+        }
+      }
+    },
+    "errorJoinRequestsLoading" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error loading join requests"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erreur lors du chargement des demandes"
+          }
+        }
+      }
+    },
     "errorLeavingTeam" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -8350,6 +8446,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Équipe non trouvée"
+          }
+        }
+      }
+    },
+    "errorTeamSearch" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error searching teams"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erreur lors de la recherche d'équipes"
           }
         }
       }
@@ -13195,6 +13307,374 @@
         }
       }
     },
+    "joinRequestApproved" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Request approved"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demande approuvée"
+          }
+        }
+      }
+    },
+    "joinRequestCancelled" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Request cancelled"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demande annulée"
+          }
+        }
+      }
+    },
+    "joinRequestMessageCounter" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld/%lld characters"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld/%lld caractères"
+          }
+        }
+      }
+    },
+    "joinRequestMessageOptional" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optional message for staff"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message optionnel pour le staff"
+          }
+        }
+      }
+    },
+    "joinRequestMessageTooLong" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message cannot exceed %lld characters"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le message ne peut pas dépasser %lld caractères"
+          }
+        }
+      }
+    },
+    "joinRequestPending" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Request pending"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demande en attente"
+          }
+        }
+      }
+    },
+    "joinRequestRejected" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Request rejected"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demande refusée"
+          }
+        }
+      }
+    },
+    "joinRequestSent" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Request sent to %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demande envoyée à %@"
+          }
+        }
+      }
+    },
+    "joinRequestStatusApproved" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Approved"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Approuvée"
+          }
+        }
+      }
+    },
+    "joinRequestStatusCancelled" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancelled"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annulée"
+          }
+        }
+      }
+    },
+    "joinRequestStatusPending" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pending"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En attente"
+          }
+        }
+      }
+    },
+    "joinRequestStatusRejected" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rejected"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refusée"
+          }
+        }
+      }
+    },
+    "joinRequestsTitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Join requests (%lld)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demandes d'adhésion (%lld)"
+          }
+        }
+      }
+    },
+    "joinTeam" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Join a team"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rejoindre une équipe"
+          }
+        }
+      }
+    },
+    "joinTeamDescription" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search for a team by name or enter its ID to send a join request."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recherchez une équipe par nom ou saisissez son identifiant pour envoyer une demande d'adhésion."
+          }
+        }
+      }
+    },
+    "joinTeamResults" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Results"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Résultats"
+          }
+        }
+      }
+    },
+    "joinTeamSearchById" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Team ID"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ID équipe"
+          }
+        }
+      }
+    },
+    "joinTeamSearchByName" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nom"
+          }
+        }
+      }
+    },
+    "joinTeamSearchIdPlaceholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Team identifier"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Identifiant de l'équipe"
+          }
+        }
+      }
+    },
+    "joinTeamSearchMode" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search mode"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mode de recherche"
+          }
+        }
+      }
+    },
+    "joinTeamSearchNamePlaceholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Team name"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nom de l'équipe"
+          }
+        }
+      }
+    },
+    "joinTeamSearchNoResults" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No teams found"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune équipe trouvée"
+          }
+        }
+      }
+    },
+    "joinTeamSearchRequired" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter a team name or team ID"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saisissez un nom ou un identifiant d'équipe"
+          }
+        }
+      }
+    },
     "joueurAjouteSucces" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -16032,6 +16512,22 @@
         }
       }
     },
+    "myJoinRequests" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My pending requests"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mes demandes en attente"
+          }
+        }
+      }
+    },
     "name" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -16428,6 +16924,38 @@
         }
       }
     },
+    "noJoinRequests" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No join requests"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune demande d'adhésion"
+          }
+        }
+      }
+    },
+    "noJoinRequestsMessage" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Players who want to join the team will appear here."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les joueurs qui souhaitent rejoindre l'équipe apparaîtront ici."
+          }
+        }
+      }
+    },
     "noMatchesFound" : {
       "localizations" : {
         "en" : {
@@ -16590,6 +17118,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vous serez notifié ici des événements importants"
+          }
+        }
+      }
+    },
+    "noPendingJoinRequests" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pending requests"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune demande en attente"
           }
         }
       }
@@ -18358,6 +18902,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld en attente"
+          }
+        }
+      }
+    },
+    "pendingJoinRequestsCount" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld pending request(s)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld demande(s) en attente"
           }
         }
       }
@@ -21047,6 +21607,22 @@
         }
       }
     },
+    "reject" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reject"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refuser"
+          }
+        }
+      }
+    },
     "rememberMe" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -21195,6 +21771,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Remplace l'environnement sélectionné"
+          }
+        }
+      }
+    },
+    "requestToJoin" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Request to join"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demander à rejoindre"
           }
         }
       }
@@ -21953,6 +22545,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Faites défiler pour charger plus de matchs"
+          }
+        }
+      }
+    },
+    "search" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechercher"
           }
         }
       }
@@ -25901,7 +26509,6 @@
       }
     },
     "unknownPlayer" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

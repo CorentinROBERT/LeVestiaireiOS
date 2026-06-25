@@ -7,6 +7,7 @@ import Foundation
 
 enum TeamSheet: Identifiable, Equatable {
     case createTeam
+    case joinTeam
     case settings
     case invitePlayer
     case shareTeamInvite
@@ -17,6 +18,8 @@ enum TeamSheet: Identifiable, Equatable {
         switch self {
         case .createTeam:
             return "createTeam"
+        case .joinTeam:
+            return "joinTeam"
         case .settings:
             return "settings"
         case .invitePlayer:

@@ -1632,5 +1632,69 @@
   "testPushNotificationFailed": "Unable to send the test notification.",
   "pushTokenRegistrationFailed": "Unable to register the push token.",
   "pushTokenUnregistrationFailed": "Unable to unregister the push token.",
-  "developerPushRequiresLogin": "Sign in, then open the developer menu from the Profile tab (5 taps on the version label) to test push notifications."
+  "developerPushRequiresLogin": "Sign in, then open the developer menu from the Profile tab (5 taps on the version label) to test push notifications.",
+  "joinTeam": "Join a team",
+  "joinTeamDescription": "Search for a team by name or enter its ID to send a join request.",
+  "joinTeamSearchMode": "Search mode",
+  "joinTeamSearchByName": "Name",
+  "joinTeamSearchById": "Team ID",
+  "joinTeamSearchNamePlaceholder": "Team name",
+  "joinTeamSearchIdPlaceholder": "Team identifier",
+  "joinTeamSearchRequired": "Enter a team name or team ID",
+  "joinTeamSearchNoResults": "No teams found",
+  "joinTeamResults": "Results",
+  "myJoinRequests": "My pending requests",
+  "noPendingJoinRequests": "No pending requests",
+  "joinRequestMessageOptional": "Optional message for staff",
+  "joinRequestMessageCounter": "{current}/{max} characters",
+  "@joinRequestMessageCounter": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "max": { "type": "int" }
+    }
+  },
+  "requestToJoin": "Request to join",
+  "alreadyTeamMember": "Already a member",
+  "joinRequestPending": "Request pending",
+  "joinRequestSent": "Request sent to {teamName}",
+  "@joinRequestSent": {
+    "placeholders": {
+      "teamName": { "type": "String" }
+    }
+  },
+  "joinRequestCancelled": "Request cancelled",
+  "joinRequestMessageTooLong": "Message cannot exceed {max} characters",
+  "@joinRequestMessageTooLong": {
+    "placeholders": {
+      "max": { "type": "int" }
+    }
+  },
+  "joinRequestStatusPending": "Pending",
+  "joinRequestStatusApproved": "Approved",
+  "joinRequestStatusRejected": "Rejected",
+  "joinRequestStatusCancelled": "Cancelled",
+  "joinRequestsTitle": "Join requests ({count})",
+  "@joinRequestsTitle": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "noJoinRequests": "No join requests",
+  "noJoinRequestsMessage": "Players who want to join the team will appear here.",
+  "pendingJoinRequestsCount": "{count} pending request(s)",
+  "@pendingJoinRequestsCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "joinRequestApproved": "Request approved",
+  "joinRequestRejected": "Request rejected",
+  "approve": "Approve",
+  "reject": "Reject",
+  "search": "Search",
+  "errorTeamSearch": "Error searching teams",
+  "errorJoinRequestCreate": "Unable to send join request",
+  "errorJoinRequestsLoading": "Error loading join requests",
+  "errorJoinRequestReview": "Unable to process join request",
+  "errorJoinRequestCancel": "Unable to cancel join request"
 }
