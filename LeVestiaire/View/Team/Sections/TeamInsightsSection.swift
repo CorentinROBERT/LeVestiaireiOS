@@ -9,15 +9,42 @@ struct TeamInsightsSection: View {
     @ObservedObject var statsViewModel: TeamStatsViewModel
 
     var body: some View {
-        UCard(title: L10n.text("teamInsights"), icon: "sparkles") {
-            VStack(alignment: .leading, spacing: 16) {
-                if statsViewModel.isLoadingInsights, statsViewModel.teamInsights == nil {
-                    TeamLoadingPlaceholder()
-                } else if let error = statsViewModel.insightsLoadError, statsViewModel.teamInsights == nil {
-                    TeamSectionErrorView(message: error) {
-                        Task { await statsViewModel.retryStats() }
-                    }
-                } else if let insights = statsViewModel.teamInsights, insights.hasContent {
+        TeamExpandableCard(
+            title: L10n.text("teamInsights"),
+            icon: "sparkles",
+            initiallyExpanded: true,
+            isLoading: statsViewModel.isLoadingInsights && statsViewModel.teamInsights == nil,
+            collapsedSummary: { collapsedSummary },
+            content: { expandedContent }
+        )
+    }
+
+    @ViewBuilder
+    private var collapsedSummary: some View {
+        if statsViewModel.isLoadingInsights, statsViewModel.teamInsights == nil {
+            Text(L10n.loading)
+                .font(.caption)
+                .foregroundStyle(AppPalette.Neutral.textSecondary)
+        } else if let error = statsViewModel.insightsLoadError, statsViewModel.teamInsights == nil {
+            TeamSectionErrorText(message: error)
+        } else if let insights = statsViewModel.teamInsights, insights.hasContent {
+            insightsCollapsedSummary(insights)
+        } else {
+            Text(L10n.text("noInsightsAvailable"))
+                .font(.caption)
+                .foregroundStyle(AppPalette.Neutral.textSecondary)
+        }
+    }
+
+    @ViewBuilder
+    private var expandedContent: some View {
+        if statsViewModel.isLoadingInsights, statsViewModel.teamInsights == nil {
+            TeamLoadingPlaceholder()
+        } else if let error = statsViewModel.insightsLoadError, statsViewModel.teamInsights == nil {
+            TeamSectionErrorView(message: error) {
+                Task { await statsViewModel.retryStats() }
+            }
+        } else if let insights = statsViewModel.teamInsights, insights.hasContent {
                     if let form = insights.form, form.hasContent {
                         formSection(form)
                     }
@@ -48,6 +75,32 @@ struct TeamInsightsSection: View {
                         message: L10n.text("noInsightsAvailable")
                     )
                 }
+    }
+
+    private func insightsCollapsedSummary(_ insights: TeamSeasonInsightsPayload) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            if let form = insights.form, !form.results.isEmpty {
+                Text(form.results.map(\.shortLabel).joined(separator: " · "))
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(AppPalette.Primary.dark)
+            }
+
+            if let streak = insights.streak {
+                Text(streakLabel(streak))
+                    .font(.caption)
+                    .foregroundStyle(AppPalette.Neutral.textSecondary)
+            }
+
+            if let player = insights.playerOfMoment?.player, !player.displayName.isEmpty {
+                Text(L10n.format("insightsCollapsedPlayer", player.displayName))
+                    .font(.caption)
+                    .foregroundStyle(AppPalette.Neutral.textSecondary)
+            }
+
+            if let match = insights.nextMatch?.match {
+                Text(match.displayTitle)
+                    .font(.caption)
+                    .foregroundStyle(AppPalette.Neutral.textSecondary)
             }
         }
     }

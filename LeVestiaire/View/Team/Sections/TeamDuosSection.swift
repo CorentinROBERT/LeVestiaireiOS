@@ -9,26 +9,62 @@ struct TeamDuosSection: View {
     @ObservedObject var statsViewModel: TeamStatsViewModel
 
     var body: some View {
-        UCard(title: L10n.text("topDuos"), icon: "person.2.fill") {
-            VStack(alignment: .leading, spacing: 16) {
-                if statsViewModel.isLoadingDuos, statsViewModel.teamDuos == nil {
-                    TeamLoadingPlaceholder()
-                } else if let error = statsViewModel.duosLoadError, statsViewModel.teamDuos == nil {
-                    TeamSectionErrorView(message: error) {
-                        Task { await statsViewModel.retryStats() }
-                    }
-                } else if let duos = statsViewModel.teamDuos, duos.hasContent {
-                    ForEach(duos.duos) { duo in
-                        duoRow(duo)
-                    }
-                } else {
-                    TeamEmptyState(
-                        icon: "person.2",
-                        title: L10n.text("emptyDuosTitle"),
-                        message: L10n.text("noDuosAvailable")
-                    )
+        TeamExpandableCard(
+            title: L10n.text("topDuos"),
+            icon: "person.2.fill",
+            isLoading: statsViewModel.isLoadingDuos && statsViewModel.teamDuos == nil,
+            collapsedSummary: { collapsedSummary },
+            content: { expandedContent }
+        )
+    }
+
+    @ViewBuilder
+    private var collapsedSummary: some View {
+        if statsViewModel.isLoadingDuos, statsViewModel.teamDuos == nil {
+            Text(L10n.loading)
+                .font(.caption)
+                .foregroundStyle(AppPalette.Neutral.textSecondary)
+        } else if let error = statsViewModel.duosLoadError, statsViewModel.teamDuos == nil {
+            TeamSectionErrorText(message: error)
+        } else if let duos = statsViewModel.teamDuos, let topDuo = duos.duos.first {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(duoNames(topDuo))
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(AppPalette.Primary.dark)
+                Text(L10n.format("duoGoalsTogether", topDuo.goalsTogether))
+                    .font(.caption)
+                    .foregroundStyle(AppPalette.Neutral.textSecondary)
+                if duos.duos.count > 1 {
+                    Text(L10n.format("duosCollapsedMoreCount", duos.duos.count - 1))
+                        .font(.caption2)
+                        .foregroundStyle(AppPalette.Neutral.textTertiary)
                 }
             }
+        } else {
+            Text(L10n.text("noDuosAvailable"))
+                .font(.caption)
+                .foregroundStyle(AppPalette.Neutral.textSecondary)
+        }
+    }
+
+    @ViewBuilder
+    private var expandedContent: some View {
+        if statsViewModel.isLoadingDuos, statsViewModel.teamDuos == nil {
+            TeamLoadingPlaceholder()
+        } else if let error = statsViewModel.duosLoadError, statsViewModel.teamDuos == nil {
+            TeamSectionErrorView(message: error) {
+                Task { await statsViewModel.retryStats() }
+            }
+        } else if let duos = statsViewModel.teamDuos, duos.hasContent {
+            ForEach(duos.duos) { duo in
+                duoRow(duo)
+            }
+        } else {
+            TeamEmptyState(
+                icon: "person.2",
+                title: L10n.text("emptyDuosTitle"),
+                message: L10n.text("noDuosAvailable")
+            )
         }
     }
 

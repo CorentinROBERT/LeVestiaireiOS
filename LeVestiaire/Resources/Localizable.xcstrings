@@ -2702,6 +2702,22 @@
         }
       }
     },
+    "collapseSection" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hide details"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masquer le détail"
+          }
+        }
+      }
+    },
     "comment" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -5909,6 +5925,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld but(s) ensemble"
+          }
+        }
+      }
+    },
+    "duosCollapsedMoreCount" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+%lld more duo(s)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+%lld autre(s) duo(s)"
           }
         }
       }
@@ -9295,6 +9327,22 @@
         }
       }
     },
+    "expandSection" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show details"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher le détail"
+          }
+        }
+      }
+    },
     "experienceYears" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -12402,6 +12450,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Blessure"
+          }
+        }
+      }
+    },
+    "insightsCollapsedPlayer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Player of the moment: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Joueur du moment : %@"
           }
         }
       }
@@ -24921,6 +24985,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vos statistiques d'équipe"
+          }
+        }
+      }
+    },
+    "teamStatsCollapsedSummary" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld matches · %2$lld goals · %3$lld assists · %4$lld players"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld matchs · %2$lld buts · %3$lld passes · %4$lld joueurs"
           }
         }
       }
