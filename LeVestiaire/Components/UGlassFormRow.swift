@@ -19,10 +19,12 @@ struct UGlassFormRow<Content: View>: View {
                 .frame(width: 22)
 
             content()
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 12)
         .glassEffect(.regular, in: .rect(cornerRadius: 18))
+        .clipShape(RoundedRectangle(cornerRadius: 18))
     }
 }
 

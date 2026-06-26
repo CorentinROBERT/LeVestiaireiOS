@@ -143,7 +143,7 @@ final class TeamService {
     func leaveTeam(id: String) async throws {
         let (data, response) = try await authorizedRequest(
             path: APIEndpoints.leaveTeam(id),
-            method: "POST"
+            method: "DELETE"
         )
         try validate(response: response, data: data, fallback: L10n.text("errorTeamUpdate"))
     }

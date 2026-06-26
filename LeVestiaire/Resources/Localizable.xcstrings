@@ -5953,13 +5953,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "In preparation"
+            "value" : "In prep"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "En préparation"
+            "value" : "En prépa"
           }
         }
       }

@@ -7,6 +7,7 @@ import SwiftUI
 
 enum UPickerLabelStyle {
     case row
+    case stacked
     case hidden
 }
 
@@ -14,27 +15,57 @@ struct UMenuPicker<SelectionValue: Hashable, Content: View>: View {
     let title: String
     @Binding var selection: SelectionValue
     var labelStyle: UPickerLabelStyle = .row
+    var selectionLabel: ((SelectionValue) -> String)?
     var accessibilityValue: String?
     var isDisabled = false
     var onChange: (() -> Void)?
     @ViewBuilder let content: () -> Content
 
     var body: some View {
-        HStack {
-            if labelStyle == .row {
-                Text(title)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(AppPalette.Neutral.textPrimary)
+        Group {
+            switch labelStyle {
+            case .hidden:
+                pickerControl
+            case .row:
+                HStack(spacing: 8) {
+                    titleLabel
+                    Spacer(minLength: 8)
+                    pickerControl
+                        .layoutPriority(0)
+                }
+            case .stacked:
+                VStack(alignment: .leading, spacing: 8) {
+                    titleLabel
+                    pickerControl
+                }
             }
-
-            Spacer()
-
-            pickerControl
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var titleLabel: some View {
+        Text(title)
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(AppPalette.Neutral.textPrimary)
+            .lineLimit(1)
+            .layoutPriority(1)
+    }
+
+    private var pickerControlAlignment: Alignment {
+        labelStyle == .stacked ? .leading : .trailing
     }
 
     @ViewBuilder
     private var pickerControl: some View {
+        if let selectionLabel {
+            menuPickerControl(selectionLabel: selectionLabel)
+        } else {
+            standardPickerControl
+        }
+    }
+
+    @ViewBuilder
+    private var standardPickerControl: some View {
         let picker = Picker(title, selection: $selection) {
             content()
         }
@@ -46,11 +77,47 @@ struct UMenuPicker<SelectionValue: Hashable, Content: View>: View {
         .onChange(of: selection) { _, _ in
             onChange?()
         }
+        .frame(minWidth: 0, maxWidth: .infinity, alignment: pickerControlAlignment)
+        .fixedSize(horizontal: false, vertical: true)
+        .clipped()
 
         if let accessibilityValue {
             picker.accessibilityValue(accessibilityValue)
         } else {
             picker
+        }
+    }
+
+    @ViewBuilder
+    private func menuPickerControl(selectionLabel: @escaping (SelectionValue) -> String) -> some View {
+        let menu = Menu {
+            Picker(title, selection: $selection) {
+                content()
+            }
+            .pickerStyle(.inline)
+            .labelsHidden()
+        } label: {
+            HStack(spacing: 4) {
+                Text(selectionLabel(selection))
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+
+                Image(systemName: "chevron.up.chevron.down")
+                    .font(.caption2.weight(.semibold))
+            }
+            .foregroundStyle(AppPalette.Primary.main)
+            .frame(minWidth: 0, maxWidth: .infinity, alignment: pickerControlAlignment)
+        }
+        .disabled(isDisabled)
+        .accessibilityLabel(title)
+        .onChange(of: selection) { _, _ in
+            onChange?()
+        }
+
+        if let accessibilityValue {
+            menu.accessibilityValue(accessibilityValue)
+        } else {
+            menu
         }
     }
 }

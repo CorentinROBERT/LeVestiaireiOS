@@ -848,7 +848,7 @@
   "finished": "Finished",
   "ongoing": "Ongoing",
   "upcoming": "Upcoming",
-  "draft": "In preparation",
+  "draft": "In prep",
   "availabilityClosed": "Availability is closed for this match.",
   "publishBlockerMissingMinimalInfo": "Missing minimal information (opponent, date, location).",
   "publishBlockerMissingComposition": "No lineup has been set.",

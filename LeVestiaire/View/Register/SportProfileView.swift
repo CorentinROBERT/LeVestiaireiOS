@@ -135,6 +135,8 @@ struct SportProfileView: View {
                 UMenuPicker(
                     title: L10n.favoriteLeague,
                     selection: $viewModel.selectedLeague,
+                    labelStyle: .stacked,
+                    selectionLabel: { $0.displayName },
                     onChange: { viewModel.onLeagueChanged() }
                 ) {
                     ForEach(FootballLeague.allCases) { league in
@@ -144,7 +146,12 @@ struct SportProfileView: View {
             }
 
             UGlassFormRow(icon: "shield.fill") {
-                UMenuPicker(title: L10n.favoriteTeam, selection: $viewModel.selectedTeam) {
+                UMenuPicker(
+                    title: L10n.favoriteTeam,
+                    selection: $viewModel.selectedTeam,
+                    labelStyle: .stacked,
+                    selectionLabel: { $0 }
+                ) {
                     ForEach(viewModel.availableTeams, id: \.self) { team in
                         Text(team).tag(team)
                     }

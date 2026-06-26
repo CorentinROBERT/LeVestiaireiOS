@@ -14,6 +14,7 @@ struct TeamSeasonPicker: View {
         UMenuPicker(
             title: L10n.season,
             selection: $selection,
+            selectionLabel: { SeasonFormatter.shortLabel(for: $0) },
             accessibilityValue: SeasonFormatter.fullLabel(for: selection),
             onChange: onChange
         ) {

@@ -853,7 +853,7 @@
   "addMatchDescriptionHint": "Ajouter une description du match...",
   "optional": "optionnel",
   "upcoming": "À venir",
-  "draft": "En préparation",
+  "draft": "En prépa",
   "availabilityClosed": "Les disponibilités sont closes pour ce match.",
   "publishBlockerMissingMinimalInfo": "Informations minimales manquantes (adversaire, date, lieu).",
   "publishBlockerMissingComposition": "Aucune composition n'a été définie.",
