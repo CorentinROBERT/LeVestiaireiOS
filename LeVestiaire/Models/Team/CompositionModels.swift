@@ -523,35 +523,35 @@ enum CompositionPositionsParser {
 }
 
 struct CompositionSaveRequest: Encodable {
-    let teamId: String
+    let teamId: String?
     let name: String
     let formation: String
     let tacticalNotes: String?
-    let starters: [CompositionSlotRequest]
-    let substitutes: [CompositionSlotRequest]
+    let positions: CompositionPositionsSaveRequest
     let alternatives: [AlternativeCompositionRequest]?
     let captainId: String?
     let includeCaptainId: Bool
+    let includeTeamId: Bool
 
     private enum CodingKeys: String, CodingKey {
         case teamId
         case name
         case tactic
         case description
-        case starters
-        case substitutes
+        case positions
         case alternatives = "alternativeFormations"
         case captainId
     }
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(teamId, forKey: .teamId)
+        if includeTeamId, let teamId {
+            try container.encode(teamId, forKey: .teamId)
+        }
         try container.encode(name, forKey: .name)
         try container.encode(formation, forKey: .tactic)
         try container.encodeIfPresent(tacticalNotes, forKey: .description)
-        try container.encode(starters, forKey: .starters)
-        try container.encode(substitutes, forKey: .substitutes)
+        try container.encode(positions, forKey: .positions)
         try container.encodeIfPresent(alternatives, forKey: .alternatives)
         if includeCaptainId {
             if let captainId {
@@ -585,16 +585,14 @@ struct AlternativeCompositionRequest: Encodable {
     let name: String
     let formation: String
     let tacticalNotes: String?
-    let starters: [CompositionSlotRequest]
-    let substitutes: [CompositionSlotRequest]
+    let positions: CompositionPositionsSaveRequest
 
     private enum CodingKeys: String, CodingKey {
         case id
         case name
         case tactic
         case description
-        case starters
-        case substitutes
+        case positions
     }
 
     func encode(to encoder: Encoder) throws {
@@ -603,14 +601,8 @@ struct AlternativeCompositionRequest: Encodable {
         try container.encode(name, forKey: .name)
         try container.encode(formation, forKey: .tactic)
         try container.encodeIfPresent(tacticalNotes, forKey: .description)
-        try container.encode(starters, forKey: .starters)
-        try container.encode(substitutes, forKey: .substitutes)
+        try container.encode(positions, forKey: .positions)
     }
-}
-
-struct CompositionSlotRequest: Encodable {
-    let position: String
-    let memberId: String
 }
 
 enum CompositionPositionCatalog {
@@ -981,8 +973,8 @@ struct CompositionTabDraft: Identifiable, Equatable {
         return tabs
     }
 
-    func toSaveRequest(teamId: String, compositionId: String?) -> CompositionSaveRequest {
-        teamSaveRequest(teamId: teamId, alternativeTabs: [])
+    func toSaveRequest(teamId: String, members: [TeamMember] = [], isUpdate: Bool = false) -> CompositionSaveRequest {
+        teamSaveRequest(teamId: teamId, members: members, alternativeTabs: [], isUpdate: isUpdate)
     }
 
     var lineupMemberKeys: [String] {
@@ -1005,47 +997,34 @@ struct CompositionTabDraft: Identifiable, Equatable {
         return isInLineup ? captainMemberKey : nil
     }
 
-    var starterSlotRequests: [CompositionSlotRequest] {
-        starterAssignments.map {
-            CompositionSlotRequest(position: $0.key, memberId: $0.value)
-        }
-    }
-
-    var substituteSlotRequests: [CompositionSlotRequest] {
-        substituteMemberIds.compactMap { memberId in
-            guard let memberId else { return nil }
-            return CompositionSlotRequest(position: "SUB", memberId: memberId)
-        }
-    }
-
-    func alternativeCompositionRequest() -> AlternativeCompositionRequest {
+    func alternativeCompositionRequest(members: [TeamMember] = []) -> AlternativeCompositionRequest {
         AlternativeCompositionRequest(
             id: serverAlternativeId,
             name: name,
             formation: formationKey,
             tacticalNotes: tacticalNotes.nilIfEmpty,
-            starters: starterSlotRequests,
-            substitutes: substituteSlotRequests
+            positions: CompositionPositionsSaveRequest.from(tab: self, members: members)
         )
     }
 
     func teamSaveRequest(
         teamId: String,
+        members: [TeamMember] = [],
         alternativeTabs: [CompositionTabDraft],
         isUpdate: Bool = false
     ) -> CompositionSaveRequest {
-        let alternatives = alternativeTabs.map { $0.alternativeCompositionRequest() }
+        let alternatives = alternativeTabs.map { $0.alternativeCompositionRequest(members: members) }
         let captainId = isMain ? sanitizedCaptainMemberKey() : nil
         return CompositionSaveRequest(
             teamId: teamId,
             name: name,
             formation: formationKey,
             tacticalNotes: tacticalNotes.nilIfEmpty,
-            starters: starterSlotRequests,
-            substitutes: substituteSlotRequests,
+            positions: CompositionPositionsSaveRequest.from(tab: self, members: members),
             alternatives: alternatives.isEmpty ? nil : alternatives,
             captainId: captainId,
-            includeCaptainId: isMain && (isUpdate || captainId != nil)
+            includeCaptainId: isMain && (isUpdate || captainId != nil),
+            includeTeamId: !isUpdate
         )
     }
 

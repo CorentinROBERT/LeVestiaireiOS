@@ -94,7 +94,7 @@ struct CreateTeamSheet: View {
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
             .glassEffect(.regular, in: .rect(cornerRadius: 18))
-            .buttonStyle(.plain)
+            .buttonStyle(.fullTap)
 
             Button {
                 Task {
@@ -125,7 +125,7 @@ struct CreateTeamSheet: View {
                         .fill(AppPalette.Primary.main)
                 )
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.fullTap)
             .disabled(viewModel.isSubmitting)
         }
     }

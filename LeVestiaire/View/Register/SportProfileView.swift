@@ -110,12 +110,11 @@ struct SportProfileView: View {
             sectionTitle(L10n.sportInformationSection)
 
             UGlassFormRow(icon: "figure.run") {
-                Picker(L10n.strongFoot, selection: $viewModel.strongFoot) {
+                USegmentedPicker(title: L10n.strongFoot, selection: $viewModel.strongFoot) {
                     ForEach(StrongFoot.allCases) { foot in
                         Text(foot.displayName).tag(foot)
                     }
                 }
-                .pickerStyle(.segmented)
             }
 
             UGlassTextField(
@@ -133,42 +132,23 @@ struct SportProfileView: View {
             )
 
             UGlassFormRow(icon: "trophy.fill") {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(L10n.favoriteLeague)
-                        .font(.caption)
-                        .foregroundStyle(AppPalette.Neutral.textSecondary)
-
-                    Picker(L10n.favoriteLeague, selection: $viewModel.selectedLeague) {
-                        ForEach(FootballLeague.allCases) { league in
-                            Text(league.displayName).tag(league)
-                        }
-                    }
-                    .labelsHidden()
-                    .pickerStyle(.menu)
-                    .foregroundStyle(AppPalette.Neutral.textPrimary)
-                    .onChange(of: viewModel.selectedLeague) { _, _ in
-                        viewModel.onLeagueChanged()
+                UMenuPicker(
+                    title: L10n.favoriteLeague,
+                    selection: $viewModel.selectedLeague,
+                    onChange: { viewModel.onLeagueChanged() }
+                ) {
+                    ForEach(FootballLeague.allCases) { league in
+                        Text(league.displayName).tag(league)
                     }
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
             }
 
             UGlassFormRow(icon: "shield.fill") {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(L10n.favoriteTeam)
-                        .font(.caption)
-                        .foregroundStyle(AppPalette.Neutral.textSecondary)
-
-                    Picker(L10n.favoriteTeam, selection: $viewModel.selectedTeam) {
-                        ForEach(viewModel.availableTeams, id: \.self) { team in
-                            Text(team).tag(team)
-                        }
+                UMenuPicker(title: L10n.favoriteTeam, selection: $viewModel.selectedTeam) {
+                    ForEach(viewModel.availableTeams, id: \.self) { team in
+                        Text(team).tag(team)
                     }
-                    .labelsHidden()
-                    .pickerStyle(.menu)
-                    .foregroundStyle(AppPalette.Neutral.textPrimary)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
             }
 
             VStack(alignment: .leading, spacing: 12) {

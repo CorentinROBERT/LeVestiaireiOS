@@ -7,28 +7,8 @@ import Combine
 import Foundation
 import SwiftUI
 
-enum JoinTeamSearchMode: String, CaseIterable, Identifiable {
-    case name
-    case inviteCode
-    case teamId
-
-    var id: String { rawValue }
-
-    var localizedTitle: String {
-        switch self {
-        case .name:
-            return L10n.text("joinTeamSearchByName")
-        case .inviteCode:
-            return L10n.text("joinTeamSearchByInviteCode")
-        case .teamId:
-            return L10n.text("joinTeamSearchById")
-        }
-    }
-}
-
 @MainActor
 final class JoinTeamViewModel: ObservableObject {
-    @Published var searchMode: JoinTeamSearchMode = .name
     @Published var searchQuery = ""
     @Published var searchResults: [TeamSearchResult] = []
     @Published var myJoinRequests: [TeamJoinRequest] = []
@@ -46,8 +26,12 @@ final class JoinTeamViewModel: ObservableObject {
 
     static let messageMaxLength = 500
 
-    init(teamService: TeamService = .shared) {
+    init(teamService: TeamService) {
         self.teamService = teamService
+    }
+
+    convenience init() {
+        self.init(teamService: TeamService.shared)
     }
 
     var pendingJoinRequests: [TeamJoinRequest] {
@@ -66,7 +50,7 @@ final class JoinTeamViewModel: ObservableObject {
     }
 
     func search() async {
-        let query = searchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+        let query = searchQuery.resolvedTeamSearchQuery
         guard !query.isEmpty else {
             errorMessage = L10n.text("joinTeamSearchRequired")
             searchResults = []
@@ -79,20 +63,7 @@ final class JoinTeamViewModel: ObservableObject {
         defer { isSearching = false }
 
         do {
-            switch searchMode {
-            case .name:
-                searchResults = try await teamService.searchTeams(query: query)
-            case .inviteCode:
-                let normalizedCode = query.normalizedTeamInviteCode
-                guard !normalizedCode.isEmpty else {
-                    searchResults = []
-                    errorMessage = L10n.text("joinTeamSearchRequired")
-                    return
-                }
-                searchResults = try await teamService.searchTeams(query: normalizedCode)
-            case .teamId:
-                searchResults = try await resolveTeamById(query)
-            }
+            searchResults = try await teamService.searchTeams(query: query)
 
             if searchResults.isEmpty {
                 errorMessage = L10n.text("joinTeamSearchNoResults")
@@ -132,8 +103,8 @@ final class JoinTeamViewModel: ObservableObject {
             return false
         } catch {
             errorMessage = error.localizedDescription
-            return false
         }
+        return false
     }
 
     func cancelJoinRequest(_ request: TeamJoinRequest) async {
@@ -173,11 +144,8 @@ final class JoinTeamViewModel: ObservableObject {
         await loadMyRequests()
         await refreshTeams?()
 
-        if searchMode == .name || searchMode == .inviteCode,
-           !searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        if !searchQuery.resolvedTeamSearchQuery.isEmpty {
             await search()
-        } else if searchMode == .teamId {
-            searchResults = (try? await resolveTeamById(teamId)) ?? searchResults
         } else {
             searchResults = searchResults.map { result in
                 guard result.id == teamId else { return result }
@@ -195,27 +163,6 @@ final class JoinTeamViewModel: ObservableObject {
                 )
             }
         }
-    }
-
-    private func resolveTeamById(_ teamId: String) async throws -> [TeamSearchResult] {
-        let team = try await teamService.fetchTeam(id: teamId)
-        let myTeams = try await teamService.fetchUserTeams()
-        let isMember = myTeams.contains { $0.id == team.id }
-        let hasPending = myJoinRequests.contains { $0.teamId == team.id && $0.status == .pending }
-
-        return [
-            TeamSearchResult(
-                id: team.id,
-                name: team.name,
-                memberCount: team.resolvedMemberCount,
-                createdAt: team.createdAt,
-                sport: team.sport,
-                league: team.league,
-                logoUrl: team.logoUrl,
-                isMember: isMember,
-                hasPendingJoinRequest: hasPending
-            )
-        ]
     }
 }
 

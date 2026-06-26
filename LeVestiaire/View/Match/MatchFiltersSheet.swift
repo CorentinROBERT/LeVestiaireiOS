@@ -83,7 +83,7 @@ struct MatchFiltersSheet: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
             .glassEffect(.regular, in: .rect(cornerRadius: 20))
-            .buttonStyle(.plain)
+            .buttonStyle(.fullTap)
         }
         .padding(.horizontal, 20)
         .padding(.top, 28)
@@ -112,7 +112,7 @@ struct MatchFiltersSheet: View {
                                     .fill(isSelected ? AppPalette.Primary.main : AppPalette.Primary.soft)
                             )
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.fullTap)
                 }
             }
         }
@@ -140,7 +140,7 @@ struct MatchFiltersSheet: View {
                                     .fill(isSelected ? AppPalette.Primary.main : AppPalette.Primary.soft)
                             )
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.fullTap)
                 }
             }
         }
@@ -220,23 +220,11 @@ struct MatchFiltersSheet: View {
         date: Date?,
         binding: Binding<Date?>
     ) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-                .font(.caption)
-                .foregroundStyle(AppPalette.Neutral.textSecondary)
-
-            DatePicker(
-                "",
-                selection: Binding(
-                    get: { date ?? Date() },
-                    set: { binding.wrappedValue = $0 }
-                ),
-                displayedComponents: .date
-            )
-            .labelsHidden()
-            .datePickerStyle(.compact)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        UOptionalDatePickerRow(
+            title: title,
+            selection: binding,
+            fallbackDate: date ?? Date()
+        )
     }
 }
 

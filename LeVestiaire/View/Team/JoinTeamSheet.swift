@@ -20,7 +20,6 @@ struct JoinTeamSheet: View {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
                     descriptionText
-                    searchModePicker
                     searchField
                     feedbackMessages
                     searchResultsSection
@@ -53,39 +52,6 @@ struct JoinTeamSheet: View {
         colorScheme == .dark ? .black : .white
     }
 
-    private var searchFieldPlaceholder: String {
-        switch viewModel.searchMode {
-        case .name:
-            return L10n.text("joinTeamSearchNamePlaceholder")
-        case .inviteCode:
-            return L10n.text("joinTeamSearchInviteCodePlaceholder")
-        case .teamId:
-            return L10n.text("joinTeamSearchIdPlaceholder")
-        }
-    }
-
-    private var searchFieldIcon: String {
-        switch viewModel.searchMode {
-        case .name:
-            return "magnifyingglass"
-        case .inviteCode:
-            return "ticket.fill"
-        case .teamId:
-            return "number"
-        }
-    }
-
-    private var searchFieldAutocapitalization: TextInputAutocapitalization {
-        switch viewModel.searchMode {
-        case .name:
-            return .words
-        case .inviteCode:
-            return .characters
-        case .teamId:
-            return .never
-        }
-    }
-
     private var descriptionText: some View {
         Text(L10n.text("joinTeamDescription"))
             .font(.subheadline)
@@ -93,22 +59,18 @@ struct JoinTeamSheet: View {
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private var searchModePicker: some View {
-        Picker(L10n.text("joinTeamSearchMode"), selection: $viewModel.searchMode) {
-            ForEach(JoinTeamSearchMode.allCases) { mode in
-                Text(mode.localizedTitle).tag(mode)
-            }
-        }
-        .pickerStyle(.segmented)
-    }
-
     private var searchField: some View {
         HStack(spacing: 12) {
             UGlassTextField(
-                placeholder: searchFieldPlaceholder,
-                icon: searchFieldIcon,
+                placeholder: L10n.text("joinTeamSearchPlaceholder"),
+                icon: "magnifyingglass",
                 text: $viewModel.searchQuery,
-                autocapitalization: searchFieldAutocapitalization
+                autocapitalization: .sentences,
+                submitLabel: .search,
+                onSubmit: {
+                    guard !viewModel.isSearching else { return }
+                    Task { await viewModel.search() }
+                }
             )
 
             Button {
@@ -127,7 +89,7 @@ struct JoinTeamSheet: View {
                 .frame(width: 44, height: 44)
                 .background(AppPalette.Primary.main, in: Circle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.fullTap)
             .disabled(viewModel.isSearching)
             .accessibilityLabel(L10n.text("search"))
         }
@@ -264,7 +226,7 @@ struct JoinTeamSheet: View {
                         }
                     }
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.fullTap)
             .disabled(viewModel.isSubmitting(teamId: team.id))
         }
     }

@@ -239,7 +239,7 @@ struct Matchs: View {
             .contentShape(.rect(cornerRadius: ActionButtonMetrics.cornerRadius))
             .glassEffect(.regular, in: .rect(cornerRadius: ActionButtonMetrics.cornerRadius))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.fullTap)
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityLabel(L10n.createMatch)
     }
@@ -273,7 +273,7 @@ struct Matchs: View {
                 }
             }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.fullTap)
         .accessibilityLabel(L10n.filterMatches)
     }
 
@@ -301,7 +301,7 @@ struct Matchs: View {
             .padding(.vertical, 10)
             .glassEffect(.regular, in: .rect(cornerRadius: 12))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.fullTap)
     }
 
     private var activeFiltersDescription: String {

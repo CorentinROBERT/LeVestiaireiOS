@@ -204,23 +204,18 @@ struct MatchCompositionEditorSheet: View {
     }
 
     private var templateSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(L10n.applyTeamTemplate)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(AppPalette.Neutral.textPrimary)
-
-            Picker(L10n.applyTeamTemplate, selection: $selectedTemplateId) {
-                Text(L10n.select).tag(Optional<String>.none)
-                ForEach(compositionViewModel.teamTemplates) { template in
-                    Text(template.name).tag(Optional(template.id))
-                }
-            }
-            .pickerStyle(.menu)
-            .tint(AppPalette.Primary.main)
-            .onChange(of: selectedTemplateId) { _, newValue in
-                guard let newValue else { return }
+        UMenuPicker(
+            title: L10n.applyTeamTemplate,
+            selection: $selectedTemplateId,
+            onChange: {
+                guard let newValue = selectedTemplateId else { return }
                 pendingTemplateId = newValue
                 showsTemplateImportConfirmation = true
+            }
+        ) {
+            Text(L10n.select).tag(Optional<String>.none)
+            ForEach(compositionViewModel.teamTemplates) { template in
+                Text(template.name).tag(Optional(template.id))
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -269,7 +264,7 @@ struct MatchCompositionEditorSheet: View {
                                     : AppPalette.Neutral.textPrimary
                             )
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.fullTap)
                 }
             }
         }
@@ -290,21 +285,18 @@ struct MatchCompositionEditorSheet: View {
             )
             .disabled(!canEdit)
 
-            VStack(alignment: .leading, spacing: 8) {
-                Text(L10n.text("formation"))
-                    .font(.subheadline.weight(.semibold))
-
-                Picker(L10n.text("formation"), selection: tab.formationKey) {
-                    ForEach(FormationCatalog.all) { formation in
-                        Text(formation.displayName).tag(formation.id)
-                    }
-                }
-                .pickerStyle(.menu)
-                .disabled(!canEdit)
-                .onChange(of: tab.wrappedValue.formationKey) { _, _ in
+            UMenuPicker(
+                title: L10n.text("formation"),
+                selection: tab.formationKey,
+                isDisabled: !canEdit,
+                onChange: {
                     tab.wrappedValue.starterAssignments = [:]
                     tab.wrappedValue.captainMemberKey = nil
                     markTabsEdited()
+                }
+            ) {
+                ForEach(FormationCatalog.all) { formation in
+                    Text(formation.displayName).tag(formation.id)
                 }
             }
 

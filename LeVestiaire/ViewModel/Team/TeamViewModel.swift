@@ -95,10 +95,6 @@ final class TeamViewModel: ObservableObject {
         currentUserRole?.canChangeMemberRoles == true
     }
 
-    var kpiMemberCountDisplay: String {
-        "\(selectedTeam?.resolvedMemberCount ?? 0)"
-    }
-
     var showsTeamDetailError: Bool {
         hasTeams && selectedTeam == nil && errorMessage != nil
     }

@@ -58,7 +58,7 @@ struct TeamJoinRequestsSection: View {
             }
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.fullTap)
     }
 
     @ViewBuilder

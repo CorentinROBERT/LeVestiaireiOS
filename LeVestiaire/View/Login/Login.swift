@@ -162,7 +162,7 @@ struct Login: View {
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(AppPalette.Primary.main)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.fullTap)
 
             HStack(spacing: 4) {
                 Text(L10n.noAccountYet)
@@ -175,7 +175,7 @@ struct Login: View {
                         .fontWeight(.semibold)
                         .foregroundStyle(AppPalette.Primary.main)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.fullTap)
             }
             .font(.subheadline)
         }

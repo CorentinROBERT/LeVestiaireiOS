@@ -50,7 +50,6 @@ struct Team: View {
                         }
                     }
 
-                    TeamKPISection(viewModel: viewModel)
                     TeamTabPicker(selection: $selectedTab)
                     tabContent
                         .animation(.easeInOut(duration: 0.2), value: selectedTab)

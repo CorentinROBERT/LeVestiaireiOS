@@ -13604,13 +13604,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Search for a team by name or enter its ID to send a join request."
+            "value" : "Search for a team by name or invite code to send a join request."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Recherchez une équipe par nom ou saisissez son identifiant pour envoyer une demande d'adhésion."
+            "value" : "Recherchez une équipe par nom ou par code d'invitation pour envoyer une demande d'adhésion."
           }
         }
       }
@@ -13632,6 +13632,7 @@
       }
     },
     "joinTeamSearchById" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -13648,6 +13649,7 @@
       }
     },
     "joinTeamSearchByInviteCode" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -13664,6 +13666,7 @@
       }
     },
     "joinTeamSearchByName" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -13680,6 +13683,7 @@
       }
     },
     "joinTeamSearchIdPlaceholder" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -13696,6 +13700,7 @@
       }
     },
     "joinTeamSearchInviteCodePlaceholder" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -13712,6 +13717,7 @@
       }
     },
     "joinTeamSearchMode" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -13728,6 +13734,7 @@
       }
     },
     "joinTeamSearchNamePlaceholder" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -13759,18 +13766,34 @@
         }
       }
     },
-    "joinTeamSearchRequired" : {
+    "joinTeamSearchPlaceholder" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enter a team name, invite code, or team ID"
+            "value" : "Team name or invite code"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Saisissez un nom, un code d'invitation ou un identifiant d'équipe"
+            "value" : "Nom ou code d'invitation"
+          }
+        }
+      }
+    },
+    "joinTeamSearchRequired" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter a team name or invite code"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saisissez un nom ou un code d'invitation"
           }
         }
       }
@@ -16145,6 +16168,7 @@
       }
     },
     "members" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

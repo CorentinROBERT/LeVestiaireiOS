@@ -27,7 +27,7 @@ struct TeamCompositionsSection: View {
                             .font(.title3)
                             .foregroundStyle(AppPalette.Primary.main)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.fullTap)
                 }
             }
         ) {
@@ -83,7 +83,7 @@ struct TeamCompositionsSection: View {
             .padding(12)
             .glassEffect(.regular, in: .rect(cornerRadius: 14))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.fullTap)
         .contextMenu {
             if viewModel.canManageTeam {
                 Button(L10n.text("edit")) {

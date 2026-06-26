@@ -40,40 +40,6 @@ final class TeamStatsViewModel: ObservableObject {
         self.host = host
     }
 
-    var statsKPIsUnavailable: Bool {
-        TeamKPIDisplay.statsUnavailable(
-            stats: teamSeasonStats,
-            hasError: statsLoadError != nil,
-            isLoading: isLoadingStats
-        )
-    }
-
-    var kpiMatchesPlayedDisplay: String {
-        TeamKPIDisplay.matchesPlayed(
-            stats: teamSeasonStats,
-            hasError: statsLoadError != nil,
-            isLoading: isLoadingStats
-        )
-    }
-
-    var kpiGoalsDisplay: String {
-        TeamKPIDisplay.goals(
-            stats: teamSeasonStats,
-            hasError: statsLoadError != nil,
-            isLoading: isLoadingStats
-        )
-    }
-
-    var kpiAssistsDisplay: String {
-        TeamKPIDisplay.assists(
-            stats: teamSeasonStats,
-            hasError: statsLoadError != nil,
-            isLoading: isLoadingStats
-        )
-    }
-
-    var isLoadingKPIs: Bool { isLoadingStats && teamSeasonStats == nil }
-
     func resetCache() {
         teamSeasonStats = nil
         teamInsights = nil
@@ -124,14 +90,10 @@ final class TeamStatsViewModel: ObservableObject {
 
         guard seasonsTeamId != teamId else { return }
 
-        let seasons = await statsService.fetchAvailableSeasons()
-        if seasons.isEmpty {
-            availableSeasons = [SeasonFormatter.currentSeason()]
-        } else {
-            availableSeasons = seasons
-        }
-        selectedStatsSeason = availableSeasons.first ?? ""
-        selectedRankingSeason = availableSeasons.first ?? ""
+        availableSeasons = await statsService.fetchAvailableSeasons()
+        let defaultSeason = SeasonFormatter.defaultSelection(from: availableSeasons)
+        selectedStatsSeason = defaultSeason
+        selectedRankingSeason = defaultSeason
         seasonsTeamId = teamId
     }
 

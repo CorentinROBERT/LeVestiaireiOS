@@ -66,7 +66,7 @@ struct ProfilePhotoPicker: View {
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(AppPalette.Primary.main)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.fullTap)
             .disabled(isUploading)
         }
         .frame(maxWidth: .infinity)

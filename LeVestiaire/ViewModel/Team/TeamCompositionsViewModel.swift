@@ -13,6 +13,7 @@ final class TeamCompositionsViewModel: ObservableObject {
     @Published var compositionPendingDeletion: TeamComposition?
     @Published var editingComposition: TeamComposition?
     @Published var isSubmitting = false
+    @Published var lastSaveError: String?
 
     private weak var host: TeamViewModel?
     private let compositionService: CompositionService
@@ -32,6 +33,7 @@ final class TeamCompositionsViewModel: ObservableObject {
         compositionsLoadError = nil
         compositionPendingDeletion = nil
         editingComposition = nil
+        lastSaveError = nil
         compositionsLoadedForTeamId = nil
     }
 
@@ -73,6 +75,7 @@ final class TeamCompositionsViewModel: ObservableObject {
     }
 
     func openCompositionEditor(for composition: TeamComposition?) {
+        lastSaveError = nil
         editingComposition = composition
         host?.activeSheet = .compositionEditor(composition)
     }
@@ -81,20 +84,23 @@ final class TeamCompositionsViewModel: ObservableObject {
         tabs: [CompositionTabDraft],
         deletedAlternativeIds: [String] = []
     ) async -> Bool {
-        guard let teamId = host?.selectedTeam?.id else { return false }
+        lastSaveError = nil
+
+        guard let teamId = host?.selectedTeam?.id else {
+            lastSaveError = L10n.text("errorCompositionValidation")
+            return false
+        }
         guard let mainTab = tabs.first(where: \.isMain) ?? tabs.first else { return false }
 
         guard !mainTab.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            host?.showError(L10n.text("compositionNameRequired"))
+            lastSaveError = L10n.text("compositionNameRequired")
             return false
         }
 
         guard mainTab.starterAssignments.count == 7 else {
-            host?.showError(
-                L10n.format(
-                    "compositionMustHave7StartersCurrently",
-                    mainTab.starterAssignments.count
-                )
+            lastSaveError = L10n.format(
+                "compositionMustHave7StartersCurrently",
+                mainTab.starterAssignments.count
             )
             return false
         }
@@ -103,8 +109,10 @@ final class TeamCompositionsViewModel: ObservableObject {
         defer { isSubmitting = false }
 
         let alternativeTabs = tabs.filter { !$0.isMain }
+        let members = host?.selectedTeam?.resolvedMembers ?? []
         let request = mainTab.teamSaveRequest(
             teamId: teamId,
+            members: members,
             alternativeTabs: alternativeTabs,
             isUpdate: editingComposition?.id != nil
         )
@@ -118,15 +126,13 @@ final class TeamCompositionsViewModel: ObservableObject {
                     )
                 }
                 _ = try await compositionService.updateComposition(id: compositionId, request: request)
-                host?.showSuccess(L10n.text("compositionModifiedSuccessfully"))
             } else {
                 _ = try await compositionService.createComposition(request)
-                host?.showSuccess(L10n.text("compositionCreatedSuccessfully"))
             }
             await loadIfNeeded(force: true)
             return true
         } catch {
-            host?.showError(error.localizedDescription)
+            lastSaveError = error.localizedDescription
             return false
         }
     }

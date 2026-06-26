@@ -42,7 +42,7 @@ struct MatchDetailTabPicker: View {
                                 : AppPalette.Neutral.textPrimary
                         )
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.fullTap)
                     .accessibilityLabel(tab.title)
                     .accessibilityAddTraits(selection == tab ? .isSelected : [])
                 }

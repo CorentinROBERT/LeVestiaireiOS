@@ -165,7 +165,7 @@ struct UTextField: View {
                             .font(.body.weight(.medium))
                             .foregroundStyle(style.accessoryColor)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.fullTap)
                 }
             }
             .padding(.horizontal, 18)

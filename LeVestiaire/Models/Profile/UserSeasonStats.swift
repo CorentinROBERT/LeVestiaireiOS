@@ -201,13 +201,58 @@ enum SeasonFormatter {
         return "\(year - 1)-\(year)"
     }
 
-    static func shortLabel(for season: String) -> String {
-        let parts = season.split(separator: "-", omittingEmptySubsequences: false)
-        guard parts.count == 2 else { return season }
+    /// Saison sportive immédiatement après (ex. 2025-2026 → 2026-2027).
+    static func nextSeason(after season: String) -> String? {
+        guard let (startYear, endYear) = parseSeasonYears(season) else { return nil }
+        return "\(startYear + 1)-\(endYear + 1)"
+    }
 
-        let start = parts[0]
-        let end = parts[1]
-        let shortStart = start.count > 2 ? String(start.suffix(2)) : String(start)
-        return "\(shortStart)-\(end)"
+    /// Fusionne les saisons renvoyées par l'API avec la saison courante et la suivante
+    /// pour permettre la planification avant qu'il y ait des matchs ou des stats.
+    static func resolvedAvailableSeasons(
+        apiSeasons: [String],
+        referenceDate: Date = Date()
+    ) -> [String] {
+        var seasons = Set(apiSeasons)
+        let current = currentSeason(referenceDate: referenceDate)
+        seasons.insert(current)
+        if let next = nextSeason(after: current) {
+            seasons.insert(next)
+        }
+        return seasons.sorted()
+    }
+
+    /// Saison sélectionnée par défaut : courante si présente, sinon la plus récente.
+    static func defaultSelection(
+        from seasons: [String],
+        referenceDate: Date = Date()
+    ) -> String {
+        let current = currentSeason(referenceDate: referenceDate)
+        if seasons.contains(current) {
+            return current
+        }
+        return seasons.last ?? current
+    }
+
+    /// Libellé compact pour les pickers (ex. 2025-2026 → 25-26).
+    static func shortLabel(for season: String) -> String {
+        guard let (startYear, endYear) = parseSeasonYears(season) else { return season }
+        return String(format: "%02d-%02d", startYear % 100, endYear % 100)
+    }
+
+    /// Libellé complet (ex. 2025-2026).
+    static func fullLabel(for season: String) -> String {
+        guard let (startYear, endYear) = parseSeasonYears(season) else { return season }
+        return "\(startYear)-\(endYear)"
+    }
+
+    private static func parseSeasonYears(_ season: String) -> (Int, Int)? {
+        let parts = season.split(separator: "-", omittingEmptySubsequences: false)
+        guard parts.count == 2,
+              let startYear = Int(parts[0]),
+              let endYear = Int(parts[1]) else {
+            return nil
+        }
+        return (startYear, endYear)
     }
 }

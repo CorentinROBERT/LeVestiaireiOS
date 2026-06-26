@@ -119,7 +119,7 @@ struct MatchDetailView: View {
                                     .fill(AppPalette.Primary.soft.opacity(0.6))
                             )
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.fullTap)
                     .accessibilityLabel(L10n.editMatchInfo)
                 }
             }
@@ -227,7 +227,7 @@ struct MatchDetailView: View {
                         .fill(isSelected ? AppPalette.Primary.main : AppPalette.Primary.soft)
                 )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.fullTap)
         .disabled(viewModel.availabilityViewModel.isSubmitting)
     }
 

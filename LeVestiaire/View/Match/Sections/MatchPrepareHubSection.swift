@@ -233,7 +233,7 @@ struct MatchPrepareHubSection: View {
                             Capsule()
                                 .fill(entry.status == status ? AppPalette.Primary.main : AppPalette.Primary.soft)
                         )
-                        .buttonStyle(.plain)
+                        .buttonStyle(.fullTap)
                         .disabled(availabilityViewModel.isUpdatingAvailability)
                     }
                 }

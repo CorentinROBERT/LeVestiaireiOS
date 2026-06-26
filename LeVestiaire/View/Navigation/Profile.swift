@@ -119,7 +119,7 @@ struct Profile: View {
                                 .fill(AppPalette.Primary.soft.opacity(0.6))
                         )
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.fullTap)
                 .accessibilityLabel(L10n.editSportifProfile)
             }
         ) {
@@ -182,7 +182,7 @@ struct Profile: View {
             }
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.fullTap)
     }
 
     private var statsCollapsedContent: some View {
@@ -208,22 +208,14 @@ struct Profile: View {
                 .foregroundStyle(AppPalette.Neutral.textSecondary)
 
             if !viewModel.availableSeasons.isEmpty {
-                HStack {
-                    Text(L10n.season)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(AppPalette.Neutral.textPrimary)
-
-                    Spacer()
-
-                    Picker(L10n.season, selection: $viewModel.selectedSeason) {
-                        ForEach(viewModel.availableSeasons, id: \.self) { season in
-                            Text(SeasonFormatter.shortLabel(for: season)).tag(season)
-                        }
-                    }
-                    .labelsHidden()
-                    .pickerStyle(.menu)
-                    .onChange(of: viewModel.selectedSeason) { _, _ in
-                        viewModel.onSeasonChanged()
+                UMenuPicker(
+                    title: L10n.season,
+                    selection: $viewModel.selectedSeason,
+                    accessibilityValue: SeasonFormatter.fullLabel(for: viewModel.selectedSeason),
+                    onChange: { viewModel.onSeasonChanged() }
+                ) {
+                    ForEach(viewModel.availableSeasons, id: \.self) { season in
+                        Text(SeasonFormatter.shortLabel(for: season)).tag(season)
                     }
                 }
             }
@@ -330,7 +322,7 @@ struct Profile: View {
                     )
                     .font(.subheadline.weight(.semibold))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.fullTap)
                 .foregroundStyle(AppPalette.Primary.main)
                 .disabled(viewModel.isCancellingDeletion)
             }

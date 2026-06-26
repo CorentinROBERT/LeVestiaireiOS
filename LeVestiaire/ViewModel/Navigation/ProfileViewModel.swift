@@ -115,9 +115,9 @@ final class ProfileViewModel: ObservableObject {
         availableSeasons = seasons
 
         if selectedSeason.isEmpty {
-            selectedSeason = seasons.last ?? seasons.first ?? SeasonFormatter.currentSeason()
-        } else if !seasons.contains(selectedSeason), let fallback = seasons.last {
-            selectedSeason = fallback
+            selectedSeason = SeasonFormatter.defaultSelection(from: seasons)
+        } else if !seasons.contains(selectedSeason) {
+            selectedSeason = SeasonFormatter.defaultSelection(from: seasons)
         }
 
         await loadSeasonStats()

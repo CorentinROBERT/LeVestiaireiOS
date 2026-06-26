@@ -143,7 +143,7 @@ struct MatchEventsTimelineView: View {
                                 .fill(AppPalette.Semantic.error.opacity(0.12))
                         )
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.fullTap)
                 .disabled(isSubmitting)
             }
         }

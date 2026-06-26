@@ -77,7 +77,7 @@ struct CreateMatchSheet: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
             .glassEffect(.regular, in: .rect(cornerRadius: 20))
-            .buttonStyle(.plain)
+            .buttonStyle(.fullTap)
         }
         .padding(.horizontal, 20)
         .padding(.top, 28)
@@ -144,47 +144,27 @@ struct CreateMatchSheet: View {
     }
 
     private var teamPicker: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(L10n.team)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(AppPalette.Neutral.textSecondary)
-
-            Picker(L10n.team, selection: $viewModel.selectedTeamId) {
-                ForEach(viewModel.manageableTeams) { team in
-                    Text(team.name).tag(Optional(team.id))
-                }
+        UMenuPicker(title: L10n.team, selection: $viewModel.selectedTeamId) {
+            ForEach(viewModel.manageableTeams) { team in
+                Text(team.name).tag(Optional(team.id))
             }
-            .pickerStyle(.menu)
-            .tint(AppPalette.Primary.main)
         }
     }
 
     private var dateSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(L10n.text("matchDate"))
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(AppPalette.Neutral.textSecondary)
-
-            DatePicker(
-                "",
+            UDatePickerRow(
+                title: L10n.text("matchDate"),
                 selection: $viewModel.matchDate,
-                in: Date()...,
+                minimumDate: Date(),
                 displayedComponents: .date
             )
-            .labelsHidden()
-            .datePickerStyle(.compact)
 
-            Text(L10n.text("matchTime"))
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(AppPalette.Neutral.textSecondary)
-
-            DatePicker(
-                "",
+            UDatePickerRow(
+                title: L10n.text("matchTime"),
                 selection: $viewModel.matchTime,
                 displayedComponents: .hourAndMinute
             )
-            .labelsHidden()
-            .datePickerStyle(.compact)
         }
         .padding(14)
         .glassEffect(.regular, in: .rect(cornerRadius: 14))

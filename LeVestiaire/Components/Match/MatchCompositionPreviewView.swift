@@ -175,7 +175,7 @@ struct MatchCompositionPreviewView: View {
                             )
                         }
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.fullTap)
                 }
             }
         }

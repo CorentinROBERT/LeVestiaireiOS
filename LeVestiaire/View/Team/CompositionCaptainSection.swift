@@ -84,7 +84,7 @@ struct CompositionCaptainSection: View {
             .padding(12)
             .glassEffect(.regular, in: .rect(cornerRadius: 16))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.fullTap)
         .disabled(!canEdit || isUpdatingCaptain)
     }
 
@@ -131,7 +131,7 @@ struct CompositionCaptainSection: View {
             .padding(12)
             .glassEffect(.regular, in: .rect(cornerRadius: 16))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.fullTap)
         .disabled(!canEdit || isUpdatingCaptain)
     }
 

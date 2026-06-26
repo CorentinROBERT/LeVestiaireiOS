@@ -157,16 +157,14 @@ struct MatchQuizEditorSheet: View {
                     .background(AppPalette.Neutral.surface, in: RoundedRectangle(cornerRadius: 12))
             }
 
-            Text(L10n.text("isAnswerTrue"))
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(AppPalette.Neutral.textSecondary)
-
-            Picker("", selection: bindingAnswer(for: question.id)) {
+            USegmentedPicker(
+                title: L10n.text("isAnswerTrue"),
+                selection: bindingAnswer(for: question.id)
+            ) {
                 Text(L10n.text("undefinedAnswer")).tag(Optional<Bool>.none)
                 Text(L10n.text("trueValue")).tag(Optional(true))
                 Text(L10n.text("falseValue")).tag(Optional(false))
             }
-            .pickerStyle(.segmented)
         }
         .padding(14)
         .glassEffect(.regular, in: .rect(cornerRadius: 16))

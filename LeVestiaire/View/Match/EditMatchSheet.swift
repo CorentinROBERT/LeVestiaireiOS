@@ -66,7 +66,7 @@ struct EditMatchSheet: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
             .glassEffect(.regular, in: .rect(cornerRadius: 20))
-            .buttonStyle(.plain)
+            .buttonStyle(.fullTap)
         }
         .padding(.horizontal, 20)
         .padding(.top, 28)
@@ -119,31 +119,23 @@ struct EditMatchSheet: View {
 
     private var dateSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(L10n.text("matchDate"))
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(AppPalette.Neutral.textSecondary)
-
-            DatePicker(
-                "",
+            UDatePickerRow(
+                title: L10n.text("matchDate"),
                 selection: $viewModel.matchDate,
-                in: Date()...,
+                minimumDate: Date(),
                 displayedComponents: .date
             )
-            .labelsHidden()
-            .datePickerStyle(.compact)
 
             Toggle(L10n.includeMatchTime, isOn: $viewModel.includesTime)
                 .font(.subheadline)
                 .tint(AppPalette.Primary.main)
 
             if viewModel.includesTime {
-                DatePicker(
-                    "",
+                UDatePickerRow(
+                    title: L10n.text("matchTime"),
                     selection: $viewModel.matchTime,
                     displayedComponents: .hourAndMinute
                 )
-                .labelsHidden()
-                .datePickerStyle(.compact)
             }
         }
         .padding(14)

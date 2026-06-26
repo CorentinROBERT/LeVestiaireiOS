@@ -69,12 +69,11 @@ struct DeveloperView: View {
             tint: AppPalette.Secondary.mint
         ) {
             VStack(alignment: .leading, spacing: 16) {
-                Picker(L10n.environment, selection: $viewModel.selectedEnvironment) {
+                USegmentedPicker(selection: $viewModel.selectedEnvironment) {
                     ForEach(APIEnvironment.allCases) { environment in
                         Text(environment.displayName).tag(environment)
                     }
                 }
-                .pickerStyle(.segmented)
 
                 if viewModel.isCustomEnvironment {
                     UGlassTextField(

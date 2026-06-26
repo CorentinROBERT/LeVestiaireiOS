@@ -127,42 +127,23 @@ struct RegisterView: View {
             )
 
             UGlassFormRow(icon: "calendar") {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(L10n.birthdate)
-                        .font(.caption)
-                        .foregroundStyle(AppPalette.Neutral.textSecondary)
-
-                    DatePicker(
-                        L10n.birthdate,
-                        selection: $viewModel.birthDate,
-                        in: birthDateRange,
-                        displayedComponents: .date
-                    )
-                    .labelsHidden()
-                    .datePickerStyle(.compact)
-                    .environment(\.locale, viewModel.selectedLanguage.locale)
-                    .id(viewModel.selectedLanguage)
-                    .foregroundStyle(AppPalette.Neutral.textPrimary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                UDatePickerRow(
+                    title: L10n.birthdate,
+                    selection: $viewModel.birthDate,
+                    minimumDate: birthDateRange.lowerBound,
+                    maximumDate: birthDateRange.upperBound,
+                    displayedComponents: .date,
+                    locale: viewModel.selectedLanguage.locale
+                )
+                .id(viewModel.selectedLanguage)
             }
 
             UGlassFormRow(icon: "globe") {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(L10n.languageLabel)
-                        .font(.caption)
-                        .foregroundStyle(AppPalette.Neutral.textSecondary)
-
-                    Picker(L10n.languageLabel, selection: $viewModel.selectedLanguage) {
-                        ForEach(AppLanguage.allCases) { language in
-                            Text(language.displayName).tag(language)
-                        }
+                UMenuPicker(title: L10n.languageLabel, selection: $viewModel.selectedLanguage) {
+                    ForEach(AppLanguage.allCases) { language in
+                        Text(language.displayName).tag(language)
                     }
-                    .labelsHidden()
-                    .pickerStyle(.menu)
-                    .foregroundStyle(AppPalette.Neutral.textPrimary)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .padding(22)
@@ -200,7 +181,7 @@ struct RegisterView: View {
                         }
                         .font(.subheadline)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.fullTap)
                 }
             }
         }

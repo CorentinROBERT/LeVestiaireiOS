@@ -105,6 +105,7 @@ struct TeamHeroSection: View {
             .padding(.vertical, 10)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(AppPalette.Primary.soft.opacity(0.35), in: RoundedRectangle(cornerRadius: 12))
+            .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -122,8 +123,9 @@ struct TeamHeroSection: View {
                         Circle()
                             .fill(AppPalette.Primary.soft.opacity(0.6))
                     )
+                    .contentShape(Circle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.fullTap)
             .accessibilityLabel(L10n.text("joinTeam"))
 
             Button {
@@ -137,8 +139,9 @@ struct TeamHeroSection: View {
                         Circle()
                             .fill(AppPalette.Primary.soft.opacity(0.6))
                     )
+                    .contentShape(Circle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.fullTap)
             .accessibilityLabel(L10n.text("creerUneEquipe"))
 
             Button {
@@ -152,8 +155,9 @@ struct TeamHeroSection: View {
                         Circle()
                             .fill(AppPalette.Primary.soft.opacity(0.6))
                     )
+                    .contentShape(Circle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.fullTap)
             .accessibilityLabel(L10n.settings)
         }
     }

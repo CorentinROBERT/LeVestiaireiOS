@@ -142,17 +142,19 @@ struct NotificationsView: View {
     }
 
     private var filterPicker: some View {
-        Picker(L10n.filter, selection: Binding(
-            get: { viewModel.filter },
-            set: { newValue in
-                Task { await viewModel.applyFilter(newValue) }
-            }
-        )) {
+        USegmentedPicker(
+            title: L10n.filter,
+            selection: Binding(
+                get: { viewModel.filter },
+                set: { newValue in
+                    Task { await viewModel.applyFilter(newValue) }
+                }
+            )
+        ) {
             ForEach(NotificationFilter.allCases) { filter in
                 Text(filter.localizedTitle).tag(filter)
             }
         }
-        .pickerStyle(.segmented)
     }
 
     private var emptyState: some View {

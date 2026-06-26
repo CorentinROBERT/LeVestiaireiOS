@@ -126,11 +126,9 @@ extension TeamViewModel {
         clearSectionLoadErrors()
         await statsViewModel.loadSeasonsIfNeeded()
 
-        async let statsTask: Void = statsViewModel.loadStats()
         async let invitationsTask: Void = invitationsViewModel.loadIfNeeded()
         async let joinRequestsTask: Void = joinRequestsViewModel.loadIfNeeded()
-        _ = await (statsTask, invitationsTask, joinRequestsTask)
-        statsViewModel.statsLoadedForTeamId = selectedTeamId
+        _ = await (invitationsTask, joinRequestsTask)
 
         statsViewModel.prepareForTeamChange()
         compositionsViewModel.prepareForTeamChange()

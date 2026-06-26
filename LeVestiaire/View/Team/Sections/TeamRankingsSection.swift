@@ -23,12 +23,11 @@ struct TeamRankingsSection: View {
                     }
                 )
 
-                Picker(L10n.text("leaderboard"), selection: $statsViewModel.selectedRankingKind) {
+                USegmentedPicker(selection: $statsViewModel.selectedRankingKind) {
                     ForEach(TeamRankingKind.allCases) { kind in
                         Text(kind.title).tag(kind)
                     }
                 }
-                .pickerStyle(.segmented)
 
                 if statsViewModel.isLoadingRankings, statsViewModel.teamRankings == nil {
                     TeamLoadingPlaceholder()

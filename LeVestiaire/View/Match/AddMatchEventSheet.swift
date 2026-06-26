@@ -91,7 +91,7 @@ struct AddMatchEventSheet: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
             .glassEffect(.regular, in: .rect(cornerRadius: 20))
-            .buttonStyle(.plain)
+            .buttonStyle(.fullTap)
         }
         .padding(.horizontal, 20)
         .padding(.top, 28)
@@ -99,23 +99,18 @@ struct AddMatchEventSheet: View {
     }
 
     private var eventTypeSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(L10n.text("eventTypeLabel"))
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(AppPalette.Neutral.textSecondary)
-
-            Picker(L10n.text("eventTypeLabel"), selection: $eventType) {
-                ForEach(MatchEventType.userCreatableCases, id: \.self) { type in
-                    Text(type.displayName).tag(type)
-                }
-            }
-            .pickerStyle(.menu)
-            .tint(AppPalette.Primary.main)
-            .disabled(eventsViewModel.isSubmitting)
-            .onChange(of: eventType) { _, newValue in
-                if !newValue.requiresPlayer {
+        UMenuPicker(
+            title: L10n.text("eventTypeLabel"),
+            selection: $eventType,
+            isDisabled: eventsViewModel.isSubmitting,
+            onChange: {
+                if !eventType.requiresPlayer {
                     selectedPlayerId = nil
                 }
+            }
+        ) {
+            ForEach(MatchEventType.userCreatableCases, id: \.self) { type in
+                Text(type.displayName).tag(type)
             }
         }
     }
@@ -138,24 +133,21 @@ struct AddMatchEventSheet: View {
 
     private var playerSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(L10n.selectPlayer)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(AppPalette.Neutral.textSecondary)
-
             if eventsViewModel.eventPlayerOptions.isEmpty {
                 Text(L10n.text("noPlayersAvailable"))
                     .font(.caption)
                     .foregroundStyle(AppPalette.Neutral.textTertiary)
             } else {
-                Picker(L10n.selectPlayer, selection: $selectedPlayerId) {
+                UMenuPicker(
+                    title: L10n.selectPlayer,
+                    selection: $selectedPlayerId,
+                    isDisabled: eventsViewModel.isSubmitting
+                ) {
                     Text(L10n.select).tag(Optional<String>.none)
                     ForEach(eventsViewModel.eventPlayerOptions) { player in
                         Text(player.name).tag(Optional(player.id))
                     }
                 }
-                .pickerStyle(.menu)
-                .tint(AppPalette.Primary.main)
-                .disabled(eventsViewModel.isSubmitting)
             }
         }
     }

@@ -125,8 +125,9 @@ struct MatchAvailabilityQuickRespondBar: View {
                     Capsule()
                         .fill(isSelected ? AppPalette.Primary.main : AppPalette.Primary.soft)
                 )
+                .contentShape(Capsule())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.fullTap)
         .disabled(isSubmitting)
         .opacity(isSubmitting ? 0.7 : 1)
     }

@@ -37,8 +37,9 @@ struct TeamColoredActionTile: View {
                 RoundedRectangle(cornerRadius: 18)
                     .stroke(tint.opacity(0.22), lineWidth: 1)
             }
+            .contentShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.fullTap)
         .accessibilityLabel("\(title). \(subtitle)")
     }
 }

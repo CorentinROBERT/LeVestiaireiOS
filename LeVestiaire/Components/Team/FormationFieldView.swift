@@ -142,7 +142,7 @@ struct FormationFieldView: View {
             } label: {
                 marker
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.fullTap)
             .accessibilityLabel(positionAccessibilityLabel(position: position, member: member))
             .accessibilityHint(L10n.text("select"))
         } else {
@@ -275,7 +275,7 @@ struct SubstitutesBenchView: View {
             } label: {
                 slotContent
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.fullTap)
         } else if member != nil {
             slotContent
         }

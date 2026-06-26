@@ -19,13 +19,14 @@ struct MatchQuizStatementRow: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             if isEditable {
-                Picker("", selection: bindingSelection) {
+                USegmentedPicker(
+                    title: L10n.text("trueFalse"),
+                    selection: bindingSelection
+                ) {
                     Text(L10n.text("undefinedAnswer")).tag(Optional<Bool>.none)
                     Text(L10n.text("trueValue")).tag(Optional(true))
                     Text(L10n.text("falseValue")).tag(Optional(false))
                 }
-                .pickerStyle(.segmented)
-                .accessibilityLabel(L10n.text("trueFalse"))
             } else if let selection {
                 Text(selection ? L10n.text("trueValue") : L10n.text("falseValue"))
                     .font(.caption.weight(.semibold))

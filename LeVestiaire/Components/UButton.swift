@@ -41,8 +41,9 @@ struct UButton: View {
                 RoundedRectangle(cornerRadius: cornerRadius)
                     .fill(backgroundColor)
             )
+            .contentShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.fullTap)
         .accessibilityLabel(accessibilityLabel ?? text)
     }
 }

@@ -40,8 +40,9 @@ struct UMultiSelectChips<Item: Hashable & Identifiable>: View {
                                     lineWidth: 1
                                 )
                         )
+                        .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.fullTap)
             }
         }
     }

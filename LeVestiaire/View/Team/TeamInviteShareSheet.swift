@@ -80,7 +80,7 @@ struct TeamInviteShareSheet: View {
                 ShareLink(item: shareMessage(for: code)) {
                     shareButtonLabel(L10n.text("shareTeamInviteLink"))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.fullTap)
 
                 UButton(
                     text: showsCopiedFeedback ? L10n.text("teamInviteLinkCopied") : L10n.text("copyTeamInviteLink"),
@@ -161,6 +161,7 @@ struct TeamInviteShareSheet: View {
         .padding(.vertical, 14)
         .frame(maxWidth: .infinity)
         .background(AppPalette.Secondary.mint, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 
     private func copyInviteCode(_ code: String) {

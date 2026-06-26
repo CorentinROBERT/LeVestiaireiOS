@@ -9,16 +9,16 @@ struct TeamTabPicker: View {
     @Binding var selection: TeamContentTab
 
     var body: some View {
-        Picker("", selection: $selection) {
+        USegmentedPicker(
+            selection: $selection,
+            accessibilityValue: selection.title,
+            onChange: { _ in
+                TeamHaptics.lightImpact()
+            }
+        ) {
             ForEach(TeamContentTab.allCases) { tab in
                 Text(tab.title).tag(tab)
             }
-        }
-        .pickerStyle(.segmented)
-        .accessibilityValue(selection.title)
-        .onChange(of: selection) { _, newValue in
-            TeamHaptics.lightImpact()
-            _ = newValue
         }
     }
 }

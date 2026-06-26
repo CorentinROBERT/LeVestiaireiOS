@@ -40,7 +40,7 @@ struct AccountDeletionNavigationBanner: View {
                             .fill(AppPalette.Neutral.surface.opacity(0.8))
                     )
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.fullTap)
             .accessibilityLabel(L10n.close)
         }
         .padding(.horizontal, 16)

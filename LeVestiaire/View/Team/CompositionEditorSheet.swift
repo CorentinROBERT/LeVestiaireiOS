@@ -54,6 +54,10 @@ struct CompositionEditorSheet: View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 20) {
+                    if let saveError = compositionsViewModel.lastSaveError {
+                        compositionSaveErrorBanner(message: saveError)
+                    }
+
                     tabSelector
                     if tabs.indices.contains(selectedTabIndex) {
                         compositionForm(for: $tabs[selectedTabIndex])
@@ -178,7 +182,7 @@ struct CompositionEditorSheet: View {
                             )
                             .foregroundStyle(selectedTabId == tab.id ? .white : AppPalette.Neutral.textPrimary)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.fullTap)
                 }
             }
         }
@@ -198,20 +202,17 @@ struct CompositionEditorSheet: View {
             )
             .disabled(!canEdit)
 
-            VStack(alignment: .leading, spacing: 8) {
-                Text(L10n.text("formation"))
-                    .font(.subheadline.weight(.semibold))
-
-                Picker(L10n.text("formation"), selection: tab.formationKey) {
-                    ForEach(FormationCatalog.all) { formation in
-                        Text(formation.displayName).tag(formation.id)
-                    }
-                }
-                .pickerStyle(.menu)
-                .disabled(!canEdit)
-                .onChange(of: tab.wrappedValue.formationKey) { _, _ in
+            UMenuPicker(
+                title: L10n.text("formation"),
+                selection: tab.formationKey,
+                isDisabled: !canEdit,
+                onChange: {
                     tab.wrappedValue.starterAssignments = [:]
                     tab.wrappedValue.captainMemberKey = nil
+                }
+            ) {
+                ForEach(FormationCatalog.all) { formation in
+                    Text(formation.displayName).tag(formation.id)
                 }
             }
 
@@ -282,16 +283,33 @@ struct CompositionEditorSheet: View {
         Button(L10n.text("save")) {
             focusedField = nil
             Task {
-                if await compositionsViewModel.save(
+                let didSave = await compositionsViewModel.save(
                     tabs: tabs,
                     deletedAlternativeIds: deletedAlternativeIds
-                ) {
-                    dismiss()
-                }
+                )
+                guard didSave else { return }
+                viewModel.showSuccess(
+                    composition == nil
+                        ? L10n.text("compositionCreatedSuccessfully")
+                        : L10n.text("compositionModifiedSuccessfully")
+                )
+                viewModel.activeSheet = nil
             }
         }
         .primarySheetButton(isLoading: compositionsViewModel.isSubmitting)
         .disabled(compositionsViewModel.isSubmitting)
+    }
+
+    private func compositionSaveErrorBanner(message: String) -> some View {
+        Label(message, systemImage: "exclamationmark.triangle.fill")
+            .font(.caption)
+            .foregroundStyle(AppPalette.Semantic.error)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(AppPalette.Semantic.error.opacity(0.12))
+            )
     }
 
     private var deleteCompositionButton: some View {
@@ -299,12 +317,7 @@ struct CompositionEditorSheet: View {
             focusedField = nil
             showsDeleteCompositionConfirmation = true
         }
-        .font(.subheadline.weight(.semibold))
-        .foregroundStyle(AppPalette.Semantic.error)
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 14)
-        .glassEffect(.regular, in: .rect(cornerRadius: 18))
-        .buttonStyle(.plain)
+        .destructiveSheetButton()
         .disabled(compositionsViewModel.isSubmitting)
     }
 

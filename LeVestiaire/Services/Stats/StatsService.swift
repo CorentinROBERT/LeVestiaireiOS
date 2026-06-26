@@ -38,7 +38,7 @@ final class StatsService {
     @MainActor
     func fetchAvailableSeasons() async -> [String] {
         guard let accessToken = authService.authToken, !accessToken.isEmpty else {
-            return []
+            return SeasonFormatter.resolvedAvailableSeasons(apiSeasons: [])
         }
 
         do {
@@ -49,22 +49,23 @@ final class StatsService {
             )
 
             guard (200...299).contains(httpResponse.statusCode) else {
-                return []
+                return SeasonFormatter.resolvedAvailableSeasons(apiSeasons: [])
             }
 
+            let apiSeasons: [String]
             if let response = try? APIResponseDecoder.decode(AvailableSeasonsResponse.self, from: data),
                !response.seasons.isEmpty {
-                return response.seasons
+                apiSeasons = response.seasons
+            } else if let seasons = try? APIResponseDecoder.decodePayload([String].self, from: data),
+                      !seasons.isEmpty {
+                apiSeasons = seasons
+            } else {
+                apiSeasons = []
             }
 
-            if let seasons = try? APIResponseDecoder.decodePayload([String].self, from: data),
-               !seasons.isEmpty {
-                return seasons
-            }
-
-            return []
+            return SeasonFormatter.resolvedAvailableSeasons(apiSeasons: apiSeasons)
         } catch {
-            return []
+            return SeasonFormatter.resolvedAvailableSeasons(apiSeasons: [])
         }
     }
 

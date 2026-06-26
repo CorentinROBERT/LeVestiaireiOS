@@ -76,7 +76,7 @@ struct TeamExpandableCard<CollapsedSummary: View, Content: View>: View {
             }
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.fullTap)
         .accessibilityAddTraits(isExpanded ? .isSelected : [])
         .accessibilityHint(L10n.text(isExpanded ? "collapseSection" : "expandSection"))
     }

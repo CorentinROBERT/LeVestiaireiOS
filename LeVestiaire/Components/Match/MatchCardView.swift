@@ -25,8 +25,9 @@ struct MatchListingCard: View {
                     showsAvailabilityFooter: !showsAvailabilityActions
                 )
                 .padding(16)
+                .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.fullTap)
 
             if showsAvailabilityActions, let onAvailabilitySelect {
                 MatchAvailabilityQuickRespondBar(

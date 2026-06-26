@@ -11,20 +11,15 @@ struct TeamSeasonPicker: View {
     let onChange: () -> Void
 
     var body: some View {
-        HStack {
-            Text(L10n.season)
-                .font(.subheadline.weight(.semibold))
-            Spacer()
-            Picker(L10n.season, selection: $selection) {
-                ForEach(availableSeasons, id: \.self) { season in
-                    Text(SeasonFormatter.shortLabel(for: season)).tag(season)
-                }
+        UMenuPicker(
+            title: L10n.season,
+            selection: $selection,
+            accessibilityValue: SeasonFormatter.fullLabel(for: selection),
+            onChange: onChange
+        ) {
+            ForEach(availableSeasons, id: \.self) { season in
+                Text(SeasonFormatter.shortLabel(for: season)).tag(season)
             }
-            .labelsHidden()
-            .pickerStyle(.menu)
-            .accessibilityLabel(L10n.season)
-            .accessibilityValue(SeasonFormatter.shortLabel(for: selection))
-            .onChange(of: selection) { _, _ in onChange() }
         }
     }
 }

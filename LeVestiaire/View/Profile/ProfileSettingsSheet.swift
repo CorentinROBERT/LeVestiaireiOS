@@ -79,7 +79,7 @@ struct ProfileSettingsSheet: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
             .glassEffect(.regular, in: .rect(cornerRadius: 20))
-            .buttonStyle(.plain)
+            .buttonStyle(.fullTap)
         }
         .padding(.horizontal, 20)
         .padding(.top, 28)
@@ -106,13 +106,14 @@ struct ProfileSettingsSheet: View {
 
     private var languageCard: some View {
         UCard(title: L10n.appLanguage, icon: "globe") {
-            Picker(L10n.appLanguage, selection: languageBinding) {
+            USegmentedPicker(
+                selection: languageBinding,
+                accessibilityValue: localizationManager.language.displayName
+            ) {
                 ForEach(AppLanguage.allCases) { language in
                     Text(language.displayName).tag(language)
                 }
             }
-            .pickerStyle(.menu)
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
