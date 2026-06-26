@@ -166,6 +166,7 @@ enum TeamPreviewData {
             assists: 19,
             yellowCards: 4,
             redCards: 1,
+            cleanSheets: 3,
             manOfTheMatchCount: 3,
             minutesPlayed: 840
         ),
@@ -260,7 +261,8 @@ enum TeamPreviewData {
             losses: 3,
             goalsFor: 28,
             goalsAgainst: 16,
-            points: 23
+            points: 23,
+            cleanSheets: 3
         ),
         playerOfMoment: TeamPlayerOfMomentInsights(
             player: TeamInsightsPlayerRef(id: "user-3", firstName: "Hugo", lastName: "Petit"),

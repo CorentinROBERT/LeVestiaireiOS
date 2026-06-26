@@ -2589,6 +2589,22 @@
         }
       }
     },
+    "cleanSheets" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clean sheets"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cages inviolées"
+          }
+        }
+      }
+    },
     "clickLinkInEmail" : {
       "localizations" : {
         "en" : {

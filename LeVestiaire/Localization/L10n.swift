@@ -370,6 +370,7 @@ enum L10n {
     static var redCards: String { text("redCards") }
     static var shotsOnTarget: String { text("shotsOnTarget") }
     static var saves: String { text("saves") }
+    static var cleanSheets: String { text("cleanSheets") }
     static var substitutionsIn: String { text("substitutionsIn") }
     static var substitutionsOut: String { text("substitutionsOut") }
     static var injuries: String { text("injuries") }

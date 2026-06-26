@@ -51,6 +51,7 @@ struct TeamSeasonStatsTotals: Decodable, Equatable {
     let substitutionsOut: Int
     let shotsOnTarget: Int
     let saves: Int
+    let cleanSheets: Int
     let injuries: Int
     let shlagCount: Int
     let manOfTheMatchCount: Int
@@ -66,6 +67,7 @@ struct TeamSeasonStatsTotals: Decodable, Equatable {
             || redCards > 0
             || shotsOnTarget > 0
             || saves > 0
+            || cleanSheets > 0
             || minutesPlayed > 0
             || substitutionsIn > 0
             || substitutionsOut > 0
@@ -86,6 +88,7 @@ struct TeamSeasonStatsTotals: Decodable, Equatable {
         substitutionsOut: Int = 0,
         shotsOnTarget: Int = 0,
         saves: Int = 0,
+        cleanSheets: Int = 0,
         injuries: Int = 0,
         shlagCount: Int = 0,
         manOfTheMatchCount: Int = 0,
@@ -102,6 +105,7 @@ struct TeamSeasonStatsTotals: Decodable, Equatable {
         self.substitutionsOut = substitutionsOut
         self.shotsOnTarget = shotsOnTarget
         self.saves = saves
+        self.cleanSheets = cleanSheets
         self.injuries = injuries
         self.shlagCount = shlagCount
         self.manOfTheMatchCount = manOfTheMatchCount
@@ -121,6 +125,7 @@ struct TeamSeasonStatsTotals: Decodable, Equatable {
         substitutionsOut = SeasonStatsDecoding.int(from: container, forKey: .substitutionsOut)
         shotsOnTarget = SeasonStatsDecoding.int(from: container, forKey: .shotsOnTarget)
         saves = SeasonStatsDecoding.int(from: container, forKey: .saves)
+        cleanSheets = SeasonStatsDecoding.int(from: container, forKey: .cleanSheets)
         injuries = SeasonStatsDecoding.int(from: container, forKey: .injuries)
         shlagCount = SeasonStatsDecoding.int(from: container, forKey: .shlagCount)
         manOfTheMatchCount = SeasonStatsDecoding.int(from: container, forKey: .manOfTheMatchCount)
@@ -139,6 +144,7 @@ struct TeamSeasonStatsTotals: Decodable, Equatable {
         case substitutionsOut
         case shotsOnTarget
         case saves
+        case cleanSheets
         case injuries
         case shlagCount
         case manOfTheMatchCount

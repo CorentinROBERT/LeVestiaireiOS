@@ -147,6 +147,7 @@ struct TeamInsightsSection: View {
                 TeamStatCell(title: L10n.text("goalsFor"), value: summary.goalsFor)
                 TeamStatCell(title: L10n.text("goalsAgainst"), value: summary.goalsAgainst)
                 TeamStatCell(title: L10n.text("points"), value: summary.points)
+                TeamStatCell(title: L10n.cleanSheets, value: summary.cleanSheets)
             }
         }
     }

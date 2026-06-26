@@ -205,9 +205,10 @@ struct TeamSeasonSummaryInsights: Decodable, Equatable {
     let goalsFor: Int
     let goalsAgainst: Int
     let points: Int
+    let cleanSheets: Int
 
     var hasContent: Bool {
-        played > 0 || wins > 0 || draws > 0 || losses > 0 || goalsFor > 0 || goalsAgainst > 0 || points > 0
+        played > 0 || wins > 0 || draws > 0 || losses > 0 || goalsFor > 0 || goalsAgainst > 0 || points > 0 || cleanSheets > 0
     }
 
     init(
@@ -217,7 +218,8 @@ struct TeamSeasonSummaryInsights: Decodable, Equatable {
         losses: Int = 0,
         goalsFor: Int = 0,
         goalsAgainst: Int = 0,
-        points: Int = 0
+        points: Int = 0,
+        cleanSheets: Int = 0
     ) {
         self.played = played
         self.wins = wins
@@ -226,6 +228,7 @@ struct TeamSeasonSummaryInsights: Decodable, Equatable {
         self.goalsFor = goalsFor
         self.goalsAgainst = goalsAgainst
         self.points = points
+        self.cleanSheets = cleanSheets
     }
 
     init(from decoder: Decoder) throws {
@@ -239,6 +242,7 @@ struct TeamSeasonSummaryInsights: Decodable, Equatable {
         goalsFor = SeasonStatsDecoding.int(from: container, forKey: .goalsFor)
         goalsAgainst = SeasonStatsDecoding.int(from: container, forKey: .goalsAgainst)
         points = SeasonStatsDecoding.int(from: container, forKey: .points)
+        cleanSheets = SeasonStatsDecoding.int(from: container, forKey: .cleanSheets)
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -250,6 +254,7 @@ struct TeamSeasonSummaryInsights: Decodable, Equatable {
         case goalsFor
         case goalsAgainst
         case points
+        case cleanSheets
     }
 }
 

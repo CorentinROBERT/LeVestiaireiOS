@@ -106,6 +106,7 @@ struct TeamStatsSection: View {
             TeamStatCell(title: L10n.minutesPlayed, value: totals.minutesPlayed)
             TeamStatCell(title: L10n.shotsOnTarget, value: totals.shotsOnTarget)
             TeamStatCell(title: L10n.saves, value: totals.saves)
+            TeamStatCell(title: L10n.cleanSheets, value: totals.cleanSheets)
             TeamStatCell(title: L10n.manOfTheMatch, value: totals.manOfTheMatchCount)
         }
     }
