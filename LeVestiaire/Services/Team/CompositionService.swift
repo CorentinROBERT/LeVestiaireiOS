@@ -54,6 +54,18 @@ final class CompositionService {
     }
 
     @MainActor
+    func updateCompositionCaptain(id: String, captainId: String?) async throws -> TeamComposition {
+        let body = try JSONEncoder().encode(CompositionCaptainPatchRequest(captainId: captainId))
+        let (data, response) = try await authorizedRequest(
+            path: APIEndpoints.compositionCaptain(id),
+            method: "PATCH",
+            body: body
+        )
+        try validate(response: response, data: data)
+        return try CompositionDecoding.decodeComposition(from: data)
+    }
+
+    @MainActor
     func deleteComposition(id: String) async throws {
         let (data, response) = try await authorizedRequest(
             path: APIEndpoints.deleteComposition(id),

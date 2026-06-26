@@ -63,8 +63,14 @@ enum CompositionEditorEngine {
         in tab: inout CompositionTabDraft
     ) {
         if let positionId = context.positionId {
+            if let removedKey = tab.starterAssignments[positionId] {
+                clearCaptainIfNeeded(memberKey: removedKey, in: &tab)
+            }
             tab.starterAssignments.removeValue(forKey: positionId)
         } else if let substituteIndex = context.substituteIndex {
+            if let removedKey = tab.substituteMemberIds[substituteIndex] {
+                clearCaptainIfNeeded(memberKey: removedKey, in: &tab)
+            }
             tab.substituteMemberIds[substituteIndex] = nil
         }
     }
@@ -97,6 +103,7 @@ enum CompositionEditorEngine {
             guard positionId != excludingPositionId else { continue }
             if member.matchesCompositionMemberKey(assignedKey) {
                 tab.starterAssignments.removeValue(forKey: positionId)
+                clearCaptainIfNeeded(member: member, in: &tab)
             }
         }
 
@@ -105,7 +112,21 @@ enum CompositionEditorEngine {
             guard let assignedKey = tab.substituteMemberIds[substituteIndex] else { continue }
             if member.matchesCompositionMemberKey(assignedKey) {
                 tab.substituteMemberIds[substituteIndex] = nil
+                clearCaptainIfNeeded(member: member, in: &tab)
             }
+        }
+    }
+
+    private static func clearCaptainIfNeeded(member: TeamMember, in tab: inout CompositionTabDraft) {
+        guard let captainKey = tab.captainMemberKey,
+              member.matchesCompositionMemberKey(captainKey) else { return }
+        tab.captainMemberKey = nil
+    }
+
+    private static func clearCaptainIfNeeded(memberKey: String, in tab: inout CompositionTabDraft) {
+        guard let captainKey = tab.captainMemberKey else { return }
+        if CompositionMemberKey.variants(for: captainKey).contains(memberKey) {
+            tab.captainMemberKey = nil
         }
     }
 

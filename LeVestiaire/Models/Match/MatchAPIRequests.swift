@@ -111,6 +111,8 @@ struct MatchCompositionSaveRequest: Encodable {
     let tacticalNotes: String?
     let positions: CompositionPositionsSaveRequest?
     let alternativeFormations: [MatchAlternativeCompositionSaveRequest]?
+    let captainId: String?
+    let includeCaptainId: Bool
 
     private enum CodingKeys: String, CodingKey {
         case templateCompositionId
@@ -119,6 +121,7 @@ struct MatchCompositionSaveRequest: Encodable {
         case description
         case positions
         case alternativeFormations
+        case captainId
     }
 
     func encode(to encoder: Encoder) throws {
@@ -129,15 +132,24 @@ struct MatchCompositionSaveRequest: Encodable {
         try container.encodeIfPresent(tacticalNotes, forKey: .description)
         try container.encodeIfPresent(positions, forKey: .positions)
         try container.encodeIfPresent(alternativeFormations, forKey: .alternativeFormations)
+        if includeCaptainId {
+            if let captainId {
+                try container.encode(captainId, forKey: .captainId)
+            } else {
+                try container.encodeNil(forKey: .captainId)
+            }
+        }
     }
 
     static func from(
         tab: CompositionTabDraft,
         templateCompositionId: String? = nil,
         members: [TeamMember] = [],
-        alternativeTabs: [CompositionTabDraft] = []
+        alternativeTabs: [CompositionTabDraft] = [],
+        isUpdate: Bool = false
     ) -> MatchCompositionSaveRequest {
-        MatchCompositionSaveRequest(
+        let captainId = tab.isMain ? tab.sanitizedCaptainMemberKey() : nil
+        return MatchCompositionSaveRequest(
             templateCompositionId: templateCompositionId,
             name: tab.name,
             formation: tab.formationKey,
@@ -153,7 +165,9 @@ struct MatchCompositionSaveRequest: Encodable {
                         tacticalNotes: alternative.tacticalNotes.matchTrimmedOrNil,
                         positions: CompositionPositionsSaveRequest.from(tab: alternative, members: members)
                     )
-                }
+                },
+            captainId: captainId,
+            includeCaptainId: tab.isMain && (isUpdate || captainId != nil)
         )
     }
 
@@ -164,7 +178,9 @@ struct MatchCompositionSaveRequest: Encodable {
             formation: nil,
             tacticalNotes: nil,
             positions: nil,
-            alternativeFormations: nil
+            alternativeFormations: nil,
+            captainId: nil,
+            includeCaptainId: false
         )
     }
 }

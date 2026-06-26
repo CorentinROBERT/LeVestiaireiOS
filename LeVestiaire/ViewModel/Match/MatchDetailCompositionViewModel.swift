@@ -134,7 +134,8 @@ final class MatchDetailCompositionViewModel: ObservableObject {
         let request = resolvedMainTab.matchSaveRequest(
             templateCompositionId: templateCompositionId,
             members: host?.editorMembers ?? [],
-            alternativeTabs: tabs.filter { !$0.isMain }
+            alternativeTabs: tabs.filter { !$0.isMain },
+            isUpdate: host?.match?.composition != nil
         )
 
         do {
@@ -146,6 +147,22 @@ final class MatchDetailCompositionViewModel: ObservableObject {
             }
             applyMatchUpdate(updated, templateCompositionId: templateCompositionId)
             await host?.loadSupplementaryData()
+            return true
+        } catch {
+            surfaceError(error)
+            return false
+        }
+    }
+
+    func setCaptain(captainId: String?) async -> Bool {
+        guard canEdit, let matchId = host?.matchId else { return false }
+
+        do {
+            let updated = try await matchService.updateMatchCompositionCaptain(
+                matchId: matchId,
+                captainId: captainId
+            )
+            applyMatchUpdate(updated)
             return true
         } catch {
             surfaceError(error)

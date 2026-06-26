@@ -303,8 +303,19 @@ struct MatchCompositionEditorSheet: View {
                 .disabled(!canEdit)
                 .onChange(of: tab.wrappedValue.formationKey) { _, _ in
                     tab.wrappedValue.starterAssignments = [:]
+                    tab.wrappedValue.captainMemberKey = nil
                     markTabsEdited()
                 }
+            }
+
+            if tab.wrappedValue.isMain {
+                CompositionCaptainSection(
+                    members: members,
+                    tab: tab.wrappedValue,
+                    captainMemberKey: tab.captainMemberKey,
+                    canEdit: canEdit,
+                    onPersistCaptain: persistMatchCaptainIfNeeded
+                )
             }
 
             if members.isEmpty {
@@ -323,7 +334,10 @@ struct MatchCompositionEditorSheet: View {
                             positionId: positionId,
                             substituteIndex: nil
                         )
-                    }
+                    },
+                    captainMemberKey: tab.wrappedValue.isMain
+                        ? tab.wrappedValue.sanitizedCaptainMemberKey()
+                        : nil
                 )
 
                 SubstitutesBenchView(
@@ -337,7 +351,10 @@ struct MatchCompositionEditorSheet: View {
                             positionId: nil,
                             substituteIndex: index
                         )
-                    }
+                    },
+                    captainMemberKey: tab.wrappedValue.isMain
+                        ? tab.wrappedValue.sanitizedCaptainMemberKey()
+                        : nil
                 )
             }
 
@@ -507,6 +524,15 @@ struct MatchCompositionEditorSheet: View {
             availability: availabilityViewModel.availability
         )
         markTabsEdited()
+    }
+
+    private func persistMatchCaptainIfNeeded(_ captainId: String?) async -> Bool {
+        guard viewModel.match?.composition != nil else { return true }
+        let success = await compositionViewModel.setCaptain(captainId: captainId)
+        if success {
+            markTabsEdited()
+        }
+        return success
     }
 }
 

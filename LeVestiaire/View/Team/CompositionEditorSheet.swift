@@ -211,7 +211,18 @@ struct CompositionEditorSheet: View {
                 .disabled(!canEdit)
                 .onChange(of: tab.wrappedValue.formationKey) { _, _ in
                     tab.wrappedValue.starterAssignments = [:]
+                    tab.wrappedValue.captainMemberKey = nil
                 }
+            }
+
+            if tab.wrappedValue.isMain {
+                CompositionCaptainSection(
+                    members: members,
+                    tab: tab.wrappedValue,
+                    captainMemberKey: tab.captainMemberKey,
+                    canEdit: canEdit,
+                    onPersistCaptain: persistTeamCaptainIfNeeded
+                )
             }
 
             FormationFieldView(
@@ -226,7 +237,10 @@ struct CompositionEditorSheet: View {
                         positionId: positionId,
                         substituteIndex: nil
                     )
-                }
+                },
+                captainMemberKey: tab.wrappedValue.isMain
+                    ? tab.wrappedValue.sanitizedCaptainMemberKey()
+                    : nil
             )
 
             SubstitutesBenchView(
@@ -240,7 +254,10 @@ struct CompositionEditorSheet: View {
                         positionId: nil,
                         substituteIndex: index
                     )
-                }
+                },
+                captainMemberKey: tab.wrappedValue.isMain
+                    ? tab.wrappedValue.sanitizedCaptainMemberKey()
+                    : nil
             )
 
             VStack(alignment: .leading, spacing: 8) {
@@ -388,6 +405,14 @@ struct CompositionEditorSheet: View {
         CompositionEditorEngine.clearSelection(
             context: compositionContext(from: context),
             in: &tabs[index]
+        )
+    }
+
+    private func persistTeamCaptainIfNeeded(_ captainId: String?) async -> Bool {
+        guard let compositionId = composition?.id else { return true }
+        return await compositionsViewModel.setCaptain(
+            compositionId: compositionId,
+            captainId: captainId
         )
     }
 }

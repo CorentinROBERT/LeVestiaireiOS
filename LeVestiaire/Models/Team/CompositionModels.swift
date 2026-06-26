@@ -40,9 +40,10 @@ struct TeamComposition: Identifiable, Decodable, Equatable {
     let tacticalNotes: String?
     let teamId: String?
     let matchId: String?
-    /// Verrouillage lié à un match en cours (création / démarrage), pas à l’édition depuis l’équipe.
+    /// Obsolète — conservé pour rétrocompat API (`composition.isLocked`). Le verrou courant est `match.compositionLocked`.
     let isLocked: Bool?
     let isActive: Bool?
+    let captainId: String?
     let starters: [CompositionAssignment]
     let substitutes: [CompositionAssignment]
     let alternatives: [CompositionAlternative]
@@ -68,8 +69,9 @@ struct TeamComposition: Identifiable, Decodable, Equatable {
             tacticalNotes: tacticalNotes ?? other.tacticalNotes,
             teamId: teamId ?? other.teamId,
             matchId: matchId ?? other.matchId,
-            isLocked: isLocked ?? other.isLocked,
+            isLocked: isLocked,
             isActive: isActive ?? other.isActive,
+            captainId: captainId ?? other.captainId,
             starters: starters.isEmpty ? other.starters : starters,
             substitutes: substitutes.isEmpty ? other.substitutes : substitutes,
             alternatives: alternatives.isEmpty ? other.alternatives : alternatives
@@ -89,6 +91,7 @@ struct TeamComposition: Identifiable, Decodable, Equatable {
         matchId: String? = nil,
         isLocked: Bool? = nil,
         isActive: Bool? = nil,
+        captainId: String? = nil,
         starters: [CompositionAssignment] = [],
         substitutes: [CompositionAssignment] = [],
         alternatives: [CompositionAlternative] = []
@@ -101,6 +104,7 @@ struct TeamComposition: Identifiable, Decodable, Equatable {
         self.matchId = matchId
         self.isLocked = isLocked
         self.isActive = isActive
+        self.captainId = captainId
         self.starters = starters
         self.substitutes = substitutes
         self.alternatives = alternatives
@@ -119,6 +123,7 @@ struct TeamComposition: Identifiable, Decodable, Equatable {
         matchId = try container.decodeIfPresent(String.self, forKey: .matchId)
         isLocked = try container.decodeIfPresent(Bool.self, forKey: .isLocked)
         isActive = try container.decodeIfPresent(Bool.self, forKey: .isActive)
+        captainId = try container.decodeIfPresent(String.self, forKey: .captainId)
 
         let positions = try container.decodeIfPresent(CompositionPositions.self, forKey: .positions)
         let parsed = CompositionPositionsParser.parse(
@@ -160,6 +165,7 @@ struct TeamComposition: Identifiable, Decodable, Equatable {
         case matchId
         case isLocked
         case isActive
+        case captainId
     }
 }
 
@@ -524,6 +530,8 @@ struct CompositionSaveRequest: Encodable {
     let starters: [CompositionSlotRequest]
     let substitutes: [CompositionSlotRequest]
     let alternatives: [AlternativeCompositionRequest]?
+    let captainId: String?
+    let includeCaptainId: Bool
 
     private enum CodingKeys: String, CodingKey {
         case teamId
@@ -533,6 +541,7 @@ struct CompositionSaveRequest: Encodable {
         case starters
         case substitutes
         case alternatives = "alternativeFormations"
+        case captainId
     }
 
     func encode(to encoder: Encoder) throws {
@@ -544,6 +553,30 @@ struct CompositionSaveRequest: Encodable {
         try container.encode(starters, forKey: .starters)
         try container.encode(substitutes, forKey: .substitutes)
         try container.encodeIfPresent(alternatives, forKey: .alternatives)
+        if includeCaptainId {
+            if let captainId {
+                try container.encode(captainId, forKey: .captainId)
+            } else {
+                try container.encodeNil(forKey: .captainId)
+            }
+        }
+    }
+}
+
+struct CompositionCaptainPatchRequest: Encodable {
+    let captainId: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case captainId
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        if let captainId {
+            try container.encode(captainId, forKey: .captainId)
+        } else {
+            try container.encodeNil(forKey: .captainId)
+        }
     }
 }
 
@@ -879,6 +912,7 @@ struct CompositionTabDraft: Identifiable, Equatable {
     var substituteMemberIds: [String?]
     var memberJerseyNumbers: [String: Int]
     var tacticalNotes: String
+    var captainMemberKey: String?
     var isMain: Bool
     var serverAlternativeId: String?
 
@@ -892,6 +926,7 @@ struct CompositionTabDraft: Identifiable, Equatable {
         substituteMemberIds: [String?] = Array(repeating: nil, count: substituteCount),
         memberJerseyNumbers: [String: Int] = [:],
         tacticalNotes: String = "",
+        captainMemberKey: String? = nil,
         isMain: Bool = false,
         serverAlternativeId: String? = nil
     ) {
@@ -902,6 +937,7 @@ struct CompositionTabDraft: Identifiable, Equatable {
         self.substituteMemberIds = substituteMemberIds
         self.memberJerseyNumbers = memberJerseyNumbers
         self.tacticalNotes = tacticalNotes
+        self.captainMemberKey = captainMemberKey
         self.isMain = isMain
         self.serverAlternativeId = serverAlternativeId
     }
@@ -918,6 +954,7 @@ struct CompositionTabDraft: Identifiable, Equatable {
                     from: composition.resolvedStarters + composition.resolvedSubstitutes
                 ),
                 tacticalNotes: composition.tacticalNotes ?? "",
+                captainMemberKey: composition.captainId,
                 isMain: true,
                 serverAlternativeId: nil
             )
@@ -948,6 +985,26 @@ struct CompositionTabDraft: Identifiable, Equatable {
         teamSaveRequest(teamId: teamId, alternativeTabs: [])
     }
 
+    var lineupMemberKeys: [String] {
+        var keys = Array(starterAssignments.values)
+        keys.append(contentsOf: substituteMemberIds.compactMap { $0 })
+        return keys
+    }
+
+    func lineupMembers(from members: [TeamMember]) -> [TeamMember] {
+        lineupMemberKeys.compactMap { key in
+            members.first { $0.matchesCompositionMemberKey(key) }
+        }
+    }
+
+    func sanitizedCaptainMemberKey() -> String? {
+        guard let captainMemberKey else { return nil }
+        let isInLineup = lineupMemberKeys.contains { key in
+            CompositionMemberKey.variants(for: captainMemberKey).contains(key)
+        }
+        return isInLineup ? captainMemberKey : nil
+    }
+
     var starterSlotRequests: [CompositionSlotRequest] {
         starterAssignments.map {
             CompositionSlotRequest(position: $0.key, memberId: $0.value)
@@ -974,9 +1031,11 @@ struct CompositionTabDraft: Identifiable, Equatable {
 
     func teamSaveRequest(
         teamId: String,
-        alternativeTabs: [CompositionTabDraft]
+        alternativeTabs: [CompositionTabDraft],
+        isUpdate: Bool = false
     ) -> CompositionSaveRequest {
         let alternatives = alternativeTabs.map { $0.alternativeCompositionRequest() }
+        let captainId = isMain ? sanitizedCaptainMemberKey() : nil
         return CompositionSaveRequest(
             teamId: teamId,
             name: name,
@@ -984,20 +1043,24 @@ struct CompositionTabDraft: Identifiable, Equatable {
             tacticalNotes: tacticalNotes.nilIfEmpty,
             starters: starterSlotRequests,
             substitutes: substituteSlotRequests,
-            alternatives: alternatives.isEmpty ? nil : alternatives
+            alternatives: alternatives.isEmpty ? nil : alternatives,
+            captainId: captainId,
+            includeCaptainId: isMain && (isUpdate || captainId != nil)
         )
     }
 
     func matchSaveRequest(
         templateCompositionId: String?,
         members: [TeamMember],
-        alternativeTabs: [CompositionTabDraft]
+        alternativeTabs: [CompositionTabDraft],
+        isUpdate: Bool = false
     ) -> MatchCompositionSaveRequest {
         MatchCompositionSaveRequest.from(
             tab: self,
             templateCompositionId: templateCompositionId,
             members: members,
-            alternativeTabs: alternativeTabs
+            alternativeTabs: alternativeTabs,
+            isUpdate: isUpdate
         )
     }
 

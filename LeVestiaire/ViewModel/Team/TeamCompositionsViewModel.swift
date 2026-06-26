@@ -105,7 +105,8 @@ final class TeamCompositionsViewModel: ObservableObject {
         let alternativeTabs = tabs.filter { !$0.isMain }
         let request = mainTab.teamSaveRequest(
             teamId: teamId,
-            alternativeTabs: alternativeTabs
+            alternativeTabs: alternativeTabs,
+            isUpdate: editingComposition?.id != nil
         )
 
         do {
@@ -135,6 +136,30 @@ final class TeamCompositionsViewModel: ObservableObject {
             try await compositionService.deleteComposition(id: composition.id)
             await loadIfNeeded(force: true)
             host?.showSuccess(L10n.text("compositionDeletedSuccessfully"))
+            return true
+        } catch {
+            host?.showError(error.localizedDescription)
+            return false
+        }
+    }
+
+    func setCaptain(compositionId: String, captainId: String?) async -> Bool {
+        do {
+            let updated = try await compositionService.updateCompositionCaptain(
+                id: compositionId,
+                captainId: captainId
+            )
+            if let index = compositions.firstIndex(where: { $0.id == compositionId }) {
+                compositions[index] = updated
+            }
+            if editingComposition?.id == compositionId {
+                editingComposition = updated
+            }
+            host?.showSuccess(
+                captainId == nil
+                    ? L10n.text("compositionCaptainRemoved")
+                    : L10n.text("compositionCaptainSet")
+            )
             return true
         } catch {
             host?.showError(error.localizedDescription)

@@ -9,6 +9,7 @@ import SwiftUI
 
 enum JoinTeamSearchMode: String, CaseIterable, Identifiable {
     case name
+    case inviteCode
     case teamId
 
     var id: String { rawValue }
@@ -17,6 +18,8 @@ enum JoinTeamSearchMode: String, CaseIterable, Identifiable {
         switch self {
         case .name:
             return L10n.text("joinTeamSearchByName")
+        case .inviteCode:
+            return L10n.text("joinTeamSearchByInviteCode")
         case .teamId:
             return L10n.text("joinTeamSearchById")
         }
@@ -79,6 +82,14 @@ final class JoinTeamViewModel: ObservableObject {
             switch searchMode {
             case .name:
                 searchResults = try await teamService.searchTeams(query: query)
+            case .inviteCode:
+                let normalizedCode = query.normalizedTeamInviteCode
+                guard !normalizedCode.isEmpty else {
+                    searchResults = []
+                    errorMessage = L10n.text("joinTeamSearchRequired")
+                    return
+                }
+                searchResults = try await teamService.searchTeams(query: normalizedCode)
             case .teamId:
                 searchResults = try await resolveTeamById(query)
             }
@@ -162,7 +173,8 @@ final class JoinTeamViewModel: ObservableObject {
         await loadMyRequests()
         await refreshTeams?()
 
-        if searchMode == .name, !searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        if searchMode == .name || searchMode == .inviteCode,
+           !searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             await search()
         } else if searchMode == .teamId {
             searchResults = (try? await resolveTeamById(teamId)) ?? searchResults

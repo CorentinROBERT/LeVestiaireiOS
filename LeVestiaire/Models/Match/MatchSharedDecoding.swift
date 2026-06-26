@@ -102,4 +102,30 @@ enum MatchSharedDecoding {
         }
         return nil
     }
+
+    /// Verrou de la feuille match : `compositionLocked` sur le match, avec repli API legacy.
+    static func resolveCompositionLocked<K: CodingKey>(
+        from container: KeyedDecodingContainer<K>,
+        compositionLockedKey: K,
+        legacyIsCompositionLockedKey: K,
+        legacyCompositionIsLocked: Bool? = nil
+    ) -> Bool {
+        if (try? container.decodeIfPresent(Bool.self, forKey: compositionLockedKey)) == true {
+            return true
+        }
+        if (try? container.decodeIfPresent(Bool.self, forKey: legacyIsCompositionLockedKey)) == true {
+            return true
+        }
+        return legacyCompositionIsLocked == true
+    }
+
+    static func resolveCompositionLockedAt<K: CodingKey>(
+        from container: KeyedDecodingContainer<K>,
+        compositionLockedAtKey: K
+    ) -> Date? {
+        guard let raw = try? container.decodeIfPresent(String.self, forKey: compositionLockedAtKey) else {
+            return nil
+        }
+        return parseDateString(raw)
+    }
 }

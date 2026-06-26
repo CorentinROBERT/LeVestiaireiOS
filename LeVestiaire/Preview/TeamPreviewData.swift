@@ -118,6 +118,7 @@ enum TeamPreviewData {
             formation: FormationCatalog.defaultFormationKey,
             tacticalNotes: "Pressing haut dès la perte de balle.",
             teamId: "team-1",
+            captainId: "user-3",
             starters: [
                 CompositionAssignment(position: "GK", memberId: "user-1", firstName: "Lucas", lastName: "Martin"),
                 CompositionAssignment(position: "D1", memberId: "user-5", firstName: "Tom", lastName: "Durand"),

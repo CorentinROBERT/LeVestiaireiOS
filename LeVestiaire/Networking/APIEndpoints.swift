@@ -201,6 +201,10 @@ enum APIEndpoints {
         "/api/v1/matches/\(matchId)/composition"
     }
 
+    static func matchCompositionCaptain(_ matchId: String) -> String {
+        "/api/v1/matches/\(matchId)/composition/captain"
+    }
+
     static func matchAvailabilityPlayer(_ matchId: String, playerId: String) -> String {
         "/api/v1/matches/\(matchId)/availability/\(playerId)"
     }
@@ -221,6 +225,10 @@ enum APIEndpoints {
 
     static func updateComposition(_ id: String) -> String {
         "/api/v1/compositions/\(id)"
+    }
+
+    static func compositionCaptain(_ id: String) -> String {
+        "/api/v1/compositions/\(id)/captain"
     }
 
     static func deleteComposition(_ id: String) -> String {

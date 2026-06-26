@@ -53,6 +53,39 @@ struct JoinTeamSheet: View {
         colorScheme == .dark ? .black : .white
     }
 
+    private var searchFieldPlaceholder: String {
+        switch viewModel.searchMode {
+        case .name:
+            return L10n.text("joinTeamSearchNamePlaceholder")
+        case .inviteCode:
+            return L10n.text("joinTeamSearchInviteCodePlaceholder")
+        case .teamId:
+            return L10n.text("joinTeamSearchIdPlaceholder")
+        }
+    }
+
+    private var searchFieldIcon: String {
+        switch viewModel.searchMode {
+        case .name:
+            return "magnifyingglass"
+        case .inviteCode:
+            return "ticket.fill"
+        case .teamId:
+            return "number"
+        }
+    }
+
+    private var searchFieldAutocapitalization: TextInputAutocapitalization {
+        switch viewModel.searchMode {
+        case .name:
+            return .words
+        case .inviteCode:
+            return .characters
+        case .teamId:
+            return .never
+        }
+    }
+
     private var descriptionText: some View {
         Text(L10n.text("joinTeamDescription"))
             .font(.subheadline)
@@ -72,12 +105,10 @@ struct JoinTeamSheet: View {
     private var searchField: some View {
         HStack(spacing: 12) {
             UGlassTextField(
-                placeholder: viewModel.searchMode == .name
-                    ? L10n.text("joinTeamSearchNamePlaceholder")
-                    : L10n.text("joinTeamSearchIdPlaceholder"),
-                icon: viewModel.searchMode == .name ? "magnifyingglass" : "number",
+                placeholder: searchFieldPlaceholder,
+                icon: searchFieldIcon,
                 text: $viewModel.searchQuery,
-                autocapitalization: viewModel.searchMode == .name ? .words : .never
+                autocapitalization: searchFieldAutocapitalization
             )
 
             Button {

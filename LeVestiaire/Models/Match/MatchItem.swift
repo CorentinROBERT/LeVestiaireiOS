@@ -14,6 +14,7 @@ struct MatchItem: Identifiable, Decodable, Hashable {
     let statusLabel: String?
     let preparationPhase: MatchPreparationPhase?
     let isPreparationLocked: Bool
+    /// Porté par le match (`compositionLocked` API), pas par les templates d’équipe.
     let isCompositionLocked: Bool
     let canPublish: Bool
     let publishBlockers: [PublishBlocker]
@@ -105,7 +106,7 @@ struct MatchItem: Identifiable, Decodable, Hashable {
             statusLabel: statusLabel ?? previous.statusLabel,
             preparationPhase: preparationPhase ?? previous.preparationPhase,
             isPreparationLocked: isPreparationLocked,
-            isCompositionLocked: isCompositionLocked,
+            isCompositionLocked: isCompositionLocked || previous.isCompositionLocked,
             canPublish: canPublish,
             publishBlockers: publishBlockers.isEmpty ? previous.publishBlockers : publishBlockers,
             myAvailabilityStatus: myAvailabilityStatus ?? previous.myAvailabilityStatus,
@@ -208,7 +209,11 @@ struct MatchItem: Identifiable, Decodable, Hashable {
         statusLabel = try container.decodeIfPresent(String.self, forKey: .statusLabel)
         preparationPhase = try container.decodeIfPresent(MatchPreparationPhase.self, forKey: .preparationPhase)
         isPreparationLocked = try container.decodeIfPresent(Bool.self, forKey: .isPreparationLocked) ?? false
-        isCompositionLocked = try container.decodeIfPresent(Bool.self, forKey: .isCompositionLocked) ?? false
+        isCompositionLocked = MatchSharedDecoding.resolveCompositionLocked(
+            from: container,
+            compositionLockedKey: .compositionLocked,
+            legacyIsCompositionLockedKey: .isCompositionLocked
+        )
         canPublish = try container.decodeIfPresent(Bool.self, forKey: .canPublish) ?? false
         publishBlockers = try container.decodeIfPresent([PublishBlocker].self, forKey: .publishBlockers) ?? []
         myAvailabilityStatus = try container.decodeIfPresent(MatchAvailabilityStatus.self, forKey: .myAvailabilityStatus)
@@ -250,6 +255,7 @@ struct MatchItem: Identifiable, Decodable, Hashable {
         case statusLabel
         case preparationPhase
         case isPreparationLocked
+        case compositionLocked
         case isCompositionLocked
         case canPublish
         case publishBlockers

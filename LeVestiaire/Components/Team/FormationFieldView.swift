@@ -12,6 +12,7 @@ struct FormationFieldView: View {
     let onPositionTapped: (String) -> Void
     var interactive: Bool = true
     var compact: Bool = false
+    var captainMemberKey: String? = nil
 
     private var markerScale: CGFloat {
         compact ? 0.8 : 1.5
@@ -89,15 +90,22 @@ struct FormationFieldView: View {
     @ViewBuilder
     private func positionButton(position: FormationPosition, member: TeamMember?) -> some View {
         let marker = VStack(spacing: stackSpacing) {
-            ZStack {
-                Circle()
-                    .fill(member == nil ? Color.white.opacity(0.92) : AppPalette.Primary.main)
-                    .frame(width: circleSize, height: circleSize)
-                Text(member?.initials ?? position.localizedMarkerLabel)
-                    .font(.system(size: resolvedInitialsFontSize, weight: .bold))
-                    .foregroundStyle(member == nil ? Self.emptySlotLabelColor : .white)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.65)
+            ZStack(alignment: .topTrailing) {
+                ZStack {
+                    Circle()
+                        .fill(member == nil ? Color.white.opacity(0.92) : AppPalette.Primary.main)
+                        .frame(width: circleSize, height: circleSize)
+                    Text(member?.initials ?? position.localizedMarkerLabel)
+                        .font(.system(size: resolvedInitialsFontSize, weight: .bold))
+                        .foregroundStyle(member == nil ? Self.emptySlotLabelColor : .white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.65)
+                }
+
+                if isCaptain(member) {
+                    CaptainBadgeView(size: compact ? 11 : 13)
+                        .offset(x: compact ? 5 : 6, y: compact ? -5 : -6)
+                }
             }
 
             if let member {
@@ -147,9 +155,17 @@ struct FormationFieldView: View {
         return members.first { $0.matchesCompositionMemberKey(memberId) }
     }
 
+    private func isCaptain(_ member: TeamMember?) -> Bool {
+        guard let member, let captainMemberKey else { return false }
+        return member.matchesCompositionMemberKey(captainMemberKey)
+    }
+
     private func positionAccessibilityLabel(position: FormationPosition, member: TeamMember?) -> String {
         if let member {
-            return "\(position.localizedMarkerLabel), \(member.displayName)"
+            let captainSuffix = isCaptain(member)
+                ? ", \(L10n.text("compositionCaptain"))"
+                : ""
+            return "\(position.localizedMarkerLabel), \(member.displayName)\(captainSuffix)"
         }
         return position.localizedMarkerLabel
     }
@@ -181,6 +197,7 @@ struct SubstitutesBenchView: View {
     let substituteMemberIds: [String?]
     let onBenchSlotTapped: (Int) -> Void
     var interactive: Bool = true
+    var captainMemberKey: String? = nil
 
     var body: some View {
         let visibleIndices = visibleSlotIndices
@@ -217,21 +234,28 @@ struct SubstitutesBenchView: View {
         }
 
         let slotContent = VStack(spacing: 6) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(AppPalette.Neutral.surface.opacity(0.8))
-                    .frame(height: 56)
-                if let member {
-                    Text(member.initials)
-                        .font(.subheadline.weight(.bold))
-                        .foregroundStyle(AppPalette.Primary.main)
-                } else if interactive {
-                    Image(systemName: "plus")
-                        .foregroundStyle(AppPalette.Neutral.textSecondary)
-                } else {
-                    Text("—")
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(AppPalette.Neutral.textTertiary)
+            ZStack(alignment: .topTrailing) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(AppPalette.Neutral.surface.opacity(0.8))
+                        .frame(height: 56)
+                    if let member {
+                        Text(member.initials)
+                            .font(.subheadline.weight(.bold))
+                            .foregroundStyle(AppPalette.Primary.main)
+                    } else if interactive {
+                        Image(systemName: "plus")
+                            .foregroundStyle(AppPalette.Neutral.textSecondary)
+                    } else {
+                        Text("—")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(AppPalette.Neutral.textTertiary)
+                    }
+                }
+
+                if let member, isCaptain(member) {
+                    CaptainBadgeView(size: 13)
+                        .offset(x: 5, y: -5)
                 }
             }
 
@@ -255,6 +279,11 @@ struct SubstitutesBenchView: View {
         } else if member != nil {
             slotContent
         }
+    }
+
+    private func isCaptain(_ member: TeamMember) -> Bool {
+        guard let captainMemberKey else { return false }
+        return member.matchesCompositionMemberKey(captainMemberKey)
     }
 }
 

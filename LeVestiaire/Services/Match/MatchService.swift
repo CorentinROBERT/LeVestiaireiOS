@@ -257,6 +257,18 @@ final class MatchService {
     }
 
     @MainActor
+    func updateMatchCompositionCaptain(matchId: String, captainId: String?) async throws -> MatchDetail {
+        let body = try JSONEncoder().encode(CompositionCaptainPatchRequest(captainId: captainId))
+        let (data, response) = try await authorizedRequest(
+            path: APIEndpoints.matchCompositionCaptain(matchId),
+            method: "PATCH",
+            body: body
+        )
+        try validate(response: response, data: data, fallback: L10n.text("errorMatchCannotBeModified"))
+        return try MatchDecoding.decodeDetail(from: data)
+    }
+
+    @MainActor
     func lockMatchComposition(matchId: String) async throws -> MatchDetail {
         let (data, response) = try await authorizedRequest(
             path: APIEndpoints.matchLockComposition(matchId),

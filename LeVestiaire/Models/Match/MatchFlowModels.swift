@@ -423,7 +423,9 @@ struct MatchDetail: Decodable, Identifiable, Equatable {
     let statusLabel: String?
     let preparationPhase: MatchPreparationPhase?
     let isPreparationLocked: Bool
+    /// Feuille validée par le staff (phase « en attente ») — porté par le match (`compositionLocked` API).
     let isCompositionLocked: Bool
+    let compositionLockedAt: Date?
     let canPublish: Bool
     let publishBlockers: [PublishBlocker]
     let myAvailabilityStatus: MatchAvailabilityStatus?
@@ -516,7 +518,6 @@ struct MatchDetail: Decodable, Identifiable, Equatable {
         statusLabel = try container.decodeIfPresent(String.self, forKey: .statusLabel)
         preparationPhase = try container.decodeIfPresent(MatchPreparationPhase.self, forKey: .preparationPhase)
         isPreparationLocked = try container.decodeIfPresent(Bool.self, forKey: .isPreparationLocked) ?? false
-        isCompositionLocked = try container.decodeIfPresent(Bool.self, forKey: .isCompositionLocked) ?? false
         canPublish = try container.decodeIfPresent(Bool.self, forKey: .canPublish) ?? false
         publishBlockers = try container.decodeIfPresent([PublishBlocker].self, forKey: .publishBlockers) ?? []
         myAvailabilityStatus = try container.decodeIfPresent(MatchAvailabilityStatus.self, forKey: .myAvailabilityStatus)
@@ -549,6 +550,16 @@ struct MatchDetail: Decodable, Identifiable, Equatable {
             date = Date()
         }
         composition = try container.decodeIfPresent(TeamComposition.self, forKey: .composition)
+        isCompositionLocked = MatchSharedDecoding.resolveCompositionLocked(
+            from: container,
+            compositionLockedKey: .compositionLocked,
+            legacyIsCompositionLockedKey: .isCompositionLocked,
+            legacyCompositionIsLocked: composition?.isLocked
+        )
+        compositionLockedAt = MatchSharedDecoding.resolveCompositionLockedAt(
+            from: container,
+            compositionLockedAtKey: .compositionLockedAt
+        )
     }
 
     init(
@@ -559,6 +570,7 @@ struct MatchDetail: Decodable, Identifiable, Equatable {
         preparationPhase: MatchPreparationPhase?,
         isPreparationLocked: Bool,
         isCompositionLocked: Bool,
+        compositionLockedAt: Date? = nil,
         canPublish: Bool,
         publishBlockers: [PublishBlocker],
         myAvailabilityStatus: MatchAvailabilityStatus?,
@@ -581,6 +593,7 @@ struct MatchDetail: Decodable, Identifiable, Equatable {
         self.preparationPhase = preparationPhase
         self.isPreparationLocked = isPreparationLocked
         self.isCompositionLocked = isCompositionLocked
+        self.compositionLockedAt = compositionLockedAt
         self.canPublish = canPublish
         self.publishBlockers = publishBlockers
         self.myAvailabilityStatus = myAvailabilityStatus
@@ -606,6 +619,7 @@ struct MatchDetail: Decodable, Identifiable, Equatable {
             preparationPhase: preparationPhase ?? previous.preparationPhase,
             isPreparationLocked: isPreparationLocked,
             isCompositionLocked: isCompositionLocked || previous.isCompositionLocked,
+            compositionLockedAt: compositionLockedAt ?? previous.compositionLockedAt,
             canPublish: canPublish || previous.canPublish,
             publishBlockers: publishBlockers.isEmpty ? previous.publishBlockers : publishBlockers,
             myAvailabilityStatus: myAvailabilityStatus ?? previous.myAvailabilityStatus,
@@ -648,6 +662,7 @@ struct MatchDetail: Decodable, Identifiable, Equatable {
             preparationPhase: preparationPhase,
             isPreparationLocked: isPreparationLocked,
             isCompositionLocked: isCompositionLocked,
+            compositionLockedAt: compositionLockedAt,
             canPublish: canPublish,
             publishBlockers: publishBlockers,
             myAvailabilityStatus: myAvailabilityStatus,
@@ -674,6 +689,7 @@ struct MatchDetail: Decodable, Identifiable, Equatable {
             preparationPhase: preparationPhase,
             isPreparationLocked: isPreparationLocked,
             isCompositionLocked: isCompositionLocked,
+            compositionLockedAt: compositionLockedAt,
             canPublish: canPublish,
             publishBlockers: publishBlockers,
             myAvailabilityStatus: availabilityStatus,
@@ -700,6 +716,7 @@ struct MatchDetail: Decodable, Identifiable, Equatable {
             preparationPhase: preparationPhase,
             isPreparationLocked: isPreparationLocked,
             isCompositionLocked: isCompositionLocked,
+            compositionLockedAt: compositionLockedAt,
             canPublish: canPublish,
             publishBlockers: publishBlockers,
             myAvailabilityStatus: myAvailabilityStatus,
@@ -746,7 +763,9 @@ struct MatchDetail: Decodable, Identifiable, Equatable {
         case statusLabel
         case preparationPhase
         case isPreparationLocked
+        case compositionLocked
         case isCompositionLocked
+        case compositionLockedAt
         case canPublish
         case publishBlockers
         case myAvailabilityStatus

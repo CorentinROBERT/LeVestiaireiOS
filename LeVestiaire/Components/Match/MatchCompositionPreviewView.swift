@@ -212,10 +212,14 @@ struct MatchCompositionPreviewView: View {
                         assignments: tab.starterAssignments,
                         onPositionTapped: { _ in },
                         interactive: false,
-                        compact: isCompact
+                        compact: isCompact,
+                        captainMemberKey: tab.isMain ? tab.sanitizedCaptainMemberKey() : nil
                     )
 
-                    SubstitutesBenchMiniView(entries: substituteEntries)
+                    SubstitutesBenchMiniView(
+                        entries: substituteEntries,
+                        captainMemberKey: tab.isMain ? tab.sanitizedCaptainMemberKey() : nil
+                    )
                 }
                 .frame(minHeight: isCompact ? Self.compactPanelHeight : nil, alignment: .top)
             }
@@ -296,6 +300,7 @@ struct MatchCompositionPreviewView: View {
 
 struct SubstitutesBenchMiniView: View {
     let entries: [CompositionSubstituteEntry]
+    var captainMemberKey: String? = nil
 
     var body: some View {
         if !entries.isEmpty {
@@ -308,14 +313,23 @@ struct SubstitutesBenchMiniView: View {
                     HStack(spacing: 8) {
                         ForEach(entries) { entry in
                             VStack(spacing: 4) {
-                                Text(entry.initials)
-                                    .font(.system(size: 11, weight: .bold))
-                                    .foregroundStyle(AppPalette.Primary.main)
-                                    .frame(width: 32, height: 32)
-                                    .background {
-                                        Circle()
-                                            .fill(AppPalette.Primary.soft)
+                                ZStack(alignment: .topTrailing) {
+                                    ZStack {
+                                        Text(entry.initials)
+                                            .font(.system(size: 11, weight: .bold))
+                                            .foregroundStyle(AppPalette.Primary.main)
+                                            .frame(width: 32, height: 32)
+                                            .background {
+                                                Circle()
+                                                    .fill(AppPalette.Primary.soft)
+                                            }
                                     }
+
+                                    if isCaptain(entry) {
+                                        CaptainBadgeView(size: 10)
+                                            .offset(x: 4, y: -4)
+                                    }
+                                }
 
                                 Text(entry.fieldDisplayName)
                                     .font(.system(size: 9, weight: .medium))
@@ -324,12 +338,21 @@ struct SubstitutesBenchMiniView: View {
                                     .frame(maxWidth: 72)
                             }
                             .accessibilityElement(children: .combine)
-                            .accessibilityLabel(entry.displayName)
+                            .accessibilityLabel(
+                                isCaptain(entry)
+                                    ? "\(entry.displayName), \(L10n.text("compositionCaptain"))"
+                                    : entry.displayName
+                            )
                         }
                     }
                 }
             }
         }
+    }
+
+    private func isCaptain(_ entry: CompositionSubstituteEntry) -> Bool {
+        guard let captainMemberKey else { return false }
+        return CompositionMemberKey.variants(for: captainMemberKey).contains(entry.id)
     }
 }
 

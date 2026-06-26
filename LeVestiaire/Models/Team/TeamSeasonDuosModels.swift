@@ -75,8 +75,8 @@ struct TeamSeasonDuoEntry: Decodable, Equatable, Identifiable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         playerA = try container.decode(TeamInsightsPlayerRef.self, forKey: .playerA)
         playerB = try container.decode(TeamInsightsPlayerRef.self, forKey: .playerB)
-        goalsTogether = SeasonStatsDecoding.int(from: container, forKey: .goalsTogether) ?? 0
-        totalCombos = SeasonStatsDecoding.int(from: container, forKey: .totalCombos) ?? 0
+        goalsTogether = SeasonStatsDecoding.int(from: container, forKey: .goalsTogether)
+        totalCombos = SeasonStatsDecoding.int(from: container, forKey: .totalCombos)
     }
 
     private enum CodingKeys: String, CodingKey {

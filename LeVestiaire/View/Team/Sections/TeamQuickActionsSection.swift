@@ -33,7 +33,7 @@ struct TeamQuickActionsSection: View {
             TeamColoredActionTile(
                 title: L10n.text("shareTeamInviteLink"),
                 subtitle: L10n.text("shareTeamInviteActionSubtitle"),
-                icon: "link",
+                icon: "ticket.fill",
                 tint: AppPalette.Primary.main
             ) {
                 viewModel.presentShareTeamInviteSheet()
