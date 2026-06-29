@@ -91,7 +91,11 @@ LeVestiaire/
 ├── Localization/             # L10n helpers
 ├── Theme/                    # AppPalette, AppInfo
 ├── Resources/                # Strings, reference JSON
+├── Support/                  # UITest, AccessibilityID, CI config
 └── Preview/                  # SwiftUI preview data
+
+LeVestiaireTests/             # Unit tests (Swift Testing)
+LeVestiaireUITests/           # UI tests (XCTest + network stubs)
 ```
 
 ### View model layout
@@ -152,6 +156,43 @@ String sources:
 
 ---
 
+## Testing
+
+### Unit tests (`LeVestiaireTests`)
+
+- **Swift Testing** framework
+- ViewModels covered with injectable mocks (`Services/Protocols/ServiceProtocols.swift`)
+- No network or simulator required
+
+### UI tests (`LeVestiaireUITests`)
+
+- **~55 tests** — smoke checks + critical user flows (auth, navigation, matches, team, sport profile)
+- Network stubbed via `UITestURLProtocol` — **no real backend**
+- **French** locale forced in UI test mode (`UITestAppConfigurator`)
+- Launch scenarios: `-UITestScenario` (`landing`, `login`, `authenticated`, `sportProfile`)
+
+### Running tests locally
+
+```bash
+./Scripts/ci_test.sh                      # unit + UI
+RUN_UI_TESTS=0 ./Scripts/ci_test.sh       # unit tests only (fast)
+RUN_UNIT_TESTS=0 ./Scripts/ci_test.sh     # UI tests only
+```
+
+Run a specific suite or test:
+
+```bash
+xcodebuild test -scheme LeVestiaire \
+  -destination 'platform=iOS Simulator,name=iPhone 17' \
+  -only-testing:LeVestiaireTests
+
+xcodebuild test -scheme LeVestiaire \
+  -destination 'platform=iOS Simulator,name=iPhone 17' \
+  -only-testing:LeVestiaireUITests/LoginUITests
+```
+
+---
+
 ## Building from the command line
 
 ```bash
@@ -173,13 +214,19 @@ xcodebuild -scheme LeVestiaire \
 
 ## CI / CD (GitHub Actions)
 
-### CI — automatic build
+### CI — automatic build & tests
 
 Workflow `.github/workflows/ios-ci.yml` runs on every **push** and **pull request** to `main` or `develop`:
 
 - `macos-26` runner + Xcode **26.5**
 - Swift package resolution (Firebase)
-- **Debug** and **Release** simulator builds (no signing required)
+- **Debug** simulator build (no signing)
+- **Unit tests** (`LeVestiaireTests`) — always
+- **UI tests** (`LeVestiaireUITests`) — **`main` only** (push or PR targeting `main`)
+- On **`develop`**: build + unit tests only (no UI tests, faster CI)
+- **Release** simulator build
+
+Environment variables for `./Scripts/ci_test.sh`: `RUN_UNIT_TESTS`, `RUN_UI_TESTS` (see [Testing](#testing)).
 
 Badge (once enabled):
 

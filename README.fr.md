@@ -91,7 +91,11 @@ LeVestiaire/
 ├── Localization/             # Helpers L10n
 ├── Theme/                    # AppPalette, AppInfo
 ├── Resources/                # Chaînes, JSON de référence
+├── Support/                  # UITest, AccessibilityID, config CI
 └── Preview/                  # Données pour previews SwiftUI
+
+LeVestiaireTests/             # Tests unitaires (Swift Testing)
+LeVestiaireUITests/           # Tests UI (XCTest + stubs réseau)
 ```
 
 ### Organisation des view models
@@ -152,6 +156,43 @@ Sources des chaînes :
 
 ---
 
+## Tests
+
+### Unitaires (`LeVestiaireTests`)
+
+- Framework **Swift Testing**
+- ViewModels couverts avec mocks injectables (`Services/Protocols/ServiceProtocols.swift`)
+- Pas de réseau ni de simulateur requis
+
+### UI (`LeVestiaireUITests`)
+
+- **~55 tests** : smoke + parcours critiques (auth, navigation, match, équipe, profil sportif)
+- Stubs réseau via `UITestURLProtocol` — **aucun backend réel**
+- Locale forcée en **français** en mode UI test (`UITestAppConfigurator`)
+- Scénarios de lancement : `-UITestScenario` (`landing`, `login`, `authenticated`, `sportProfile`)
+
+### Lancer les tests en local
+
+```bash
+./Scripts/ci_test.sh                      # unitaires + UI
+RUN_UI_TESTS=0 ./Scripts/ci_test.sh       # unitaires seulement (rapide)
+RUN_UNIT_TESTS=0 ./Scripts/ci_test.sh     # UI seulement
+```
+
+Cibler une suite ou un test :
+
+```bash
+xcodebuild test -scheme LeVestiaire \
+  -destination 'platform=iOS Simulator,name=iPhone 17' \
+  -only-testing:LeVestiaireTests
+
+xcodebuild test -scheme LeVestiaire \
+  -destination 'platform=iOS Simulator,name=iPhone 17' \
+  -only-testing:LeVestiaireUITests/LoginUITests
+```
+
+---
+
 ## Compilation en ligne de commande
 
 ```bash
@@ -173,13 +214,19 @@ xcodebuild -scheme LeVestiaire \
 
 ## CI / CD (GitHub Actions)
 
-### CI — build automatique
+### CI — build & tests automatiques
 
 Le workflow `.github/workflows/ios-ci.yml` tourne sur chaque **push** et **pull request** vers `main` ou `develop` :
 
 - Runner `macos-26` + Xcode **26.5**
 - Résolution des packages Swift (Firebase)
-- Build **Debug** et **Release** pour simulateur (sans certificat)
+- Build **Debug** simulateur (sans certificat)
+- **Tests unitaires** (`LeVestiaireTests`) — toujours
+- **Tests UI** (`LeVestiaireUITests`) — **uniquement sur `main`** (push ou PR ciblant `main`)
+- Sur **`develop`** : build + unitaires seulement (pas d’UI tests, CI plus rapide)
+- Build **Release** simulateur
+
+Variables utilisées par `./Scripts/ci_test.sh` : `RUN_UNIT_TESTS`, `RUN_UI_TESTS` (voir section [Tests](#tests)).
 
 Badge à ajouter dans le README une fois activé :
 
