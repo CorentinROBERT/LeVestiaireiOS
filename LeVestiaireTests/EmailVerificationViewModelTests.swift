@@ -8,6 +8,7 @@ import Testing
 @testable import LeVestiaire
 
 @MainActor
+@Suite(.serialized)
 struct EmailVerificationViewModelTests {
   private func makeViewModel(
     email: String = "user@example.com",
@@ -39,10 +40,8 @@ struct EmailVerificationViewModelTests {
     )
 
     viewModel.confirmVerification()
-    await AsyncTestSupport.waitUntil {
-      viewModel.isCheckingVerification == false
-        && viewModel.feedbackMessage == L10n.emailNotYetVerified
-    }
+    await Task.yield()
+    await AsyncTestSupport.waitUntil { viewModel.isCheckingVerification == false }
 
     #expect(viewModel.feedbackMessage == L10n.emailNotYetVerified)
   }
@@ -65,6 +64,7 @@ struct EmailVerificationViewModelTests {
     )
 
     viewModel.confirmVerification()
+    await Task.yield()
     await AsyncTestSupport.waitUntil { viewModel.isCheckingVerification == false }
 
     #expect(inviteCoordinator.joinPendingTeamIfNeededCallCount == 1)
@@ -93,6 +93,7 @@ struct EmailVerificationViewModelTests {
 
     auth.isAuthenticated = false
     viewModel.confirmVerification()
+    await Task.yield()
     await AsyncTestSupport.waitUntil { viewModel.isCheckingVerification == false }
 
     #expect(auth.loginCallCount == 1)
@@ -113,11 +114,8 @@ struct EmailVerificationViewModelTests {
     )
 
     viewModel.resendEmail()
-    await AsyncTestSupport.waitUntil {
-      viewModel.isResending == false
-        && viewModel.resendCooldownRemaining > 0
-        && viewModel.feedbackMessage != nil
-    }
+    await Task.yield()
+    await AsyncTestSupport.waitUntil { viewModel.isResending == false }
 
     #expect(viewModel.feedbackMessage != nil)
     #expect(viewModel.resendCooldownRemaining > 0)
