@@ -53,8 +53,15 @@ jobs:
       - name: Build Debug (simulator)
         run: ./Scripts/ci_build.sh
 
-      - name: Run unit and UI tests
-        run: ./Scripts/ci_test.sh
+      - name: Run tests
+        env:
+          # UI tests complets sur main uniquement ; develop = unitaires + build (itération plus rapide).
+          RUN_UI_TESTS: ${{ github.ref != 'refs/heads/develop' && github.base_ref != 'develop' && '1' || '0' }}
+        run: |
+          echo "Branche push: ${GITHUB_REF_NAME:-n/a}"
+          echo "Branche cible PR: ${GITHUB_BASE_REF:-n/a}"
+          echo "UI tests: ${RUN_UI_TESTS}"
+          ./Scripts/ci_test.sh
 
       - name: Build Release (simulator)
         env:

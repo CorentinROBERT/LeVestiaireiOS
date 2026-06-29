@@ -487,19 +487,29 @@ enum UITestApp {
     }
 
     @discardableResult
-    static func openTeamTab(in app: XCUIApplication, timeout: TimeInterval = 15) -> Bool {
+    static func openTeamTab(in app: XCUIApplication, timeout: TimeInterval = 0) -> Bool {
+        let resolvedTimeout = timeout > 0 ? timeout : uiTestTimeout(default: 15, ci: 25)
         tapTab(teamTab(in: app), in: app)
-        guard app.navigationBars.staticTexts["Équipe"].waitForExistence(timeout: timeout) else {
+
+        let teamNavTitle = app.navigationBars.staticTexts["Équipe"]
+        let teamNavTitleEN = app.navigationBars.staticTexts["Team"]
+        let hasNavTitle = teamNavTitle.waitForExistence(timeout: resolvedTimeout)
+            || teamNavTitleEN.waitForExistence(timeout: 4)
+        guard hasNavTitle else {
             return false
         }
 
-        let deadline = Date().addingTimeInterval(timeout)
+        let deadline = Date().addingTimeInterval(resolvedTimeout)
         while Date() < deadline {
             if app.otherElements[UITestID.Team.shell].exists { return true }
             if app.staticTexts["FC Test UI"].exists { return true }
             RunLoop.current.run(until: Date().addingTimeInterval(0.25))
         }
         return false
+    }
+
+    private static func uiTestTimeout(default defaultTimeout: TimeInterval, ci: TimeInterval) -> TimeInterval {
+        ProcessInfo.processInfo.environment["CI"] == "true" ? ci : defaultTimeout
     }
 
     static func profileTab(in app: XCUIApplication) -> XCUIElement {

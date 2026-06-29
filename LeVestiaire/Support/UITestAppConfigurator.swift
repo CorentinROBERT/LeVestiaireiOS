@@ -40,5 +40,9 @@ enum UITestAppConfigurator {
         }
 
         APIClient.shared.installUITestNetworkingIfNeeded()
+
+        if UITestLaunchArgument.isEnabled {
+            LocalizationManager.shared.setLanguage(.french)
+        }
     }
 }

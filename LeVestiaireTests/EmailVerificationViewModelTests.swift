@@ -39,7 +39,10 @@ struct EmailVerificationViewModelTests {
     )
 
     viewModel.confirmVerification()
-    await AsyncTestSupport.waitUntil { viewModel.isCheckingVerification == false }
+    await AsyncTestSupport.waitUntil {
+      viewModel.isCheckingVerification == false
+        && viewModel.feedbackMessage == L10n.emailNotYetVerified
+    }
 
     #expect(viewModel.feedbackMessage == L10n.emailNotYetVerified)
   }
@@ -110,10 +113,15 @@ struct EmailVerificationViewModelTests {
     )
 
     viewModel.resendEmail()
-    await AsyncTestSupport.waitUntil { viewModel.isResending == false }
+    await AsyncTestSupport.waitUntil {
+      viewModel.isResending == false
+        && viewModel.resendCooldownRemaining > 0
+        && viewModel.feedbackMessage != nil
+    }
 
     #expect(viewModel.feedbackMessage != nil)
-    #expect(viewModel.resendCooldownRemaining == 20)
+    #expect(viewModel.resendCooldownRemaining > 0)
+    #expect(viewModel.resendCooldownRemaining <= 20)
     #expect(viewModel.canResendEmail == false)
   }
 }

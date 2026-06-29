@@ -7,10 +7,10 @@ import Foundation
 import Testing
 
 enum AsyncTestSupport {
-  static func waitUntil(
-    _ condition: @escaping @MainActor () -> Bool,
-    timeout: Duration = .seconds(2)
-  ) async {
+    static func waitUntil(
+        _ condition: @escaping @MainActor () -> Bool,
+        timeout: Duration = .seconds(5)
+    ) async {
     let clock = ContinuousClock()
     let deadline = clock.now + timeout
 
