@@ -5,6 +5,18 @@
 
 import SwiftUI
 
+struct OptionalAccessibilityIdentifier: ViewModifier {
+    let identifier: String?
+
+    func body(content: Content) -> some View {
+        if let identifier, !identifier.isEmpty {
+            content.accessibilityIdentifier(identifier)
+        } else {
+            content
+        }
+    }
+}
+
 struct UButton: View {
     var text: String = ""
     var textColor: Color = AppPalette.Primary.onMain
@@ -14,6 +26,7 @@ struct UButton: View {
     var leadingIcon: String?
     var trailingIcon: String?
     var accessibilityLabel: String?
+    var accessibilityIdentifier: String?
     var onPress: () -> Void = {}
 
     var body: some View {
@@ -45,6 +58,7 @@ struct UButton: View {
         }
         .buttonStyle(.fullTap)
         .accessibilityLabel(accessibilityLabel ?? text)
+        .modifier(OptionalAccessibilityIdentifier(identifier: accessibilityIdentifier))
     }
 }
 

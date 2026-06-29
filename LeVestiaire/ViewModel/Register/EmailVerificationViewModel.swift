@@ -20,9 +20,9 @@ final class EmailVerificationViewModel: ObservableObject {
     @Published var resendCooldownRemaining = 0
 
     private var resendCooldownTask: Task<Void, Never>?
-    private let authService: AuthService
-    private let pendingCredentialsStore: PendingAuthCredentialsStore
-    private let teamInviteCoordinator: TeamInviteCoordinator
+    private let authService: any AuthServicing
+    private let pendingCredentialsStore: any PendingAuthCredentialsStoring
+    private let teamInviteCoordinator: any TeamInviteCoordinating
 
     var canResendEmail: Bool {
         resendCooldownRemaining == 0 && !isResending
@@ -30,9 +30,9 @@ final class EmailVerificationViewModel: ObservableObject {
 
     init(
         email: String,
-        authService: AuthService,
-        pendingCredentialsStore: PendingAuthCredentialsStore,
-        teamInviteCoordinator: TeamInviteCoordinator
+        authService: any AuthServicing,
+        pendingCredentialsStore: any PendingAuthCredentialsStoring,
+        teamInviteCoordinator: any TeamInviteCoordinating
     ) {
         self.email = email
         self.authService = authService
@@ -45,7 +45,7 @@ final class EmailVerificationViewModel: ObservableObject {
             email: email,
             authService: AuthService.shared,
             pendingCredentialsStore: PendingAuthCredentialsStore.shared,
-            teamInviteCoordinator: .shared
+            teamInviteCoordinator: TeamInviteCoordinator.shared
         )
     }
 

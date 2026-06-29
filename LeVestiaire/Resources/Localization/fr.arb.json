@@ -1439,6 +1439,7 @@
   "errorvalidationemailrequired": "Email requis",
   "errorvalidationinvalidresetcode": "Le code de réinitialisation doit contenir 6 chiffres",
   "errorvalidationrefreshtokenrequired": "Refresh token requis",
+  "errorvalidationdevonly": "Cette action n'est disponible qu'en environnement de développement",
   "errorserverinternal": "Erreur interne du serveur",
   "erroremailsendfailed": "Échec de l'envoi de l'email",
   "errorquiznotfound": "Quiz introuvable",

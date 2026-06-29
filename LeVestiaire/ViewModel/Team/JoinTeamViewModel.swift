@@ -20,13 +20,13 @@ final class JoinTeamViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var successMessage: String?
 
-    private let teamService: TeamService
+    private let teamService: any TeamJoinServicing
 
     var refreshTeams: (() async -> Void)?
 
     static let messageMaxLength = 500
 
-    init(teamService: TeamService) {
+    init(teamService: any TeamJoinServicing) {
         self.teamService = teamService
     }
 

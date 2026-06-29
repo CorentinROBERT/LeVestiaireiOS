@@ -72,10 +72,14 @@ final class DeviceTokenService {
     }
 
     @MainActor
-    func sendTestPushNotification() async throws -> TestPushNotificationResponse {
+    func sendTestPushNotification(allowProduction: Bool) async throws -> TestPushNotificationResponse {
+        let body = try JSONEncoder().encode(
+            TestPushNotificationRequest(allowProduction: allowProduction)
+        )
         let (data, response) = try await authorizedRequest(
             path: APIEndpoints.testPushNotification,
-            method: "POST"
+            method: "POST",
+            body: body
         )
         try validate(
             response: response,

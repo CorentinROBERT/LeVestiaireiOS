@@ -82,6 +82,7 @@ struct EmailVerificationView: View {
                 cornerRadius: 25,
                 isFullWidth: true,
                 trailingIcon: "checkmark.circle",
+                accessibilityIdentifier: AccessibilityID.EmailVerification.confirmButton,
                 onPress: viewModel.confirmVerification
             )
             .disabled(viewModel.isCheckingVerification)

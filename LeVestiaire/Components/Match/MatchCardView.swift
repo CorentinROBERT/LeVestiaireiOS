@@ -28,6 +28,7 @@ struct MatchListingCard: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.fullTap)
+            .accessibilityIdentifier(AccessibilityID.Match.listingCard(match.id))
 
             if showsAvailabilityActions, let onAvailabilitySelect {
                 MatchAvailabilityQuickRespondBar(

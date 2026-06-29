@@ -30,17 +30,17 @@ final class ProfileViewModel: ObservableObject {
     @Published var alertMessage: String?
 
     private var cancellables = Set<AnyCancellable>()
-    private let authService: AuthService
-    private let sportProfileService: SportProfileService
-    private let statsService: StatsService
-    private let accountService: AccountService
+    private let authService: any AuthServicing
+    private let sportProfileService: any SportProfileServicing
+    private let statsService: any ProfileStatsServicing
+    private let accountService: any AccountServicing
     let pullToRefreshTask = PullToRefreshTask()
 
     init(
-        authService: AuthService,
-        sportProfileService: SportProfileService,
-        statsService: StatsService,
-        accountService: AccountService
+        authService: any AuthServicing,
+        sportProfileService: any SportProfileServicing,
+        statsService: any ProfileStatsServicing,
+        accountService: any AccountServicing
     ) {
         self.authService = authService
         self.sportProfileService = sportProfileService
@@ -48,12 +48,14 @@ final class ProfileViewModel: ObservableObject {
         self.accountService = accountService
         self.user = authService.currentUser
 
-        authService.$currentUser
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] currentUser in
-                self?.user = currentUser
-            }
-            .store(in: &cancellables)
+        if let observing = authService as? AuthUserObserving {
+            observing.currentUserPublisher
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] currentUser in
+                    self?.user = currentUser
+                }
+                .store(in: &cancellables)
+        }
     }
 
     convenience init() {
@@ -100,7 +102,7 @@ final class ProfileViewModel: ObservableObject {
     }
 
     private func reloadProfileContent() async {
-        if let fetchedUser = await authService.fetchCurrentUser() {
+        if let fetchedUser = await authService.fetchCurrentUser(retryOnUnauthorized: true) {
             user = fetchedUser
         } else {
             user = authService.currentUser
@@ -131,7 +133,7 @@ final class ProfileViewModel: ObservableObject {
             if profileResponse.success {
                 sportProfile = profileResponse.data
             }
-            _ = await authService.fetchCurrentUser()
+            _ = await authService.fetchCurrentUser(retryOnUnauthorized: true)
             user = authService.currentUser
         }
     }
@@ -153,7 +155,7 @@ final class ProfileViewModel: ObservableObject {
             let response = await sportProfileService.uploadProfilePicture(newImage)
 
             if response.imageUrl != nil || response.success {
-                _ = await authService.fetchCurrentUser()
+                _ = await authService.fetchCurrentUser(retryOnUnauthorized: true)
                 user = authService.currentUser
                 return
             }
@@ -173,7 +175,7 @@ final class ProfileViewModel: ObservableObject {
             let response = await accountService.requestAccountDeletion()
 
             if response.success {
-                _ = await authService.fetchCurrentUser()
+                _ = await authService.fetchCurrentUser(retryOnUnauthorized: true)
                 user = authService.currentUser
                 alertMessage = L10n.deleteAccountSuccess
                 return
@@ -195,7 +197,7 @@ final class ProfileViewModel: ObservableObject {
             let response = await accountService.cancelAccountDeletion()
 
             if response.success {
-                _ = await authService.fetchCurrentUser()
+                _ = await authService.fetchCurrentUser(retryOnUnauthorized: true)
                 user = authService.currentUser
                 alertMessage = L10n.accountDeletionCancelled
                 return

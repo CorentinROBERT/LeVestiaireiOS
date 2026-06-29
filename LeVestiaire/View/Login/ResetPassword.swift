@@ -49,7 +49,8 @@ struct ResetPassword: View {
                             text: $viewModel.password,
                             isSecure: true,
                             isPasswordVisible: $viewModel.isPasswordVisible,
-                            textContentType: .newPassword
+                            textContentType: .newPassword,
+                            accessibilityIdentifier: AccessibilityID.Auth.resetPasswordField
                         )
 
                         UTextField(
@@ -59,7 +60,8 @@ struct ResetPassword: View {
                             text: $viewModel.confirmPassword,
                             isSecure: true,
                             isPasswordVisible: $viewModel.isConfirmPasswordVisible,
-                            textContentType: .newPassword
+                            textContentType: .newPassword,
+                            accessibilityIdentifier: AccessibilityID.Auth.resetPasswordConfirmField
                         )
 
                         UButton(
@@ -68,6 +70,7 @@ struct ResetPassword: View {
                             backgroundColor: AppPalette.Primary.main,
                             cornerRadius: 30,
                             isFullWidth: true,
+                            accessibilityIdentifier: AccessibilityID.Auth.resetPasswordSubmit,
                             onPress: viewModel.resetPassword
                         )
                         .opacity(viewModel.canSubmit ? 1 : 0.5)

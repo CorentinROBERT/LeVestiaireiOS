@@ -60,3 +60,8 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
+vendor/bundle
+
+# Secrets CI locaux (ne jamais committer)
+Scripts/ci-secrets.local.env
+AuthKey_*.p8

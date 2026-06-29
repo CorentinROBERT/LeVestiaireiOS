@@ -1,0 +1,5 @@
+app_identifier("com.corentin.robert.LeVestaire")
+team_id("8UTV7J6Z6Z")
+
+# Optionnel si tu utilises upload_to_testflight avec Apple ID :
+# apple_id("ton-email@exemple.com")

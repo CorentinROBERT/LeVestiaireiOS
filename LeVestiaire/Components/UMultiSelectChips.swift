@@ -43,6 +43,7 @@ struct UMultiSelectChips<Item: Hashable & Identifiable>: View {
                         .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
                 }
                 .buttonStyle(.fullTap)
+                .accessibilityAddTraits(isSelected ? .isSelected : [])
             }
         }
     }

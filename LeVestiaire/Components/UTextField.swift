@@ -78,6 +78,7 @@ struct UTextField: View {
     var focusedTag: FocusState<Int?>.Binding? = nil
     var nextFocusTag: Int? = nil
     var usesSystemKeyboardToolbar = true
+    var accessibilityIdentifier: String?
 
     @FocusState private var isInternallyFocused: Bool
 
@@ -121,8 +122,10 @@ struct UTextField: View {
                 Group {
                     if isSecure, let isPasswordVisible, !isPasswordVisible.wrappedValue {
                         SecureField(placeholder, text: $text)
+                            .modifier(OptionalAccessibilityIdentifier(identifier: accessibilityIdentifier))
                     } else {
                         TextField(placeholder, text: $text)
+                            .modifier(OptionalAccessibilityIdentifier(identifier: accessibilityIdentifier))
                     }
                 }
                 .modifier(FocusModifier(
@@ -230,7 +233,8 @@ extension UTextField {
         focusTag: Int? = nil,
         focusedTag: FocusState<Int?>.Binding? = nil,
         nextFocusTag: Int? = nil,
-        usesSystemKeyboardToolbar: Bool = true
+        usesSystemKeyboardToolbar: Bool = true,
+        accessibilityIdentifier: String? = nil
     ) {
         self.init(
             label: nil,
@@ -250,7 +254,8 @@ extension UTextField {
             focusTag: focusTag,
             focusedTag: focusedTag,
             nextFocusTag: nextFocusTag,
-            usesSystemKeyboardToolbar: usesSystemKeyboardToolbar
+            usesSystemKeyboardToolbar: usesSystemKeyboardToolbar,
+            accessibilityIdentifier: accessibilityIdentifier
         )
     }
 }

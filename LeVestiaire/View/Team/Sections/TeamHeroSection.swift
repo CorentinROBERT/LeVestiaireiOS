@@ -127,6 +127,7 @@ struct TeamHeroSection: View {
             }
             .buttonStyle(.fullTap)
             .accessibilityLabel(L10n.text("joinTeam"))
+            .accessibilityIdentifier(AccessibilityID.Main.joinTeamButton)
 
             Button {
                 viewModel.activeSheet = .createTeam
@@ -143,6 +144,7 @@ struct TeamHeroSection: View {
             }
             .buttonStyle(.fullTap)
             .accessibilityLabel(L10n.text("creerUneEquipe"))
+            .accessibilityIdentifier(AccessibilityID.Main.createTeamButton)
 
             Button {
                 viewModel.activeSheet = .settings
@@ -159,6 +161,7 @@ struct TeamHeroSection: View {
             }
             .buttonStyle(.fullTap)
             .accessibilityLabel(L10n.settings)
+            .accessibilityIdentifier(AccessibilityID.Team.settingsButton)
         }
     }
 

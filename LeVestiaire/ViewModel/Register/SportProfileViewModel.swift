@@ -29,9 +29,9 @@ final class SportProfileViewModel: ObservableObject {
     let mode: SportProfileMode
     var onProfileSaved: (() -> Void)?
 
-    private let sportProfileService: SportProfileService
-    private let referenceDataService: ReferenceDataService
-    private let authService: AuthService
+    private let sportProfileService: any SportProfileServicing
+    private let referenceDataService: any ReferenceDataServicing
+    private let authService: any AuthServicing
 
     var isEditMode: Bool {
         mode == .edit
@@ -64,9 +64,9 @@ final class SportProfileViewModel: ObservableObject {
     init(
         mode: SportProfileMode = .onboarding,
         onProfileSaved: (() -> Void)? = nil,
-        sportProfileService: SportProfileService,
-        referenceDataService: ReferenceDataService,
-        authService: AuthService
+        sportProfileService: any SportProfileServicing,
+        referenceDataService: any ReferenceDataServicing,
+        authService: any AuthServicing
     ) {
         self.mode = mode
         self.onProfileSaved = onProfileSaved

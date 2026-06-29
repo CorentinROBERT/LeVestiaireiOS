@@ -22,10 +22,10 @@ final class MatchDetailQuizViewModel: ObservableObject {
     @Published var isSubmitting = false
 
     private weak var host: MatchDetailViewModel?
-    private let quizService: QuizService
-    private let teamService: TeamService
+    private let quizService: any QuizServicing
+    private let teamService: any TeamDetailServicing
 
-    init(quizService: QuizService, teamService: TeamService) {
+    init(quizService: any QuizServicing, teamService: any TeamDetailServicing) {
         self.quizService = quizService
         self.teamService = teamService
     }

@@ -9,8 +9,16 @@ import SwiftUI
 
 struct RegisterView: View {
     @EnvironmentObject private var teamInviteCoordinator: TeamInviteCoordinator
-    @StateObject private var viewModel = RegisterViewModel()
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    @StateObject private var viewModel: RegisterViewModel
     @State private var presentedLegalDocument: LegalDocument?
+
+    let onEmailVerification: (String) -> Void
+
+    init(onEmailVerification: @escaping (String) -> Void = { _ in }) {
+        self.onEmailVerification = onEmailVerification
+        _viewModel = StateObject(wrappedValue: RegisterViewModel(onRegistered: onEmailVerification))
+    }
 
     private var birthDateRange: ClosedRange<Date> {
         let minimum = Calendar.current.date(byAdding: .year, value: -100, to: Date()) ?? Date()
@@ -41,9 +49,6 @@ struct RegisterView: View {
         }
         .navigationTitle(L10n.createAccount)
         .navigationBarTitleDisplayMode(.inline)
-        .navigationDestination(isPresented: $viewModel.showEmailVerification) {
-            EmailVerificationView(email: viewModel.trimmedEmail)
-        }
         .alert(
             L10n.register,
             isPresented: Binding(
@@ -58,8 +63,17 @@ struct RegisterView: View {
         .sheet(item: $presentedLegalDocument) { document in
             LegalDocumentSheet(document: document, language: viewModel.selectedLanguage)
         }
+        .navigationDestination(isPresented: $viewModel.showEmailVerification) {
+            EmailVerificationView(email: viewModel.trimmedEmail)
+        }
+        .environment(\.locale, localizationManager.locale)
+        .onAppear {
+            guard UITestLaunchArgument.isEnabled else { return }
+            viewModel.isPasswordVisible = true
+            viewModel.isConfirmPasswordVisible = true
+        }
         .onChange(of: viewModel.selectedLanguage) { _, language in
-            LocalizationManager.shared.setLanguage(language)
+            localizationManager.setLanguage(language)
         }
     }
 
@@ -85,7 +99,8 @@ struct RegisterView: View {
                 text: $viewModel.lastName,
                 style: .light,
                 textContentType: .familyName,
-                autocapitalization: .words
+                autocapitalization: .words,
+                accessibilityIdentifier: AccessibilityID.Register.lastNameField
             )
 
             UGlassTextField(
@@ -94,7 +109,8 @@ struct RegisterView: View {
                 text: $viewModel.firstName,
                 style: .light,
                 textContentType: .givenName,
-                autocapitalization: .words
+                autocapitalization: .words,
+                accessibilityIdentifier: AccessibilityID.Register.firstNameField
             )
 
             UGlassTextField(
@@ -103,7 +119,8 @@ struct RegisterView: View {
                 text: $viewModel.email,
                 style: .light,
                 keyboardType: .emailAddress,
-                textContentType: .emailAddress
+                textContentType: .emailAddress,
+                accessibilityIdentifier: AccessibilityID.Register.emailField
             )
 
             UGlassTextField(
@@ -113,7 +130,8 @@ struct RegisterView: View {
                 style: .light,
                 isSecure: true,
                 isPasswordVisible: $viewModel.isPasswordVisible,
-                textContentType: .newPassword
+                textContentType: UITestLaunchArgument.isEnabled ? nil : .newPassword,
+                accessibilityIdentifier: AccessibilityID.Register.passwordField
             )
 
             UGlassTextField(
@@ -123,7 +141,8 @@ struct RegisterView: View {
                 style: .light,
                 isSecure: true,
                 isPasswordVisible: $viewModel.isConfirmPasswordVisible,
-                textContentType: .newPassword
+                textContentType: UITestLaunchArgument.isEnabled ? nil : .newPassword,
+                accessibilityIdentifier: AccessibilityID.Register.confirmPasswordField
             )
 
             UGlassFormRow(icon: "calendar") {
@@ -158,6 +177,7 @@ struct RegisterView: View {
                     .foregroundStyle(AppPalette.Neutral.textPrimary)
             }
             .tint(AppPalette.Primary.main)
+            .accessibilityIdentifier(AccessibilityID.Register.legalToggle)
 
             Text(L10n.legalConsentHint)
                 .font(.caption)
@@ -197,6 +217,7 @@ struct RegisterView: View {
             cornerRadius: 25,
             isFullWidth: true,
             trailingIcon: "checkmark",
+            accessibilityIdentifier: AccessibilityID.Register.submitButton,
             onPress: viewModel.createAccount
         )
         .opacity(viewModel.canSubmit ? 1 : 0.5)
@@ -208,5 +229,6 @@ struct RegisterView: View {
     NavigationStack {
         RegisterView()
             .environmentObject(TeamInviteCoordinator.shared)
+            .environmentObject(LocalizationManager.shared)
     }
 }

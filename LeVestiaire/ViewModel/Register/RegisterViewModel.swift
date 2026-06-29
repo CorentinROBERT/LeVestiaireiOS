@@ -24,9 +24,11 @@ final class RegisterViewModel: ObservableObject {
     @Published var showEmailVerification = false
     @Published var isLoading = false
 
-    private let authService: AuthService
-    private let pendingCredentialsStore: PendingAuthCredentialsStore
-    private let teamInviteCoordinator: TeamInviteCoordinator
+    var onRegistered: ((String) -> Void)?
+
+    private let authService: any AuthServicing
+    private let pendingCredentialsStore: any PendingAuthCredentialsStoring
+    private let teamInviteCoordinator: any TeamInviteCoordinating
 
     var pendingInviteTeamName: String? {
         teamInviteCoordinator.pendingInviteTeamName
@@ -37,22 +39,29 @@ final class RegisterViewModel: ObservableObject {
     }
 
     init(
-        authService: AuthService,
-        pendingCredentialsStore: PendingAuthCredentialsStore,
-        teamInviteCoordinator: TeamInviteCoordinator
+        authService: any AuthServicing,
+        pendingCredentialsStore: any PendingAuthCredentialsStoring,
+        teamInviteCoordinator: any TeamInviteCoordinating,
+        onRegistered: ((String) -> Void)? = nil
     ) {
         self.authService = authService
         self.pendingCredentialsStore = pendingCredentialsStore
         self.teamInviteCoordinator = teamInviteCoordinator
+        self.onRegistered = onRegistered
     }
 
-    convenience init() {
+    convenience init(onRegistered: ((String) -> Void)? = nil) {
         self.init(
             authService: AuthService.shared,
             pendingCredentialsStore: PendingAuthCredentialsStore.shared,
-            teamInviteCoordinator: .shared
+            teamInviteCoordinator: TeamInviteCoordinator.shared,
+            onRegistered: onRegistered
         )
         selectedLanguage = LocalizationManager.shared.language
+    }
+
+    convenience init() {
+        self.init(onRegistered: nil)
     }
 
     var canSubmit: Bool {
@@ -113,6 +122,7 @@ final class RegisterViewModel: ObservableObject {
             if response.success {
                 LocalizationManager.shared.setLanguage(selectedLanguage)
                 pendingCredentialsStore.save(email: trimmedEmail, password: password)
+                onRegistered?(trimmedEmail)
                 showEmailVerification = true
                 return
             }

@@ -19,9 +19,9 @@ final class MatchDetailAvailabilityViewModel: ObservableObject {
     @Published var isSubmitting = false
 
     private weak var host: MatchDetailViewModel?
-    private let matchService: MatchService
+    private let matchService: any MatchDetailServicing
 
-    init(matchService: MatchService) {
+    init(matchService: any MatchDetailServicing) {
         self.matchService = matchService
     }
 

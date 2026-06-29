@@ -261,6 +261,7 @@ struct Profile: View {
                 cornerRadius: 20,
                 isFullWidth: true,
                 leadingIcon: "gearshape.fill",
+                accessibilityIdentifier: AccessibilityID.Main.profileSettingsButton,
                 onPress: { viewModel.showsSettings = true }
             )
 
@@ -284,6 +285,7 @@ struct Profile: View {
                 cornerRadius: 20,
                 isFullWidth: true,
                 trailingIcon: "rectangle.portrait.and.arrow.right",
+                accessibilityIdentifier: AccessibilityID.Main.profileLogoutButton,
                 onPress: { viewModel.showsLogoutConfirmation = true }
             )
             .disabled(viewModel.isLoggingOut)

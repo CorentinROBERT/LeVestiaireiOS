@@ -15,9 +15,9 @@ final class ForgetPasswordViewModel: ObservableObject {
     @Published var successMessage: String?
     @Published var isLoading = false
 
-    private let authService: AuthService
+    private let authService: any AuthServicing
 
-    init(authService: AuthService) {
+    init(authService: any AuthServicing) {
         self.authService = authService
     }
 

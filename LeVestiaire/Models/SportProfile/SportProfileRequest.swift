@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct SportProfileRequest: Encodable, Equatable {
+struct SportProfileRequest: Codable, Equatable {
     let favoriteLeague: String?
     let favoriteTeam: String?
     let strongFoot: String?

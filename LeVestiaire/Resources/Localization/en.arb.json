@@ -1439,6 +1439,7 @@
   "errorvalidationemailrequired": "Email required",
   "errorvalidationinvalidresetcode": "Reset code must contain 6 digits",
   "errorvalidationrefreshtokenrequired": "Refresh token required",
+  "errorvalidationdevonly": "This action is only available in the development environment",
   "errorserverinternal": "Internal server error",
   "erroremailsendfailed": "Failed to send email",
   "errorquiznotfound": "Quiz not found",

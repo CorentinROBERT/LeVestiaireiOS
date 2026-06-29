@@ -21,9 +21,9 @@ final class ResetPasswordViewModel: ObservableObject {
     @Published var successMessage: String?
     @Published var isLoading = false
 
-    private let authService: AuthService
+    private let authService: any AuthServicing
 
-    init(resetToken: String?, authService: AuthService) {
+    init(resetToken: String?, authService: any AuthServicing) {
         self.resetToken = resetToken
         self.authService = authService
     }

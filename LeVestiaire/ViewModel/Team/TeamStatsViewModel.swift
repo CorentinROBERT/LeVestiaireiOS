@@ -26,13 +26,13 @@ final class TeamStatsViewModel: ObservableObject {
     @Published var rankingsLoadError: String?
 
     private weak var host: TeamViewModel?
-    private let statsService: StatsService
+    private let statsService: any StatsServicing
 
     var statsLoadedForTeamId: String?
     var rankingsLoadedForTeamId: String?
     var seasonsTeamId: String?
 
-    init(statsService: StatsService) {
+    init(statsService: any StatsServicing) {
         self.statsService = statsService
     }
 

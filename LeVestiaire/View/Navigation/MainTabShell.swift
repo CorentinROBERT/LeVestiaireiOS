@@ -18,36 +18,19 @@ struct MainTabShell: View {
     private var dismissedBannerUserId = ""
 
     var body: some View {
-        TabView(selection: $viewModel.selectedTab) {
-            Tab(value: AppTab.matches) {
-                mainTabRoot(title: L10n.matches) {
-                    Matchs()
-                }
-            } label: {
-                Label(L10n.matches, systemImage: "sportscourt.fill")
-            }
-
-            Tab(value: AppTab.team) {
-                mainTabRoot(title: L10n.team) {
-                    Team()
-                }
-            } label: {
-                Label(L10n.team, systemImage: "person.3.fill")
-            }
-
-            Tab(value: AppTab.profile) {
-                mainTabRoot(title: L10n.profile) {
-                    Profile()
-                }
-            } label: {
-                Label(L10n.profile, systemImage: "person.crop.circle.fill")
+        Group {
+            if UITestLaunchArgument.isEnabled {
+                uiTestTabView
+            } else {
+                productionTabView
             }
         }
-        .tabBarMinimizeBehavior(.onScrollDown)
+        .accessibilityIdentifier(AccessibilityID.Main.shell)
         .environmentObject(viewModel)
         .task {
             configureNotificationsViewModel()
             configurePushNotifications()
+            guard !UITestLaunchArgument.isEnabled else { return }
             await viewModel.refreshUnreadCount()
             handlePendingPushNavigation()
         }
@@ -112,6 +95,69 @@ struct MainTabShell: View {
         }
     }
 
+    private var productionTabView: some View {
+        TabView(selection: $viewModel.selectedTab) {
+            Tab(value: AppTab.matches) {
+                mainTabRoot(title: L10n.matches) {
+                    Matchs()
+                }
+            } label: {
+                Label(L10n.matches, systemImage: "sportscourt.fill")
+                    .accessibilityIdentifier(AccessibilityID.Tab.matches)
+            }
+
+            Tab(value: AppTab.team) {
+                mainTabRoot(title: L10n.team) {
+                    Team()
+                }
+            } label: {
+                Label(L10n.team, systemImage: "person.3.fill")
+                    .accessibilityIdentifier(AccessibilityID.Tab.team)
+            }
+
+            Tab(value: AppTab.profile) {
+                mainTabRoot(title: L10n.profile) {
+                    Profile()
+                }
+            } label: {
+                Label(L10n.profile, systemImage: "person.crop.circle.fill")
+                    .accessibilityIdentifier(AccessibilityID.Tab.profile)
+            }
+        }
+        .modifier(MainTabShellTabBarBehavior())
+    }
+
+    private var uiTestTabView: some View {
+        TabView(selection: $viewModel.selectedTab) {
+            mainTabRoot(title: L10n.matches) {
+                Matchs()
+            }
+            .tabItem {
+                Label(L10n.matches, systemImage: "sportscourt.fill")
+            }
+            .tag(AppTab.matches)
+            .accessibilityIdentifier(AccessibilityID.Tab.matches)
+
+            mainTabRoot(title: L10n.team) {
+                Team()
+            }
+            .tabItem {
+                Label(L10n.team, systemImage: "person.3.fill")
+            }
+            .tag(AppTab.team)
+            .accessibilityIdentifier(AccessibilityID.Tab.team)
+
+            mainTabRoot(title: L10n.profile) {
+                Profile()
+            }
+            .tabItem {
+                Label(L10n.profile, systemImage: "person.crop.circle.fill")
+            }
+            .tag(AppTab.profile)
+            .accessibilityIdentifier(AccessibilityID.Tab.profile)
+        }
+    }
+
     private var showsAccountDeletionBanner: Bool {
         guard let user = authService.currentUser,
               user.accountDeletion?.hasPendingDeletion == true else {
@@ -171,7 +217,15 @@ struct MainTabShell: View {
 
     @ViewBuilder
     private var notificationToolbarButton: some View {
-        if viewModel.unreadCount > 0 {
+        if UITestLaunchArgument.isEnabled {
+            Button {
+                viewModel.openNotifications()
+            } label: {
+                Image(systemName: "bell.fill")
+            }
+            .accessibilityLabel(L10n.notifications)
+            .accessibilityIdentifier(AccessibilityID.Main.notificationsButton)
+        } else if viewModel.unreadCount > 0 {
             Button {
                 viewModel.openNotifications()
             } label: {
@@ -179,6 +233,7 @@ struct MainTabShell: View {
             }
             .badge(viewModel.unreadCount > 99 ? "99+" : "\(viewModel.unreadCount)")
             .accessibilityLabel(L10n.notifications)
+            .accessibilityIdentifier(AccessibilityID.Main.notificationsButton)
         } else {
             Button {
                 viewModel.openNotifications()
@@ -186,6 +241,17 @@ struct MainTabShell: View {
                 Image(systemName: "bell.fill")
             }
             .accessibilityLabel(L10n.notifications)
+            .accessibilityIdentifier(AccessibilityID.Main.notificationsButton)
+        }
+    }
+}
+
+private struct MainTabShellTabBarBehavior: ViewModifier {
+    func body(content: Content) -> some View {
+        if UITestLaunchArgument.isEnabled {
+            content
+        } else {
+            content.tabBarMinimizeBehavior(.onScrollDown)
         }
     }
 }

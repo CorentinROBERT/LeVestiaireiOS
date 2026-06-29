@@ -31,6 +31,7 @@ struct MatchDetailView: View {
                 placeholderContent
             }
         }
+        .accessibilityIdentifier(AccessibilityID.Match.detailView)
         .navigationTitle(viewModel.match?.title ?? L10n.matchDetailTitle)
         .navigationBarTitleDisplayMode(.inline)
         .task {

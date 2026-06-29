@@ -28,12 +28,20 @@ final class APIClient {
     )
 
     private let configuration: APIConfiguration
-    private let session: URLSession
+    private var session: URLSession
     private weak var authInterceptor: APIAuthIntercepting?
 
     init(configuration: APIConfiguration, session: URLSession = .shared) {
         self.configuration = configuration
         self.session = session
+    }
+
+    func installUITestNetworkingIfNeeded() {
+        guard UITestLaunchArgument.usesNetworkStub else { return }
+
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [UITestURLProtocol.self]
+        session = URLSession(configuration: configuration)
     }
 
     func setAuthInterceptor(_ interceptor: APIAuthIntercepting?) {

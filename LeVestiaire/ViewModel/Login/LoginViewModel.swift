@@ -17,12 +17,13 @@ final class LoginViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var showEmailVerification = false
 
-    private var cancellables = Set<AnyCancellable>()
-    private let authService: AuthService
-    private let savedEmailStore: SavedLoginEmailStore
-    private let pendingCredentialsStore: PendingAuthCredentialsStore
-    private let biometricStore: BiometricAuthStore
-    private let teamInviteCoordinator: TeamInviteCoordinator
+    private let authServiceBox: ObservableAuthServiceBox
+    private let savedEmailStore: any SavedLoginEmailStoring
+    private let pendingCredentialsStore: any PendingAuthCredentialsStoring
+    private let biometricStore: any BiometricAuthStoring
+    private let teamInviteCoordinator: any TeamInviteCoordinating
+
+    private var authService: any AuthServicing { authServiceBox.service }
 
     var pendingInviteTeamName: String? {
         teamInviteCoordinator.pendingInviteTeamName
@@ -33,25 +34,18 @@ final class LoginViewModel: ObservableObject {
     }
 
     init(
-        authService: AuthService,
-        savedEmailStore: SavedLoginEmailStore,
-        pendingCredentialsStore: PendingAuthCredentialsStore,
-        biometricStore: BiometricAuthStore,
-        teamInviteCoordinator: TeamInviteCoordinator
+        authService: some AuthServicing,
+        savedEmailStore: any SavedLoginEmailStoring,
+        pendingCredentialsStore: any PendingAuthCredentialsStoring,
+        biometricStore: any BiometricAuthStoring,
+        teamInviteCoordinator: any TeamInviteCoordinating
     ) {
-        self.authService = authService
+        self.authServiceBox = ObservableAuthServiceBox(authService)
         self.savedEmailStore = savedEmailStore
         self.pendingCredentialsStore = pendingCredentialsStore
         self.biometricStore = biometricStore
         self.teamInviteCoordinator = teamInviteCoordinator
         self.email = savedEmailStore.load() ?? ""
-
-        authService.objectWillChange
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.objectWillChange.send()
-            }
-            .store(in: &cancellables)
     }
 
     convenience init() {
@@ -60,7 +54,7 @@ final class LoginViewModel: ObservableObject {
             savedEmailStore: SavedLoginEmailStore.shared,
             pendingCredentialsStore: PendingAuthCredentialsStore.shared,
             biometricStore: BiometricAuthStore.shared,
-            teamInviteCoordinator: .shared
+            teamInviteCoordinator: TeamInviteCoordinator.shared
         )
     }
 

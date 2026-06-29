@@ -58,6 +58,7 @@ struct ULanding: View {
                         backgroundColor: .white,
                         cornerRadius: 25,
                         isFullWidth: true,
+                        accessibilityIdentifier: AccessibilityID.Onboarding.primaryButton,
                         onPress: onButtonPress
                     )
 

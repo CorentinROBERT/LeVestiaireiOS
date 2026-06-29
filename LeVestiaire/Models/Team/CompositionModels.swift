@@ -1234,12 +1234,11 @@ private extension String {
 enum CompositionDecoding {
     static func decodeCompositions(from data: Data) throws -> [TeamComposition] {
         if let response = try? APIResponseDecoder.decode(CompositionsListResponse.self, from: data),
-           let compositions = response.data, !compositions.isEmpty {
+           let compositions = response.data {
             return compositions
         }
 
-        if let compositions = try? APIResponseDecoder.decodePayload([TeamComposition].self, from: data),
-           !compositions.isEmpty {
+        if let compositions = try? APIResponseDecoder.decodePayload([TeamComposition].self, from: data) {
             return compositions
         }
 

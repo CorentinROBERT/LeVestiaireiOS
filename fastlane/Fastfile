@@ -1,0 +1,58 @@
+default_platform(:ios)
+
+platform :ios do
+  PROJECT = "LeVestiaire.xcodeproj"
+  SCHEME = "LeVestiaire"
+  BUNDLE_ID = "com.corentin.robert.LeVestaire"
+
+  desc "Build de vérification CI (simulateur, sans signature)"
+  lane :ci do
+    sh("Scripts/ci_build.sh")
+  end
+
+  private_lane :configure_manual_signing do
+    profile_name = ENV.fetch("IOS_PROVISIONING_PROFILE_NAME")
+
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: PROJECT,
+      targets: ["LeVestiaire"],
+      bundle_identifier: BUNDLE_ID,
+      profile_name: profile_name,
+      code_sign_identity: "Apple Distribution"
+    )
+  end
+
+  desc "Build Release + envoi TestFlight (nécessite secrets App Store Connect)"
+  lane :beta do
+    setup_ci if ENV["CI"]
+    configure_manual_signing
+
+    profile_name = ENV.fetch("IOS_PROVISIONING_PROFILE_NAME")
+
+    api_key = app_store_connect_api_key(
+      key_id: ENV.fetch("APP_STORE_CONNECT_KEY_ID"),
+      issuer_id: ENV.fetch("APP_STORE_CONNECT_ISSUER_ID"),
+      key_content: ENV.fetch("APP_STORE_CONNECT_KEY_CONTENT"),
+      is_key_content_base64: true
+    )
+
+    build_app(
+      project: PROJECT,
+      scheme: SCHEME,
+      configuration: "Release",
+      export_method: "app-store",
+      export_options: {
+        provisioningProfiles: {
+          BUNDLE_ID => profile_name
+        }
+      },
+      clean: true
+    )
+
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true
+    )
+  end
+end

@@ -482,6 +482,47 @@ final class AuthService: ObservableObject {
             return false
         }
     }
+
+    @MainActor
+    func configureUnauthenticatedForUITesting() {
+        isBootstrapComplete = true
+        isAuthenticated = false
+        requiresPasswordReauthentication = false
+        requiresSportProfileCompletion = false
+        currentUser = nil
+        authToken = nil
+        tokens = nil
+    }
+
+    @MainActor
+    func configureAuthenticatedForUITesting(requiresSportProfile: Bool) {
+        isBootstrapComplete = true
+        isAuthenticated = true
+        requiresPasswordReauthentication = false
+        currentUser = User(
+            id: "ui-test-user",
+            email: "uitest@levestaire.test",
+            firstName: "Test",
+            lastName: "UI",
+            isActive: true,
+            emailVerified: true
+        )
+        authToken = "ui-test-access-token"
+        tokens = AuthTokens(
+            accessToken: "ui-test-access-token",
+            refreshToken: "ui-test-refresh-token"
+        )
+        tokenStore.saveTokens(
+            accessToken: "ui-test-access-token",
+            refreshToken: "ui-test-refresh-token"
+        )
+
+        if requiresSportProfile {
+            markSportProfileRequired()
+        } else {
+            markSportProfileCompleted()
+        }
+    }
 }
 
 extension AuthService: APIAuthIntercepting {
@@ -494,6 +535,7 @@ extension AuthService: APIAuthIntercepting {
     }
 
     func forceLogout() async {
+        guard !UITestLaunchArgument.isEnabled else { return }
         await logout()
     }
 }

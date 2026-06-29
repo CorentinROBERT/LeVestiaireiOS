@@ -1949,6 +1949,7 @@
       }
     },
     "betaDisclaimer" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2572,6 +2573,22 @@
         }
       }
     },
+    "cleanSheets" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clean sheets"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cages inviolées"
+          }
+        }
+      }
+    },
     "clear" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2585,22 +2602,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Effacer"
-          }
-        }
-      }
-    },
-    "cleanSheets" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Clean sheets"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cages inviolées"
           }
         }
       }
@@ -8765,6 +8766,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Utilisateur non trouvé ou inactif"
+          }
+        }
+      }
+    },
+    "errorvalidationdevonly" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This action is only available in the development environment"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette action n'est disponible qu'en environnement de développement"
           }
         }
       }

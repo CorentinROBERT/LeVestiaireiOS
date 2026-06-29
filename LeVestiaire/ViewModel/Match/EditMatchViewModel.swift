@@ -18,7 +18,7 @@ final class EditMatchViewModel: ObservableObject {
     @Published var errorMessage: String?
 
     private let matchId: String
-    private let matchService: MatchService
+    private let matchService: any MatchDetailServicing
 
     var canSubmit: Bool {
         !isSubmitting
@@ -34,7 +34,7 @@ final class EditMatchViewModel: ObservableObject {
         return matchDate > maxDate
     }
 
-    init(match: MatchDetail, matchService: MatchService) {
+    init(match: MatchDetail, matchService: any MatchDetailServicing) {
         self.matchId = match.id
         self.matchService = matchService
         opponentTeam = match.opponentTeam ?? ""

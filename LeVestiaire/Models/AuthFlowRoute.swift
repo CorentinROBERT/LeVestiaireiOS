@@ -11,4 +11,5 @@ enum AuthFlowRoute: Hashable {
     case register
     case forgetPassword
     case resetPassword(token: String?)
+    case emailVerification(email: String)
 }

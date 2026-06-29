@@ -13,7 +13,26 @@
 		F804B84E2FE92E68000E307E /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = F804B84D2FE92E68000E307E /* FirebaseMessaging */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		F86EA8512FF26A0D00AA8436 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F8B10FF92FD6F78D0061F056 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F8B110002FD6F78D0061F056;
+			remoteInfo = LeVestiaire;
+		};
+		F86EA8602FF26A3600AA8436 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F8B10FF92FD6F78D0061F056 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F8B110002FD6F78D0061F056;
+			remoteInfo = LeVestiaire;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		F86EA84D2FF26A0D00AA8436 /* LeVestiaireTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LeVestiaireTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F86EA85A2FF26A3600AA8436 /* LeVestiaireUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LeVestiaireUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F8B110012FD6F78D0061F056 /* LeVestiaire.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LeVestiaire.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -30,6 +49,16 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		F86EA84E2FF26A0D00AA8436 /* LeVestiaireTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = LeVestiaireTests;
+			sourceTree = "<group>";
+		};
+		F86EA85B2FF26A3600AA8436 /* LeVestiaireUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = LeVestiaireUITests;
+			sourceTree = "<group>";
+		};
 		F8B110032FD6F78D0061F056 /* LeVestiaire */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -41,6 +70,20 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		F86EA84A2FF26A0D00AA8436 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F86EA8572FF26A3600AA8436 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F8B10FFE2FD6F78D0061F056 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -66,6 +109,8 @@
 			isa = PBXGroup;
 			children = (
 				F8B110032FD6F78D0061F056 /* LeVestiaire */,
+				F86EA84E2FF26A0D00AA8436 /* LeVestiaireTests */,
+				F86EA85B2FF26A3600AA8436 /* LeVestiaireUITests */,
 				F804B8462FE92E68000E307E /* Frameworks */,
 				F8B110022FD6F78D0061F056 /* Products */,
 			);
@@ -75,6 +120,8 @@
 			isa = PBXGroup;
 			children = (
 				F8B110012FD6F78D0061F056 /* LeVestiaire.app */,
+				F86EA84D2FF26A0D00AA8436 /* LeVestiaireTests.xctest */,
+				F86EA85A2FF26A3600AA8436 /* LeVestiaireUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -82,6 +129,52 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		F86EA84C2FF26A0D00AA8436 /* LeVestiaireTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F86EA8552FF26A0E00AA8436 /* Build configuration list for PBXNativeTarget "LeVestiaireTests" */;
+			buildPhases = (
+				F86EA8492FF26A0D00AA8436 /* Sources */,
+				F86EA84A2FF26A0D00AA8436 /* Frameworks */,
+				F86EA84B2FF26A0D00AA8436 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F86EA8522FF26A0D00AA8436 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				F86EA84E2FF26A0D00AA8436 /* LeVestiaireTests */,
+			);
+			name = LeVestiaireTests;
+			packageProductDependencies = (
+			);
+			productName = LeVestiaireTests;
+			productReference = F86EA84D2FF26A0D00AA8436 /* LeVestiaireTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		F86EA8592FF26A3600AA8436 /* LeVestiaireUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F86EA8622FF26A3600AA8436 /* Build configuration list for PBXNativeTarget "LeVestiaireUITests" */;
+			buildPhases = (
+				F86EA8562FF26A3600AA8436 /* Sources */,
+				F86EA8572FF26A3600AA8436 /* Frameworks */,
+				F86EA8582FF26A3600AA8436 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F86EA8612FF26A3600AA8436 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				F86EA85B2FF26A3600AA8436 /* LeVestiaireUITests */,
+			);
+			name = LeVestiaireUITests;
+			packageProductDependencies = (
+			);
+			productName = LeVestiaireUITests;
+			productReference = F86EA85A2FF26A3600AA8436 /* LeVestiaireUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		F8B110002FD6F78D0061F056 /* LeVestiaire */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = F8B1100E2FD6F7900061F056 /* Build configuration list for PBXNativeTarget "LeVestiaire" */;
@@ -117,9 +210,17 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2650;
+				LastSwiftUpdateCheck = 2660;
 				LastUpgradeCheck = 2660;
 				TargetAttributes = {
+					F86EA84C2FF26A0D00AA8436 = {
+						CreatedOnToolsVersion = 26.6;
+						TestTargetID = F8B110002FD6F78D0061F056;
+					};
+					F86EA8592FF26A3600AA8436 = {
+						CreatedOnToolsVersion = 26.6;
+						TestTargetID = F8B110002FD6F78D0061F056;
+					};
 					F8B110002FD6F78D0061F056 = {
 						CreatedOnToolsVersion = 26.5;
 					};
@@ -144,11 +245,27 @@
 			projectRoot = "";
 			targets = (
 				F8B110002FD6F78D0061F056 /* LeVestiaire */,
+				F86EA84C2FF26A0D00AA8436 /* LeVestiaireTests */,
+				F86EA8592FF26A3600AA8436 /* LeVestiaireUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		F86EA84B2FF26A0D00AA8436 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F86EA8582FF26A3600AA8436 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F8B10FFF2FD6F78D0061F056 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -210,6 +327,20 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		F86EA8492FF26A0D00AA8436 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F86EA8562FF26A3600AA8436 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F8B10FFD2FD6F78D0061F056 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -219,7 +350,108 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		F86EA8522FF26A0D00AA8436 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F8B110002FD6F78D0061F056 /* LeVestiaire */;
+			targetProxy = F86EA8512FF26A0D00AA8436 /* PBXContainerItemProxy */;
+		};
+		F86EA8612FF26A3600AA8436 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F8B110002FD6F78D0061F056 /* LeVestiaire */;
+			targetProxy = F86EA8602FF26A3600AA8436 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		F86EA8532FF26A0D00AA8436 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 8UTV7J6Z6Z;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.corentin.robert.LeVestiaireTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/LeVestiaire.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/LeVestiaire";
+			};
+			name = Debug;
+		};
+		F86EA8542FF26A0D00AA8436 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8UTV7J6Z6Z;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.corentin.robert.LeVestiaireTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/LeVestiaire.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/LeVestiaire";
+			};
+			name = Release;
+		};
+		F86EA8632FF26A3600AA8436 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 8UTV7J6Z6Z;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.corentin.robert.LeVestiaireUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = LeVestiaire;
+			};
+			name = Debug;
+		};
+		F86EA8642FF26A3600AA8436 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8UTV7J6Z6Z;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.corentin.robert.LeVestiaireUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = LeVestiaire;
+			};
+			name = Release;
+		};
 		F8B1100C2FD6F7900061F056 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -439,6 +671,24 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		F86EA8552FF26A0E00AA8436 /* Build configuration list for PBXNativeTarget "LeVestiaireTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F86EA8532FF26A0D00AA8436 /* Debug */,
+				F86EA8542FF26A0D00AA8436 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F86EA8622FF26A3600AA8436 /* Build configuration list for PBXNativeTarget "LeVestiaireUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F86EA8632FF26A3600AA8436 /* Debug */,
+				F86EA8642FF26A3600AA8436 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		F8B10FFC2FD6F78D0061F056 /* Build configuration list for PBXProject "LeVestiaire" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

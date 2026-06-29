@@ -155,12 +155,70 @@ String sources:
 ## Building from the command line
 
 ```bash
-xcodebuild -scheme LeVestiaire \
-  -destination 'platform=iOS Simulator,name=iPhone 17' \
-  -configuration Debug build
+./Scripts/ci_build.sh
 ```
 
-Replace `Debug` with `Release` for a production configuration build.
+Optional env vars: `CONFIGURATION=Release`, `DESTINATION='generic/platform=iOS Simulator'`.
+
+Manual equivalent:
+
+```bash
+xcodebuild -scheme LeVestiaire \
+  -destination 'generic/platform=iOS Simulator' \
+  -configuration Debug \
+  CODE_SIGNING_ALLOWED=NO build
+```
+
+---
+
+## CI / CD (GitHub Actions)
+
+### CI — automatic build
+
+Workflow `.github/workflows/ios-ci.yml` runs on every **push** and **pull request** to `main` or `develop`:
+
+- `macos-26` runner + Xcode **26.5**
+- Swift package resolution (Firebase)
+- **Debug** and **Release** simulator builds (no signing required)
+
+Badge (once enabled):
+
+`![iOS CI](https://github.com/CorentinROBERT/LeVestiaireiOS/actions/workflows/ios-ci.yml/badge.svg)`
+
+### CD — TestFlight (manual)
+
+Workflow `.github/workflows/ios-release.yml` is triggered manually (**Actions → iOS Release → Run workflow**).
+
+Required GitHub secrets (Settings → Secrets and variables → Actions):
+
+| Secret | Description |
+|--------|-------------|
+| `APP_STORE_CONNECT_KEY_ID` | App Store Connect API key ID |
+| `APP_STORE_CONNECT_ISSUER_ID` | Issuer ID |
+| `APP_STORE_CONNECT_KEY_CONTENT` | `.p8` key content, base64-encoded |
+| `IOS_DISTRIBUTION_CERTIFICATE_BASE64` | Distribution `.p12` certificate, base64-encoded |
+| `IOS_DISTRIBUTION_CERTIFICATE_PASSWORD` | `.p12` password |
+| `IOS_PROVISIONING_PROFILE_BASE64` | App Store provisioning profile for `com.corentin.robert.LeVestaire` |
+| `IOS_PROVISIONING_PROFILE_NAME` | Exact profile name (e.g. `Le Vestiaire App Store`) |
+| `KEYCHAIN_PASSWORD` | Temporary CI keychain password |
+
+Assisted setup:
+
+```bash
+cp Scripts/ci-secrets.env.example Scripts/ci-secrets.local.env
+# Fill ci-secrets.local.env, then:
+./Scripts/configure_github_secrets.sh
+```
+
+The script base64-encodes files and pushes secrets via `gh secret set` (or prints manual instructions if `gh` is missing: `brew install gh && gh auth login`).
+
+Locally:
+
+```bash
+bundle install
+bundle exec fastlane ci      # same build as CI
+bundle exec fastlane beta    # Release build + TestFlight upload
+```
 
 ---
 

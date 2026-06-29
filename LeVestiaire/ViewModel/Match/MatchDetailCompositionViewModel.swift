@@ -14,10 +14,10 @@ final class MatchDetailCompositionViewModel: ObservableObject {
     @Published var isLockingComposition = false
 
     private weak var host: MatchDetailViewModel?
-    private let matchService: MatchService
-    private let compositionService: CompositionService
+    private let matchService: any MatchDetailServicing
+    private let compositionService: any CompositionServicing
 
-    init(matchService: MatchService, compositionService: CompositionService) {
+    init(matchService: any MatchDetailServicing, compositionService: any CompositionServicing) {
         self.matchService = matchService
         self.compositionService = compositionService
     }

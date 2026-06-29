@@ -26,7 +26,7 @@ final class NotificationsViewModel: ObservableObject {
     @Published private(set) var markingReadNotificationIds: Set<String> = []
     @Published private(set) var archivingNotificationIds: Set<String> = []
 
-    private let notificationService: NotificationService
+    private let notificationService: any NotificationServicing
     private var currentPage = 1
     private var hasReachedMax = false
     private var loadGeneration = 0
@@ -44,7 +44,7 @@ final class NotificationsViewModel: ObservableObject {
     var onUnreadCountChanged: (() async -> Void)?
     var onNavigate: ((NotificationNavigationDestination) -> Void)?
 
-    init(notificationService: NotificationService) {
+    init(notificationService: any NotificationServicing) {
         self.notificationService = notificationService
     }
 

@@ -21,10 +21,10 @@ final class MatchDetailViewModel: ObservableObject {
     @Published var canManageMatchTeam = false
 
     let matchId: String
-    let matchService: MatchService
-    let compositionService: CompositionService
-    let teamService: TeamService
-    let authService: AuthService
+    let matchService: any MatchDetailServicing
+    let compositionService: any CompositionServicing
+    let teamService: any TeamDetailServicing
+    let authService: any AuthServicing
     let availabilityViewModel: MatchDetailAvailabilityViewModel
     let compositionViewModel: MatchDetailCompositionViewModel
     let quizViewModel: MatchDetailQuizViewModel
@@ -39,10 +39,10 @@ final class MatchDetailViewModel: ObservableObject {
 
     init(
         matchId: String,
-        matchService: MatchService,
-        compositionService: CompositionService,
-        teamService: TeamService,
-        authService: AuthService,
+        matchService: any MatchDetailServicing,
+        compositionService: any CompositionServicing,
+        teamService: any TeamDetailServicing,
+        authService: any AuthServicing,
         availabilityViewModel: MatchDetailAvailabilityViewModel? = nil,
         compositionViewModel: MatchDetailCompositionViewModel? = nil,
         quizViewModel: MatchDetailQuizViewModel? = nil,

@@ -34,25 +34,28 @@ struct Team: View {
                 } else if let errorMessage = viewModel.errorMessage, !viewModel.hasTeams {
                     teamErrorState(message: errorMessage)
                 } else if viewModel.hasTeams {
-                    TeamHeroSection(viewModel: viewModel)
+                    Group {
+                        TeamHeroSection(viewModel: viewModel)
 
-                    if viewModel.showsTeamDetailError, let errorMessage = viewModel.errorMessage {
-                        TeamLoadErrorBanner(message: errorMessage) {
-                            Task { await viewModel.retryTeamDetail() }
+                        if viewModel.showsTeamDetailError, let errorMessage = viewModel.errorMessage {
+                            TeamLoadErrorBanner(message: errorMessage) {
+                                Task { await viewModel.retryTeamDetail() }
+                            }
                         }
-                    }
 
-                    if viewModel.canManageTeam {
-                        VStack(spacing: 12) {
-                            TeamQuickActionsSection(viewModel: viewModel)
-                            TeamJoinRequestsSection(viewModel: viewModel)
-                            TeamInvitationsSection(viewModel: viewModel)
+                        if viewModel.canManageTeam {
+                            VStack(spacing: 12) {
+                                TeamQuickActionsSection(viewModel: viewModel)
+                                TeamJoinRequestsSection(viewModel: viewModel)
+                                TeamInvitationsSection(viewModel: viewModel)
+                            }
                         }
-                    }
 
-                    TeamTabPicker(selection: $selectedTab)
-                    tabContent
-                        .animation(.easeInOut(duration: 0.2), value: selectedTab)
+                        TeamTabPicker(selection: $selectedTab)
+                        tabContent
+                            .animation(.easeInOut(duration: 0.2), value: selectedTab)
+                    }
+                    .accessibilityIdentifier(AccessibilityID.Team.shell)
                 } else {
                     createTeamCard
                     emptyTeamsCard

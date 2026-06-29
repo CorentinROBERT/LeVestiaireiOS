@@ -128,7 +128,8 @@ struct SportProfileView: View {
                 keyboardType: .numberPad,
                 focusTag: Field.jersey,
                 focusedTag: $focusedField,
-                usesSystemKeyboardToolbar: false
+                usesSystemKeyboardToolbar: false,
+                accessibilityIdentifier: AccessibilityID.SportProfile.jerseyField
             )
 
             UGlassFormRow(icon: "trophy.fill") {
@@ -233,6 +234,7 @@ struct SportProfileView: View {
             cornerRadius: 25,
             isFullWidth: true,
             trailingIcon: "checkmark.seal.fill",
+            accessibilityIdentifier: AccessibilityID.SportProfile.submitButton,
             onPress: viewModel.finalizeProfile
         )
         .opacity(viewModel.canSubmit ? 1 : 0.5)

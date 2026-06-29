@@ -48,6 +48,7 @@ struct MatchDetailTabPicker: View {
                 }
             }
         }
+        .accessibilityIdentifier(AccessibilityID.Match.tabPicker)
     }
 }
 

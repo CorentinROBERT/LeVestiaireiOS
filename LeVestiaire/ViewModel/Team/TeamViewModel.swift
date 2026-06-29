@@ -28,11 +28,11 @@ final class TeamViewModel: ObservableObject {
 
     let pullToRefreshTask = PullToRefreshTask()
 
-    let teamService: TeamService
+    let teamService: any TeamHostServicing
     let compositionService: CompositionService
     let statsService: StatsService
     let selectedTeamStore: SelectedTeamStore
-    let authService: AuthService
+    let authService: any AuthServicing
 
     let statsViewModel: TeamStatsViewModel
     let invitationsViewModel: TeamInvitationsViewModel
@@ -41,11 +41,11 @@ final class TeamViewModel: ObservableObject {
     let rosterViewModel: TeamRosterViewModel
 
     init(
-        teamService: TeamService,
+        teamService: any TeamHostServicing,
         compositionService: CompositionService,
         statsService: StatsService,
         selectedTeamStore: SelectedTeamStore,
-        authService: AuthService,
+        authService: any AuthServicing,
         statsViewModel: TeamStatsViewModel? = nil,
         invitationsViewModel: TeamInvitationsViewModel? = nil,
         joinRequestsViewModel: TeamJoinRequestsViewModel? = nil,
@@ -73,11 +73,11 @@ final class TeamViewModel: ObservableObject {
 
     convenience init() {
         self.init(
-            teamService: .shared,
+            teamService: TeamService.shared,
             compositionService: .shared,
             statsService: .shared,
             selectedTeamStore: .shared,
-            authService: .shared
+            authService: AuthService.shared
         )
     }
 

@@ -17,6 +17,10 @@ struct UnregisterDeviceTokenRequest: Encodable {
     let token: String
 }
 
+struct TestPushNotificationRequest: Encodable {
+    let allowProduction: Bool
+}
+
 struct TestPushNotificationResponse: Decodable {
     let success: Bool?
     let message: String?

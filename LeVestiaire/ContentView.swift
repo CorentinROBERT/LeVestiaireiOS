@@ -38,6 +38,10 @@ struct ContentView: View {
         .animation(.easeInOut, value: remoteSettings.isMaintenanceMode)
         .animation(.easeInOut, value: remoteSettings.requiresForceUpdate)
         .task {
+            if UITestLaunchArgument.isEnabled {
+                UITestAppConfigurator.configureIfNeeded(authService: authService)
+                return
+            }
             remoteSettings.start()
         }
         .task(id: authService.isBootstrapComplete) {

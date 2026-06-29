@@ -64,7 +64,7 @@ final class PushNotificationManager: ObservableObject {
     }
 
     func configure(application: UIApplication) {
-        guard isPushEnabled else { return }
+        guard isPushEnabled, !UITestLaunchArgument.isEnabled else { return }
 
         Task {
             await requestAuthorizationIfNeeded(application: application)
@@ -125,8 +125,8 @@ final class PushNotificationManager: ObservableObject {
         }
     }
 
-    func sendTestPushNotification() async throws {
-        _ = try await deviceTokenService.sendTestPushNotification()
+    func sendTestPushNotification(allowProduction: Bool) async throws {
+        _ = try await deviceTokenService.sendTestPushNotification(allowProduction: allowProduction)
     }
 
     private func requestAuthorizationIfNeeded(application: UIApplication) async {

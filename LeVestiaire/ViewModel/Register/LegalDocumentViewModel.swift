@@ -31,9 +31,16 @@ final class LegalDocumentViewModel: ObservableObject {
     let document: LegalDocument
     let language: AppLanguage
 
-    init(document: LegalDocument, language: AppLanguage) {
+    private let contentFetcher: any RemoteContentFetching
+
+    init(
+        document: LegalDocument,
+        language: AppLanguage,
+        contentFetcher: any RemoteContentFetching = SharedRemoteContentFetcher()
+    ) {
         self.document = document
         self.language = language
+        self.contentFetcher = contentFetcher
     }
 
     func load() async {
@@ -54,7 +61,7 @@ final class LegalDocumentViewModel: ObservableObject {
 
     private func fetchMarkdown() async throws -> String {
         let url = document.rawURL(for: language)
-        let (data, response) = try await URLSession.shared.data(from: url)
+        let (data, response) = try await contentFetcher.data(from: url)
 
         guard let httpResponse = response as? HTTPURLResponse,
               (200...299).contains(httpResponse.statusCode) else {

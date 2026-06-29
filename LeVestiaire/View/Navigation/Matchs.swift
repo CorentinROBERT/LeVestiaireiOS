@@ -242,6 +242,7 @@ struct Matchs: View {
         .buttonStyle(.fullTap)
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityLabel(L10n.createMatch)
+        .accessibilityIdentifier(AccessibilityID.Main.createMatchButton)
     }
 
     private var filterButton: some View {
@@ -275,6 +276,7 @@ struct Matchs: View {
         }
         .buttonStyle(.fullTap)
         .accessibilityLabel(L10n.filterMatches)
+        .accessibilityIdentifier(AccessibilityID.Main.filterMatchesButton)
     }
 
     private var activeFiltersBanner: some View {

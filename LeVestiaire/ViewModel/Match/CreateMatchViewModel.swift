@@ -20,9 +20,9 @@ final class CreateMatchViewModel: ObservableObject {
     @Published private(set) var isSubmitting = false
     @Published var errorMessage: String?
 
-    private let matchService: MatchService
-    private let teamService: TeamService
-    private let authService: AuthService
+    private let matchService: any MatchListingServicing
+    private let teamService: any TeamMembershipServicing
+    private let authService: any AuthServicing
 
     private var currentUserId: String? {
         authService.currentUser?.id
@@ -59,7 +59,11 @@ final class CreateMatchViewModel: ObservableObject {
         return matchDate > maxDate
     }
 
-    init(matchService: MatchService, teamService: TeamService, authService: AuthService) {
+    init(
+        matchService: any MatchListingServicing,
+        teamService: any TeamMembershipServicing,
+        authService: any AuthServicing
+    ) {
         self.matchService = matchService
         self.teamService = teamService
         self.authService = authService

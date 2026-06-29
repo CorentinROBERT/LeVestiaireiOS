@@ -23,14 +23,14 @@ final class MainTabViewModel: ObservableObject {
     @Published var pendingMatchId: String?
     @Published var pendingTeamId: String?
 
-    private let notificationService: NotificationService
+    private let notificationService: any NotificationServicing
 
-    init(notificationService: NotificationService) {
+    init(notificationService: any NotificationServicing) {
         self.notificationService = notificationService
     }
 
     convenience init() {
-        self.init(notificationService: .shared)
+        self.init(notificationService: NotificationService.shared)
     }
 
     func openNotifications() {

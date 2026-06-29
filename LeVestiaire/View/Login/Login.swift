@@ -20,7 +20,11 @@ struct Login: View {
                 .navigationDestination(for: AuthFlowRoute.self) { route in
                     switch route {
                     case .register:
-                        RegisterView()
+                        RegisterView { email in
+                            navigationPath.append(AuthFlowRoute.emailVerification(email: email))
+                        }
+                    case .emailVerification(let email):
+                        EmailVerificationView(email: email)
                     case .forgetPassword:
                         ForgetPassword {
                             navigationPath.append(AuthFlowRoute.resetPassword(token: nil))
@@ -31,6 +35,17 @@ struct Login: View {
                         }
                     }
                 }
+        }
+        .onAppear {
+            openResetPasswordForUITestingIfNeeded()
+        }
+    }
+
+    private func openResetPasswordForUITestingIfNeeded() {
+        guard UITestLaunchArgument.shouldOpenResetPassword else { return }
+        DispatchQueue.main.async {
+            guard navigationPath.isEmpty else { return }
+            navigationPath.append(AuthFlowRoute.resetPassword(token: nil))
         }
     }
 
@@ -118,7 +133,8 @@ struct Login: View {
                 submitLabel: .next,
                 focusTag: 1,
                 focusedTag: $focusedField,
-                nextFocusTag: 2
+                nextFocusTag: 2,
+                accessibilityIdentifier: AccessibilityID.Auth.emailField
             )
 
             UGlassTextField(
@@ -133,7 +149,8 @@ struct Login: View {
                 submitLabel: .go,
                 onSubmit: viewModel.login,
                 focusTag: 2,
-                focusedTag: $focusedField
+                focusedTag: $focusedField,
+                accessibilityIdentifier: AccessibilityID.Auth.passwordField
             )
 
             UButton(
@@ -143,6 +160,7 @@ struct Login: View {
                 cornerRadius: 25,
                 isFullWidth: true,
                 trailingIcon: "arrow.right",
+                accessibilityIdentifier: AccessibilityID.Auth.loginButton,
                 onPress: viewModel.login
             )
             .opacity(viewModel.isLoading ? 0.7 : 1)
@@ -163,6 +181,7 @@ struct Login: View {
                     .foregroundStyle(AppPalette.Primary.main)
             }
             .buttonStyle(.fullTap)
+            .accessibilityIdentifier(AccessibilityID.Auth.forgotPasswordLink)
 
             HStack(spacing: 4) {
                 Text(L10n.noAccountYet)
@@ -176,6 +195,7 @@ struct Login: View {
                         .foregroundStyle(AppPalette.Primary.main)
                 }
                 .buttonStyle(.fullTap)
+                .accessibilityIdentifier(AccessibilityID.Auth.createAccountLink)
             }
             .font(.subheadline)
         }

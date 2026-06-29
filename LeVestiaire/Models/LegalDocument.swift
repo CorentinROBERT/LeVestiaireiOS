@@ -9,7 +9,6 @@ import Foundation
 
 enum LegalDocument: String, CaseIterable, Identifiable {
     case termsOfUse
-    case betaWarning
     case privacyPolicy
 
     private static let rawBaseURL = "https://raw.githubusercontent.com/CorentinROBERT/squadLockerLegal/main"
@@ -21,8 +20,6 @@ enum LegalDocument: String, CaseIterable, Identifiable {
         switch self {
         case .termsOfUse:
             return L10n.termsOfService
-        case .betaWarning:
-            return L10n.betaDisclaimer
         case .privacyPolicy:
             return L10n.privacyPolicy
         }
@@ -32,8 +29,6 @@ enum LegalDocument: String, CaseIterable, Identifiable {
         switch self {
         case .termsOfUse:
             return "CGU"
-        case .betaWarning:
-            return "BetaDisclaimer"
         case .privacyPolicy:
             return "PrivacyPolicy"
         }

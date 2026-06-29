@@ -18,6 +18,20 @@ struct MatchListResponse: Decodable {
         pagination
     }
 
+    init(
+        success: Bool = true,
+        message: String? = nil,
+        error: String? = nil,
+        matches: [MatchItem] = [],
+        pagination: PaginationInfo? = nil
+    ) {
+        self.success = success
+        self.message = message
+        self.error = error
+        self.matches = matches
+        self.pagination = pagination
+    }
+
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 

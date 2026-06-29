@@ -14,9 +14,9 @@ final class TeamJoinRequestsViewModel: ObservableObject {
     @Published var reviewingRequestIds: Set<String> = []
 
     private weak var host: TeamViewModel?
-    private let teamService: TeamService
+    private let teamService: any TeamManagementServicing
 
-    init(teamService: TeamService) {
+    init(teamService: any TeamManagementServicing) {
         self.teamService = teamService
     }
 

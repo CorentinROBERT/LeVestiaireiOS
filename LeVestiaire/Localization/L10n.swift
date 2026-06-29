@@ -205,7 +205,6 @@ enum L10n {
     static var acceptLegalDocuments: String { text("acceptLegalDocuments") }
     static var legalConsentHint: String { text("legalConsentHint") }
     static var termsOfService: String { text("termsOfService") }
-    static var betaDisclaimer: String { text("betaDisclaimer") }
     static var privacyPolicy: String { text("privacyPolicy") }
 
     static var french: String { text("french") }

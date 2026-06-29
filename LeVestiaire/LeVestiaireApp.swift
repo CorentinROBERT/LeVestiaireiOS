@@ -23,8 +23,14 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         UNUserNotificationCenter.current().delegate = self
         Messaging.messaging().delegate = self
 
-        Task { @MainActor in
-            PushNotificationManager.shared.configure(application: application)
+        if UITestLaunchArgument.isEnabled {
+            MainActor.assumeIsolated {
+                UITestAppConfigurator.configureIfNeeded(authService: AuthService.shared)
+            }
+        } else {
+            Task { @MainActor in
+                PushNotificationManager.shared.configure(application: application)
+            }
         }
 
         return true
@@ -83,11 +89,17 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
 struct LeVestiaireApp: App {
     @ObservedObject private var localizationManager = LocalizationManager.shared
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-    
+
+    init() {
+        guard UITestLaunchArgument.isEnabled else { return }
+        MainActor.assumeIsolated {
+            UITestAppConfigurator.configureIfNeeded(authService: AuthService.shared)
+        }
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .id(localizationManager.language.rawValue)
                 .environmentObject(AuthService.shared)
                 .environmentObject(localizationManager)
                 .environmentObject(TeamInviteCoordinator.shared)
@@ -97,6 +109,9 @@ struct LeVestiaireApp: App {
                     TeamInviteCoordinator.shared.handleIncomingURL(url)
                 }
                 .task {
+                    if UITestLaunchArgument.isEnabled {
+                        return
+                    }
                     await AuthService.shared.initialize()
                     await PushNotificationManager.shared.syncAfterBootstrap()
                 }

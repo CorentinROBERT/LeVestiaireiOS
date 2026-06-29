@@ -29,11 +29,11 @@ final class DeveloperViewModel: ObservableObject {
     @Published var apiTestState: APITestState = .idle
     @Published var pushTestState: PushTestState = .idle
 
-    private let configuration: APIConfiguration
-    private let pushNotificationManager: PushNotificationManager
+    private let configuration: any APIConfiguring
+    private let pushNotificationManager: any PushNotificationTesting
     private var cancellables = Set<AnyCancellable>()
 
-    init(configuration: APIConfiguration, pushNotificationManager: PushNotificationManager) {
+    init(configuration: any APIConfiguring, pushNotificationManager: any PushNotificationTesting) {
         self.configuration = configuration
         self.pushNotificationManager = pushNotificationManager
         self.selectedEnvironment = configuration.environment
@@ -59,7 +59,7 @@ final class DeveloperViewModel: ObservableObject {
     convenience init() {
         self.init(
             configuration: APIConfiguration.shared,
-            pushNotificationManager: .shared
+            pushNotificationManager: PushNotificationManager.shared
         )
     }
 
@@ -130,7 +130,9 @@ final class DeveloperViewModel: ObservableObject {
 
         Task {
             do {
-                try await pushNotificationManager.sendTestPushNotification()
+                try await pushNotificationManager.sendTestPushNotification(
+                    allowProduction: selectedEnvironment == .production
+                )
                 pushTestState = .success(message: L10n.text("testPushNotificationSent"))
             } catch {
                 pushTestState = .failure(message: error.localizedDescription)

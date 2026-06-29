@@ -16,11 +16,11 @@ final class TeamCompositionsViewModel: ObservableObject {
     @Published var lastSaveError: String?
 
     private weak var host: TeamViewModel?
-    private let compositionService: CompositionService
+    private let compositionService: any CompositionServicing
 
     var compositionsLoadedForTeamId: String?
 
-    init(compositionService: CompositionService) {
+    init(compositionService: any CompositionServicing) {
         self.compositionService = compositionService
     }
 

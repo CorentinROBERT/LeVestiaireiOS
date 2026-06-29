@@ -18,9 +18,9 @@ final class ContentViewModel: ObservableObject {
 
     @Published private(set) var currentScreen: AppScreen
 
-    private let onboardingStore: OnboardingStore
+    private let onboardingStore: any OnboardingStoring
 
-    init(onboardingStore: OnboardingStore) {
+    init(onboardingStore: any OnboardingStoring) {
         self.onboardingStore = onboardingStore
         currentScreen = onboardingStore.hasCompletedOnboarding ? .login : .landing
     }

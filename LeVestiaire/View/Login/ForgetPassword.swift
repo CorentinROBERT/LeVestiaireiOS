@@ -36,7 +36,8 @@ struct ForgetPassword: View {
                             keyboardType: .emailAddress,
                             textContentType: .emailAddress,
                             errorMessage: viewModel.validationMessage,
-                            helperText: L10n.forgetPasswordEmailHelper
+                            helperText: L10n.forgetPasswordEmailHelper,
+                            accessibilityIdentifier: AccessibilityID.Auth.forgetPasswordEmailField
                         )
 
                         UButton(
@@ -45,6 +46,7 @@ struct ForgetPassword: View {
                             backgroundColor: AppPalette.Primary.main,
                             cornerRadius: 30,
                             isFullWidth: true,
+                            accessibilityIdentifier: AccessibilityID.Auth.forgetPasswordSubmit,
                             onPress: viewModel.submit
                         )
                         .opacity(viewModel.canSubmit ? 1 : 0.5)

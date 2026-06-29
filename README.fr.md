@@ -155,12 +155,70 @@ Sources des chaînes :
 ## Compilation en ligne de commande
 
 ```bash
-xcodebuild -scheme LeVestiaire \
-  -destination 'platform=iOS Simulator,name=iPhone 17' \
-  -configuration Debug build
+./Scripts/ci_build.sh
 ```
 
-Remplacer `Debug` par `Release` pour une build de configuration production.
+Variables optionnelles : `CONFIGURATION=Release`, `DESTINATION='generic/platform=iOS Simulator'`.
+
+Équivalent manuel :
+
+```bash
+xcodebuild -scheme LeVestiaire \
+  -destination 'generic/platform=iOS Simulator' \
+  -configuration Debug \
+  CODE_SIGNING_ALLOWED=NO build
+```
+
+---
+
+## CI / CD (GitHub Actions)
+
+### CI — build automatique
+
+Le workflow `.github/workflows/ios-ci.yml` tourne sur chaque **push** et **pull request** vers `main` ou `develop` :
+
+- Runner `macos-26` + Xcode **26.5**
+- Résolution des packages Swift (Firebase)
+- Build **Debug** et **Release** pour simulateur (sans certificat)
+
+Badge à ajouter dans le README une fois activé :
+
+`![iOS CI](https://github.com/CorentinROBERT/LeVestiaireiOS/actions/workflows/ios-ci.yml/badge.svg)`
+
+### CD — TestFlight (manuel)
+
+Le workflow `.github/workflows/ios-release.yml` se lance à la main (**Actions → iOS Release → Run workflow**).
+
+Secrets GitHub à configurer (Settings → Secrets and variables → Actions) :
+
+| Secret | Description |
+|--------|-------------|
+| `APP_STORE_CONNECT_KEY_ID` | Key ID de la clé API App Store Connect |
+| `APP_STORE_CONNECT_ISSUER_ID` | Issuer ID |
+| `APP_STORE_CONNECT_KEY_CONTENT` | Contenu du fichier `.p8` encodé en base64 |
+| `IOS_DISTRIBUTION_CERTIFICATE_BASE64` | Certificat Distribution `.p12` en base64 |
+| `IOS_DISTRIBUTION_CERTIFICATE_PASSWORD` | Mot de passe du `.p12` |
+| `IOS_PROVISIONING_PROFILE_BASE64` | Profil App Store du bundle `com.corentin.robert.LeVestaire` |
+| `IOS_PROVISIONING_PROFILE_NAME` | Nom exact du profil (ex. `Le Vestiaire App Store`) |
+| `KEYCHAIN_PASSWORD` | Mot de passe temporaire du trousseau CI |
+
+Configuration assistée :
+
+```bash
+cp Scripts/ci-secrets.env.example Scripts/ci-secrets.local.env
+# Remplir ci-secrets.local.env puis :
+./Scripts/configure_github_secrets.sh
+```
+
+Le script encode les fichiers en base64 et pousse les secrets via `gh secret set` (ou affiche les instructions si `gh` n'est pas installé : `brew install gh && gh auth login`).
+
+En local :
+
+```bash
+bundle install
+bundle exec fastlane ci      # même build que la CI
+bundle exec fastlane beta    # build Release + upload TestFlight
+```
 
 ---
 

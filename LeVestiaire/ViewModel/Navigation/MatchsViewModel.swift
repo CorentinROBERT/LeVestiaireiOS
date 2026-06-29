@@ -26,8 +26,8 @@ final class MatchsViewModel: ObservableObject {
     @Published private(set) var isPreparingEditMatch = false
     @Published var availabilityFeedback: String?
 
-    private let matchService: MatchService
-    private let teamService: TeamService
+    private let matchService: any MatchListingServicing
+    private let teamService: any TeamMembershipServicing
     private var currentPage = 1
     private var hasReachedMax = false
     private var loadGeneration = 0
@@ -59,7 +59,7 @@ final class MatchsViewModel: ObservableObject {
         userTeams.first { $0.id == id }?.name
     }
 
-    init(matchService: MatchService, teamService: TeamService) {
+    init(matchService: any MatchListingServicing, teamService: any TeamMembershipServicing) {
         self.matchService = matchService
         self.teamService = teamService
     }
