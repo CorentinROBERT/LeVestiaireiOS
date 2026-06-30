@@ -50,21 +50,22 @@ struct TeamSeasonDuosPayload: Decodable, Equatable {
 }
 
 struct TeamSeasonDuoEntry: Decodable, Equatable, Identifiable {
+    let pairKey: String
     let playerA: TeamInsightsPlayerRef
     let playerB: TeamInsightsPlayerRef
     let goalsTogether: Int
     let totalCombos: Int
 
-    var id: String {
-        [playerA.id, playerB.id].sorted().joined(separator: "-")
-    }
+    var id: String { pairKey }
 
     init(
+        pairKey: String? = nil,
         playerA: TeamInsightsPlayerRef,
         playerB: TeamInsightsPlayerRef,
         goalsTogether: Int = 0,
         totalCombos: Int = 0
     ) {
+        self.pairKey = pairKey ?? Self.makePairKey(playerA: playerA, playerB: playerB)
         self.playerA = playerA
         self.playerB = playerB
         self.goalsTogether = goalsTogether
@@ -77,9 +78,16 @@ struct TeamSeasonDuoEntry: Decodable, Equatable, Identifiable {
         playerB = try container.decode(TeamInsightsPlayerRef.self, forKey: .playerB)
         goalsTogether = SeasonStatsDecoding.int(from: container, forKey: .goalsTogether)
         totalCombos = SeasonStatsDecoding.int(from: container, forKey: .totalCombos)
+        pairKey = try container.decodeIfPresent(String.self, forKey: .pairKey)
+            ?? Self.makePairKey(playerA: playerA, playerB: playerB)
+    }
+
+    private static func makePairKey(playerA: TeamInsightsPlayerRef, playerB: TeamInsightsPlayerRef) -> String {
+        [playerA.id, playerB.id].sorted().joined(separator: "|")
     }
 
     private enum CodingKeys: String, CodingKey {
+        case pairKey
         case playerA
         case playerB
         case goalsTogether

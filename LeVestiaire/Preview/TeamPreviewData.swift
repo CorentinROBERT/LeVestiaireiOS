@@ -296,12 +296,14 @@ enum TeamPreviewData {
         season: season,
         duos: [
             TeamSeasonDuoEntry(
+                pairKey: "user-3|user-4",
                 playerA: TeamInsightsPlayerRef(id: "user-3", firstName: "Hugo", lastName: "Petit"),
                 playerB: TeamInsightsPlayerRef(id: "user-4", firstName: "Léa", lastName: "Moreau"),
                 goalsTogether: 5,
                 totalCombos: 4
             ),
             TeamSeasonDuoEntry(
+                pairKey: "user-2|user-3",
                 playerA: TeamInsightsPlayerRef(id: "user-2", firstName: "Emma", lastName: "Bernard"),
                 playerB: TeamInsightsPlayerRef(id: "user-3", firstName: "Hugo", lastName: "Petit"),
                 goalsTogether: 3,

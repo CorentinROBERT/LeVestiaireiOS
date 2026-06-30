@@ -295,6 +295,7 @@ struct TeamInsightsPlayerRef: Decodable, Equatable, Identifiable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decodeIfPresent(String.self, forKey: .userId)
             ?? container.decodeIfPresent(String.self, forKey: .id)
+            ?? container.decodeIfPresent(String.self, forKey: .mongoId)
             ?? ""
         firstName = try container.decodeIfPresent(String.self, forKey: .firstName)
         lastName = try container.decodeIfPresent(String.self, forKey: .lastName)
@@ -303,6 +304,7 @@ struct TeamInsightsPlayerRef: Decodable, Equatable, Identifiable {
     private enum CodingKeys: String, CodingKey {
         case id
         case userId
+        case mongoId = "_id"
         case firstName
         case lastName
     }
