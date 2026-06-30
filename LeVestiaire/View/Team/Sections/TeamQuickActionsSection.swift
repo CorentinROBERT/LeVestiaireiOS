@@ -8,9 +8,14 @@ import SwiftUI
 struct TeamQuickActionsSection: View {
     @ObservedObject var viewModel: TeamViewModel
 
+    private let pairedActionColumns = [
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12)
+    ]
+
     var body: some View {
         VStack(spacing: 12) {
-            HStack(spacing: 12) {
+            LazyVGrid(columns: pairedActionColumns, spacing: 12) {
                 TeamColoredActionTile(
                     title: L10n.text("inviterJoueur"),
                     subtitle: L10n.text("invitePlayerActionSubtitle"),
@@ -19,6 +24,7 @@ struct TeamQuickActionsSection: View {
                 ) {
                     viewModel.activeSheet = .invitePlayer
                 }
+                .frame(maxHeight: .infinity, alignment: .topLeading)
 
                 TeamColoredActionTile(
                     title: L10n.text("addGuest"),
@@ -28,6 +34,7 @@ struct TeamQuickActionsSection: View {
                 ) {
                     viewModel.activeSheet = .addGuest
                 }
+                .frame(maxHeight: .infinity, alignment: .topLeading)
             }
 
             TeamColoredActionTile(
