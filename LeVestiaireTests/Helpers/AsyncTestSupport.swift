@@ -23,6 +23,7 @@ enum AsyncTestSupport {
                 }
                 return
             }
+            await Task.yield()
             try? await Task.sleep(for: .milliseconds(25))
         }
     }

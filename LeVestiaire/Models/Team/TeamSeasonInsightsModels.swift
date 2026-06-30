@@ -70,7 +70,9 @@ struct TeamFormInsights: Decodable, Equatable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        if let matchResults = try? container.decode([TeamFormMatchEntry].self, forKey: .matches) {
+        if let last5 = try? container.decode([String].self, forKey: .last5) {
+            results = last5.compactMap { TeamMatchResult(rawValue: $0) }
+        } else if let matchResults = try? container.decode([TeamFormMatchEntry].self, forKey: .matches) {
             results = matchResults.compactMap(\.result)
         } else if let rawResults = try? container.decode([String].self, forKey: .results) {
             results = rawResults.compactMap { TeamMatchResult(rawValue: $0) }
@@ -84,6 +86,7 @@ struct TeamFormInsights: Decodable, Equatable {
     }
 
     private enum CodingKeys: String, CodingKey {
+        case last5
         case matches
         case results
         case points
