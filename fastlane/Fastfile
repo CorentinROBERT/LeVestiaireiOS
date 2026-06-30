@@ -25,6 +25,10 @@ platform :ios do
 
   desc "Build Release + envoi TestFlight (nécessite secrets App Store Connect)"
   lane :beta do
+    # CI : xcodebuild -showBuildSettings peut dépasser 3s (SPM, Firebase, clean).
+    ENV["FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT"] ||= "120"
+    ENV["FASTLANE_XCODEBUILD_SETTINGS_RETRIES"] ||= "6"
+
     setup_ci if ENV["CI"]
     configure_manual_signing
 
