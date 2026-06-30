@@ -40,10 +40,12 @@ struct EmailVerificationViewModelTests {
     )
 
     viewModel.confirmVerification()
-    await Task.yield()
-    await AsyncTestSupport.waitUntil { viewModel.isCheckingVerification == false }
+    await AsyncTestSupport.waitUntil {
+      viewModel.feedbackMessage == L10n.emailNotYetVerified
+    }
 
     #expect(viewModel.feedbackMessage == L10n.emailNotYetVerified)
+    #expect(viewModel.isCheckingVerification == false)
   }
 
   @Test
