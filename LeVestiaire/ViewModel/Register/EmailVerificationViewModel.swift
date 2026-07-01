@@ -54,26 +54,27 @@ final class EmailVerificationViewModel: ObservableObject {
     }
 
     func confirmVerification() {
+        Task { await performConfirmVerification() }
+    }
+
+    func performConfirmVerification() async {
         guard !isCheckingVerification else { return }
 
         isCheckingVerification = true
         feedbackMessage = nil
+        defer { isCheckingVerification = false }
 
-        Task {
-            defer { isCheckingVerification = false }
-
-            let isVerified = await checkEmailVerificationStatus()
-            guard isVerified else {
-                if feedbackMessage == nil {
-                    feedbackMessage = L10n.emailNotYetVerified
-                }
-                return
+        let isVerified = await checkEmailVerificationStatus()
+        guard isVerified else {
+            if feedbackMessage == nil {
+                feedbackMessage = L10n.emailNotYetVerified
             }
+            return
+        }
 
-            let didSignIn = await signInAfterVerification()
-            if !didSignIn, feedbackMessage == nil {
-                feedbackMessage = L10n.autoLoginFailedAfterVerification
-            }
+        let didSignIn = await signInAfterVerification()
+        if !didSignIn, feedbackMessage == nil {
+            feedbackMessage = L10n.autoLoginFailedAfterVerification
         }
     }
 
@@ -120,28 +121,29 @@ final class EmailVerificationViewModel: ObservableObject {
     }
 
     func resendEmail() {
+        Task { await performResendEmail() }
+    }
+
+    func performResendEmail() async {
         guard canResendEmail else { return }
 
         isResending = true
         feedbackMessage = nil
+        defer { isResending = false }
 
-        Task {
-            defer { isResending = false }
+        let response = await authService.resendVerificationEmail(email: email)
 
-            let response = await authService.resendVerificationEmail(email: email)
-
-            if response.success {
-                feedbackMessage = L10n.apiMessage(response.message) ?? L10n.verificationEmailResent
-                startResendCooldown()
-                return
-            }
-
-            feedbackMessage = L10n.apiErrorMessage(
-                message: response.message,
-                error: response.error,
-                fallback: L10n.verificationEmailResendFailed
-            )
+        if response.success {
+            feedbackMessage = L10n.apiMessage(response.message) ?? L10n.verificationEmailResent
+            startResendCooldown()
+            return
         }
+
+        feedbackMessage = L10n.apiErrorMessage(
+            message: response.message,
+            error: response.error,
+            fallback: L10n.verificationEmailResendFailed
+        )
     }
 
     private func startResendCooldown() {

@@ -39,10 +39,7 @@ struct EmailVerificationViewModelTests {
       inviteCoordinator: MockTeamInviteCoordinator()
     )
 
-    viewModel.confirmVerification()
-    await AsyncTestSupport.waitUntil {
-      viewModel.feedbackMessage == L10n.emailNotYetVerified
-    }
+    await viewModel.performConfirmVerification()
 
     #expect(viewModel.feedbackMessage == L10n.emailNotYetVerified)
     #expect(viewModel.isCheckingVerification == false)
@@ -65,9 +62,7 @@ struct EmailVerificationViewModelTests {
       inviteCoordinator: inviteCoordinator
     )
 
-    viewModel.confirmVerification()
-    await Task.yield()
-    await AsyncTestSupport.waitUntil { viewModel.isCheckingVerification == false }
+    await viewModel.performConfirmVerification()
 
     #expect(inviteCoordinator.joinPendingTeamIfNeededCallCount == 1)
     #expect(viewModel.feedbackMessage == nil)
@@ -94,9 +89,7 @@ struct EmailVerificationViewModelTests {
     )
 
     auth.isAuthenticated = false
-    viewModel.confirmVerification()
-    await Task.yield()
-    await AsyncTestSupport.waitUntil { viewModel.isCheckingVerification == false }
+    await viewModel.performConfirmVerification()
 
     #expect(auth.loginCallCount == 1)
     #expect(pendingStore.load() == nil)
@@ -115,9 +108,7 @@ struct EmailVerificationViewModelTests {
       inviteCoordinator: MockTeamInviteCoordinator()
     )
 
-    viewModel.resendEmail()
-    await Task.yield()
-    await AsyncTestSupport.waitUntil { viewModel.isResending == false }
+    await viewModel.performResendEmail()
 
     #expect(viewModel.feedbackMessage != nil)
     #expect(viewModel.resendCooldownRemaining > 0)
