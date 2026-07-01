@@ -17,7 +17,7 @@ final class RegisterViewModel: ObservableObject {
     @Published var confirmPassword = ""
     @Published var isPasswordVisible = false
     @Published var isConfirmPasswordVisible = false
-    @Published var birthDate = Calendar.current.date(byAdding: .year, value: -18, to: Date()) ?? Date()
+    @Published var birthDate: Date?
     @Published var selectedLanguage: AppLanguage = .french
     @Published var hasAcceptedLegalTerms = false
     @Published var validationMessage: String?
@@ -99,7 +99,7 @@ final class RegisterViewModel: ObservableObject {
             return
         }
 
-        guard birthDate <= Date() else {
+        if let birthDate, birthDate > Date() {
             validationMessage = L10n.invalidBirthDate
             return
         }

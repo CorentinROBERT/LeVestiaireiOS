@@ -21,14 +21,14 @@ struct RegisterViewModelTests {
     )
   }
 
-  private func fillValidForm(_ viewModel: RegisterViewModel) {
+  private func fillValidForm(_ viewModel: RegisterViewModel, birthDate: Date? = nil) {
     viewModel.firstName = "Alice"
     viewModel.lastName = "Martin"
     viewModel.email = "alice@example.com"
     viewModel.password = "password123"
     viewModel.confirmPassword = "password123"
     viewModel.hasAcceptedLegalTerms = true
-    viewModel.birthDate = Calendar.current.date(byAdding: .year, value: -20, to: Date()) ?? Date()
+    viewModel.birthDate = birthDate
   }
 
   @Test
@@ -114,5 +114,26 @@ struct RegisterViewModelTests {
     #expect(pendingStore.load()?.email == "alice@example.com")
     #expect(auth.registerCallCount == 1)
     #expect(auth.lastRegisterInviteCode == "TEAM01")
+  }
+
+  @Test
+  func createAccount_withoutBirthDate_succeeds() async {
+    let auth = MockAuthService()
+    auth.registerHandler = { _, _, _, _, birthDate, _, _ in
+      #expect(birthDate == nil)
+      return LoginResponse(success: true, message: "created")
+    }
+    let viewModel = makeViewModel(
+      auth: auth,
+      pendingStore: InMemoryPendingCredentialsStore(),
+      inviteCoordinator: MockTeamInviteCoordinator()
+    )
+    fillValidForm(viewModel)
+
+    viewModel.createAccount()
+    await AsyncTestSupport.waitUntil { viewModel.isLoading == false }
+
+    #expect(viewModel.showEmailVerification)
+    #expect(auth.registerCallCount == 1)
   }
 }
