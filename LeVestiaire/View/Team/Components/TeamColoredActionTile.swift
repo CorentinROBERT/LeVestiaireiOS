@@ -24,13 +24,18 @@ struct TeamColoredActionTile: View {
                     Text(title)
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(AppPalette.Neutral.textPrimary)
+                        .multilineTextAlignment(.leading)
+                        .lineLimit(2, reservesSpace: true)
+                        .frame(maxWidth: .infinity, alignment: .topLeading)
                     Text(subtitle)
                         .font(.caption)
                         .foregroundStyle(AppPalette.Neutral.textSecondary)
                         .multilineTextAlignment(.leading)
+                        .lineLimit(2, reservesSpace: true)
+                        .frame(maxWidth: .infinity, alignment: .topLeading)
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .padding(14)
             .background(tint.opacity(0.1), in: RoundedRectangle(cornerRadius: 18))
             .overlay {
@@ -40,6 +45,7 @@ struct TeamColoredActionTile: View {
             .contentShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         }
         .buttonStyle(.fullTap)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
         .accessibilityLabel("\(title). \(subtitle)")
     }
 }

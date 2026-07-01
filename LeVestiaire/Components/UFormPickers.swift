@@ -239,17 +239,90 @@ struct UOptionalDatePickerRow: View {
     let title: String
     @Binding var selection: Date?
     var fallbackDate = Date()
+    var minimumDate: Date?
+    var maximumDate: Date?
     var displayedComponents: DatePicker.Components = .date
+    var locale: Locale?
+    var emptyLabel: String = L10n.select
 
     var body: some View {
-        UDatePickerRow(
-            title: title,
-            selection: Binding(
-                get: { selection ?? fallbackDate },
-                set: { selection = $0 }
-            ),
-            displayedComponents: displayedComponents
-        )
+        HStack {
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(AppPalette.Neutral.textPrimary)
+
+            Spacer()
+
+            if selection == nil {
+                Button {
+                    selection = fallbackDate
+                } label: {
+                    Text(emptyLabel)
+                        .font(.subheadline)
+                        .foregroundStyle(AppPalette.Primary.main)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(title)
+            } else {
+                HStack(spacing: 8) {
+                    datePicker(
+                        selection: Binding(
+                            get: { selection ?? fallbackDate },
+                            set: { selection = $0 }
+                        )
+                    )
+
+                    Button {
+                        selection = nil
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.body)
+                            .foregroundStyle(AppPalette.Neutral.textTertiary)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(L10n.reset)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func datePicker(selection: Binding<Date>) -> some View {
+        Group {
+            switch (minimumDate, maximumDate) {
+            case let (minimum?, maximum?):
+                DatePicker(
+                    "",
+                    selection: selection,
+                    in: minimum...maximum,
+                    displayedComponents: displayedComponents
+                )
+            case let (minimum?, nil):
+                DatePicker(
+                    "",
+                    selection: selection,
+                    in: minimum...,
+                    displayedComponents: displayedComponents
+                )
+            case let (nil, maximum?):
+                DatePicker(
+                    "",
+                    selection: selection,
+                    in: ...maximum,
+                    displayedComponents: displayedComponents
+                )
+            case (nil, nil):
+                DatePicker(
+                    "",
+                    selection: selection,
+                    displayedComponents: displayedComponents
+                )
+            }
+        }
+        .labelsHidden()
+        .datePickerStyle(.compact)
+        .environment(\.locale, locale ?? .autoupdatingCurrent)
+        .accessibilityLabel(title)
     }
 }
 

@@ -146,9 +146,10 @@ struct RegisterView: View {
             )
 
             UGlassFormRow(icon: "calendar") {
-                UDatePickerRow(
+                UOptionalDatePickerRow(
                     title: L10n.birthdate,
                     selection: $viewModel.birthDate,
+                    fallbackDate: Calendar.current.date(byAdding: .year, value: -18, to: Date()) ?? Date(),
                     minimumDate: birthDateRange.lowerBound,
                     maximumDate: birthDateRange.upperBound,
                     displayedComponents: .date,
